@@ -1152,37 +1152,53 @@ class VibeCodeAPITester:
 
     def print_test_summary(self):
         """Print comprehensive test summary"""
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
+        print("\n" + "=" * 80)
+        print("📊 PRODUCTION ENHANCEMENT TEST SUMMARY")
+        print("=" * 80)
         
         total_passed = 0
         total_failed = 0
         critical_failures = []
         
-        for category, results in self.test_results.items():
-            passed = results["passed"]
-            failed = results["failed"]
-            total_passed += passed
-            total_failed += failed
-            
-            status = "✅ PASS" if failed == 0 else "❌ FAIL"
-            print(f"{category.replace('_', ' ').title()}: {status} ({passed} passed, {failed} failed)")
-            
-            if failed > 0:
-                critical_failures.extend(results["errors"])
-                for error in results["errors"]:
-                    print(f"  ❌ {error}")
+        # Define test category order and display names
+        categories = [
+            ("health_checks", "Health Checks"),
+            ("validation_tests", "Input Validation"),
+            ("rate_limiting", "Rate Limiting"),
+            ("error_handling", "Error Handling"),
+            ("pagination", "Pagination"),
+            ("project_management", "Project Management"),
+            ("file_management", "File Management"),
+            ("ai_integration", "AI Integration"),
+            ("chat_history", "Chat History"),
+            ("websocket_ai", "WebSocket AI")
+        ]
         
-        print("-" * 60)
+        for category_key, display_name in categories:
+            if category_key in self.test_results:
+                results = self.test_results[category_key]
+                passed = results["passed"]
+                failed = results["failed"]
+                total_passed += passed
+                total_failed += failed
+                
+                status = "✅ PASS" if failed == 0 else "❌ FAIL"
+                print(f"{display_name}: {status} ({passed} passed, {failed} failed)")
+                
+                if failed > 0:
+                    critical_failures.extend(results["errors"])
+                    for error in results["errors"]:
+                        print(f"  ❌ {error}")
+        
+        print("-" * 80)
         print(f"TOTAL: {total_passed} passed, {total_failed} failed")
         
         if total_failed == 0:
-            print("🎉 ALL TESTS PASSED! Backend is fully functional.")
+            print("🎉 ALL PRODUCTION ENHANCEMENT TESTS PASSED! Backend is production-ready.")
         else:
             print(f"⚠️  {total_failed} tests failed. Backend has issues that need attention.")
             
-        print("=" * 60)
+        print("=" * 80)
         
         return total_failed == 0, critical_failures
 
