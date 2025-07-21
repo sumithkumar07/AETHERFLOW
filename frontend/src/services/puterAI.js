@@ -174,7 +174,7 @@ Return response in this JSON format:
 }`;
 
       const response = await window.puter.ai.chat(prompt, {
-        model: this.models.codeReview,
+        model: this.getCurrentModel('codeReview'),
         temperature: 0.2
       });
 
