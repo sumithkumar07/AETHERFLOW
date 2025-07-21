@@ -503,17 +503,32 @@ function AppContent() {
             e.preventDefault();
             setShowSearch(true);
             break;
+          case 'p':
+            if (e.shiftKey) {
+              e.preventDefault();
+              setShowCommandPalette(true);
+            } else {
+              e.preventDefault();
+              setShowPreview(!showPreview);
+            }
+            break;
           case '`':
             e.preventDefault();
-            setShowChat(!showChat);
+            setShowTerminal(!showTerminal);
             break;
-          case 'p':
+          case 'j':
             e.preventDefault();
-            setShowPreview(!showPreview);
+            setShowChat(!showChat);
             break;
           case 'b':
             e.preventDefault();
             setSidebarCollapsed(!sidebarCollapsed);
+            break;
+          case 'g':
+            if (e.shiftKey) {
+              e.preventDefault();
+              setShowGitPanel(!showGitPanel);
+            }
             break;
           case ',':
             e.preventDefault();
@@ -534,11 +549,15 @@ function AppContent() {
             break;
         }
       }
+
+      if (e.key === 'Escape') {
+        setShowCommandPalette(false);
+      }
     };
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [currentFile, showChat, showPreview, sidebarCollapsed, showToolsPanel, focusMode, saveFile]);
+  }, [currentFile, showChat, showPreview, sidebarCollapsed, showToolsPanel, focusMode, showTerminal, showGitPanel, showCommandPalette, saveFile]);
 
   // Load projects on startup
   useEffect(() => {
