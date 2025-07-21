@@ -214,6 +214,40 @@ function AppContent() {
     }
   }, [notifications, triggerCosmicEvent, resetCosmicState]);
 
+  // BCI Session Management Functions
+  const initializeBCISession = useCallback(async () => {
+    try {
+      if (bcInterface.isAvailable()) {
+        const session = await bcInterface.startSession({
+          mode: 'enhanced_coding',
+          sensitivity: 0.7,
+          filters: ['focus', 'creativity', 'flow']
+        });
+        setNeuralSession(session);
+        console.log('🧠 BCI Session initialized:', session);
+      }
+    } catch (error) {
+      console.error('Failed to initialize BCI session:', error);
+      notifications.addNotification({
+        type: 'error',
+        title: 'BCI Error',
+        message: 'Failed to initialize neural interface'
+      });
+    }
+  }, [notifications]);
+
+  const terminateBCISession = useCallback(async () => {
+    try {
+      if (neuralSession) {
+        await bcInterface.endSession(neuralSession.id);
+        setNeuralSession(null);
+        console.log('🧠 BCI Session terminated');
+      }
+    } catch (error) {
+      console.error('Failed to terminate BCI session:', error);
+    }
+  }, [neuralSession]);
+
   // Load projects with caching and error handling
   const loadProjects = useCallback(async () => {
     try {
