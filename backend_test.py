@@ -483,7 +483,7 @@ class VibeCodeAPITester:
                 "description": "A test project for the VibeCode IDE"
             }
             
-            async with self.session.post(f"{API_BASE_URL}/projects", json=project_data) as response:
+            async with self.session.post(f"{API_V1_BASE_URL}/projects", json=project_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("name") == project_data["name"] and data.get("id"):
@@ -504,7 +504,7 @@ class VibeCodeAPITester:
     async def test_get_projects(self):
         """Test getting all projects"""
         try:
-            async with self.session.get(f"{API_BASE_URL}/projects") as response:
+            async with self.session.get(f"{API_V1_BASE_URL}/projects") as response:
                 if response.status == 200:
                     data = await response.json()
                     if isinstance(data, list):
@@ -534,7 +534,7 @@ class VibeCodeAPITester:
             return False
             
         try:
-            async with self.session.get(f"{API_BASE_URL}/projects/{self.test_project_id}") as response:
+            async with self.session.get(f"{API_V1_BASE_URL}/projects/{self.test_project_id}") as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("id") == self.test_project_id:
