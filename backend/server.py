@@ -907,7 +907,7 @@ async def generate_documentation_endpoint(request: DocumentationRequest):
         raise HTTPException(status_code=500, detail="Documentation service unavailable")
 
 @api_router.post("/ai/security-scan")
-async def scan_security(request: SecurityScanRequest):
+async def security_scan_endpoint(request: SecurityScanRequest):
     """Security vulnerability scanning"""
     try:
         result = await ai_engine.scan_security(
