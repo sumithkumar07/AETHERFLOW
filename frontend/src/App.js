@@ -727,9 +727,25 @@ function AppContent() {
             
             {/* Action buttons */}
             <button 
-              onClick={() => setShowSearch(true)}
+              onClick={() => setShowTerminal(!showTerminal)}
+              className={`btn btn-ghost btn-sm ${showTerminal ? 'text-green-400' : ''}`}
+              title="Toggle Terminal (Ctrl+`)"
+            >
+              <Terminal size={16} />
+            </button>
+
+            <button 
+              onClick={() => setShowGitPanel(!showGitPanel)}
+              className={`btn btn-ghost btn-sm ${showGitPanel ? 'text-purple-400' : ''}`}
+              title="Source Control (Ctrl+Shift+G)"
+            >
+              <GitBranch size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowCommandPalette(true)}
               className="btn btn-ghost btn-sm"
-              title="Search files (Ctrl+F)"
+              title="Command Palette (Ctrl+Shift+P)"
             >
               <Search size={16} />
             </button>
