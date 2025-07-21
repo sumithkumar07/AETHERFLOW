@@ -893,7 +893,7 @@ async def debug_code_endpoint(request: DebugRequest):
         raise HTTPException(status_code=500, detail="Debug service unavailable")
 
 @api_router.post("/ai/documentation")
-async def generate_documentation(request: DocumentationRequest):
+async def generate_documentation_endpoint(request: DocumentationRequest):
     """Generate comprehensive documentation for code"""
     try:
         result = await ai_engine.generate_documentation(
