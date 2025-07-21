@@ -42,6 +42,10 @@ function AppContent() {
   const [showProjectManager, setShowProjectManager] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [layout, setLayout] = useState('code');
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
+  const [showGitPanel, setShowGitPanel] = useState(false);
+  const [terminalHeight, setTerminalHeight] = useState(300);
   
   // Professional UI state
   const [isLoading, setIsLoading] = useState(false);
