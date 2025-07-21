@@ -605,8 +605,12 @@ const AIChat = ({ currentFile }) => {
               onKeyPress={handleKeyPress}
               placeholder={
                 activeMode === 'nlp' 
-                  ? "Describe the code you want to generate..."
-                  : "Ask me anything about coding..."
+                  ? "Describe the code you want to generate with full context..."
+                  : activeMode === 'performance'
+                    ? "Ask for performance analysis of current file..."
+                    : activeMode === 'contextual'
+                      ? "Ask context-aware questions about your project..."
+                      : "Chat with advanced AI memory and project understanding..."
               }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:border-purple-400"
               rows="2"
