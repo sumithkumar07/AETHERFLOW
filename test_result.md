@@ -357,10 +357,10 @@ metadata:
 test_plan:
   current_focus:
     - "Code Evolution with Genetic Algorithms"
-  stuck_tasks:
-    - "Code Evolution with Genetic Algorithms"
-  test_all: false
-  test_priority: "stuck_first"
+    - "Frontend cosmic features comprehensive testing"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "all_backend_then_frontend"
 
 agent_communication:
     - agent: "main"
