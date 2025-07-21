@@ -768,6 +768,18 @@ function AppContent() {
             />
           </div>
         )}
+        
+        {/* Collaboration Panel */}
+        {showCollaboration && (
+          <div className="w-80">
+            <CollaborationPanel
+              project={currentProject}
+              currentFile={currentFile}
+              isVisible={showCollaboration}
+              onToggle={() => setShowCollaboration(!showCollaboration)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
