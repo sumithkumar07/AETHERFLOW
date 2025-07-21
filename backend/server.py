@@ -40,10 +40,6 @@ app.add_middleware(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Hugging Face Configuration
-HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY')
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models"
-
 # === MODELS ===
 
 class FileNode(BaseModel):
