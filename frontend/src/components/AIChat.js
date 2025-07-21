@@ -439,22 +439,41 @@ const AIChat = ({ currentFile }) => {
             <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">ADVANCED</span>
           </div>
           
-          {/* Mode Selector */}
-          <div className="flex bg-gray-700 rounded-lg p-1">
-            {modeButtons.map(({ id, label, icon: Icon, color }) => (
-              <button
-                key={id}
-                onClick={() => setActiveMode(id)}
-                className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${
-                  activeMode === id 
-                    ? `bg-${color}-600 text-white` 
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                <Icon size={12} />
-                <span>{label}</span>
-              </button>
-            ))}
+          {/* Enhanced Mode Selector */}
+          <div className="flex flex-col space-y-1">
+            <div className="flex bg-gray-700 rounded-lg p-1">
+              {modeButtons.map(({ id, label, icon: Icon, color }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveMode(id)}
+                  className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${
+                    activeMode === id 
+                      ? `bg-${color}-600 text-white` 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  title={modeButtons.find(m => m.id === id)?.desc}
+                >
+                  <Icon size={12} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+            
+            {/* Advanced Options for Performance Mode */}
+            {activeMode === 'performance' && (
+              <div className="flex bg-gray-700 rounded p-1 text-xs">
+                <select
+                  value={selectedAnalysisType}
+                  onChange={(e) => setSelectedAnalysisType(e.target.value)}
+                  className="bg-gray-600 text-white rounded px-2 py-1 text-xs"
+                >
+                  <option value="comprehensive">Comprehensive</option>
+                  <option value="performance">Performance Focus</option>
+                  <option value="security">Security Focus</option>
+                  <option value="memory">Memory Analysis</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
         
