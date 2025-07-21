@@ -100,6 +100,14 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     }
   }, [language, file?.name, isAnalyzing]);
 
+  useEffect(() => {
+    if (file) {
+      setLanguage(getLanguageFromFilename(file.name));
+      setIsModified(false);
+      setCodeReview(null);
+    }
+  }, [file]);
+
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     
@@ -111,10 +119,52 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
       handleSave();
     });
 
+    // Add keyboard shortcut for code review
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, () => {
+      if (file?.content) {
+        performCodeReview(file.content);
+      }
+    });
+
+    // Register AI code completion provider
+    const completionProvider = monaco.languages.registerCompletionItemProvider(language, {
+      provideCompletionItems: async (model, position) => {
+        const code = model.getValue();
+        const offset = model.getOffsetAt(position);
+        
+        // Trigger AI completion
+        await getAICodeCompletion(code, {
+          line: position.lineNumber - 1,
+          column: position.column - 1
+        });
+        
+        // Convert AI suggestions to Monaco format
+        const suggestions = completionSuggestions.map((suggestion, index) => ({
+          label: suggestion.text,
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: suggestion.text,
+          documentation: `AI Suggestion (Confidence: ${(suggestion.confidence * 100).toFixed(0)}%)`,
+          sortText: `000${index}`,
+          range: {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: position.column,
+            endColumn: position.column,
+          }
+        }));
+
+        return { suggestions };
+      }
+    });
+
     // Auto-completion and other editor features
     editor.updateOptions({
       suggestOnTriggerCharacters: true,
-      quickSuggestions: true,
+      quickSuggestions: {
+        other: true,
+        comments: false,
+        strings: false
+      },
       wordBasedSuggestions: true,
       minimap: { enabled: true },
       lineNumbers: 'on',
@@ -123,8 +173,29 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
       bracketMatching: 'always',
       autoIndent: 'full',
       formatOnPaste: true,
-      formatOnType: true
+      formatOnType: true,
+      fontSize: 14,
+      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+      lineHeight: 1.5,
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+      tabSize: 2,
+      insertSpaces: true,
+      wordWrap: 'on',
+      contextmenu: true,
+      selectOnLineNumbers: true,
+      roundedSelection: false,
+      readOnly: false,
+      cursorStyle: 'line',
+      cursorBlinking: 'blink',
+      renderLineHighlight: 'all',
+      showFoldingControls: 'mouseover'
     });
+
+    // Cleanup function
+    return () => {
+      completionProvider.dispose();
+    };
   };
 
   const handleEditorChange = (value) => {
