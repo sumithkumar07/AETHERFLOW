@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Set
 from datetime import datetime, timedelta
 from fastapi import WebSocket
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from ..models.collaboration_models import (
+from models.collaboration_models import (
     User, Room, UserPresence, CollaborationCursor, EditOperation, 
     ChatMessage, FileVersion, RoomInvite
 )
