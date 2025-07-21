@@ -291,18 +291,18 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     }
   };
 
-  const renderAIResultPanel = () => {
-    if (!aiResult) return null;
+  const renderCodeReviewPanel = () => {
+    if (!showCodeReview || !codeReview) return null;
 
     return (
-      <div className="absolute top-0 right-0 w-96 h-full bg-gray-800 border-l border-gray-600 z-10 overflow-hidden flex flex-col">
+      <div className="absolute top-0 right-0 w-80 h-full bg-gray-800 border-l border-gray-600 z-10 overflow-hidden flex flex-col">
         <div className="bg-gray-700 px-4 py-3 border-b border-gray-600 flex items-center justify-between">
           <h3 className="text-sm font-medium text-white flex items-center">
-            <Bot size={16} className="mr-2 text-purple-400" />
-            AI Result
+            <AlertTriangle size={16} className="mr-2 text-yellow-400" />
+            Code Review
           </h3>
           <button
-            onClick={() => setAiResult(null)}
+            onClick={() => setShowCodeReview(false)}
             className="text-gray-400 hover:text-white text-lg"
           >
             ×
@@ -310,166 +310,76 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
         </div>
         
         <div className="flex-1 overflow-auto p-4">
-          {aiAction === 'debugging' && aiResult.analysis && (
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-red-400">🐛 Debug Analysis</h4>
-              <div className="text-sm text-gray-300 whitespace-pre-wrap">{aiResult.analysis}</div>
-              
-              {aiResult.fixes && aiResult.fixes.length > 0 && (
-                <div className="mt-4">
-                  <h5 className="text-sm font-medium text-green-400 mb-2">Suggested Fixes:</h5>
-                  {aiResult.fixes.map((fix, index) => (
-                    <div key={index} className="bg-gray-700 p-3 rounded mb-2">
-                      <p className="text-sm text-gray-300 mb-2">{fix.description}</p>
-                      <pre className="bg-gray-900 p-2 rounded text-xs text-green-400 overflow-x-auto">
-                        <code>{fix.code}</code>
-                      </pre>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {codeReview.overall_score && (
+            <div className="mb-4 p-3 bg-gray-700 rounded">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-300">Code Quality Score</span>
+                <span className={`text-lg font-bold ${
+                  codeReview.overall_score >= 80 ? 'text-green-400' :
+                  codeReview.overall_score >= 60 ? 'text-yellow-400' : 'text-red-400'
+                }`}>
+                  {codeReview.overall_score}/100
+                </span>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full ${
+                    codeReview.overall_score >= 80 ? 'bg-green-400' :
+                    codeReview.overall_score >= 60 ? 'bg-yellow-400' : 'bg-red-400'
+                  }`}
+                  style={{ width: `${codeReview.overall_score}%` }}
+                ></div>
+              </div>
             </div>
           )}
 
-          {aiAction === 'documenting' && aiResult.documentation && (
+          {codeReview.issues && codeReview.issues.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-blue-400">📚 Generated Documentation</h4>
-              <div className="text-sm text-gray-300 whitespace-pre-wrap">{aiResult.documentation}</div>
-            </div>
-          )}
-
-          {aiAction === 'scanning' && (
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-orange-400">🛡️ Security Analysis</h4>
-              
-              {aiResult.risk_score !== undefined && (
-                <div className="bg-gray-700 p-3 rounded">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-300">Risk Score</span>
-                    <span className={`text-lg font-bold ${
-                      aiResult.risk_score <= 20 ? 'text-green-400' :
-                      aiResult.risk_score <= 50 ? 'text-yellow-400' : 'text-red-400'
+              <h4 className="text-sm font-medium text-gray-300">Issues Found:</h4>
+              {codeReview.issues.map((issue, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded border-l-4 ${
+                    issue.severity === 'high' ? 'bg-red-900/20 border-red-500' :
+                    issue.severity === 'medium' ? 'bg-yellow-900/20 border-yellow-500' :
+                    'bg-blue-900/20 border-blue-500'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      issue.severity === 'high' ? 'bg-red-600 text-white' :
+                      issue.severity === 'medium' ? 'bg-yellow-600 text-white' :
+                      'bg-blue-600 text-white'
                     }`}>
-                      {aiResult.risk_score}/100
+                      {issue.type}
+                    </span>
+                    <span className={`text-xs ${
+                      issue.severity === 'high' ? 'text-red-400' :
+                      issue.severity === 'medium' ? 'text-yellow-400' :
+                      'text-blue-400'
+                    }`}>
+                      {issue.severity}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-600 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${
-                        aiResult.risk_score <= 20 ? 'bg-green-400' :
-                        aiResult.risk_score <= 50 ? 'bg-yellow-400' : 'bg-red-400'
-                      }`}
-                      style={{ width: `${aiResult.risk_score}%` }}
-                    />
-                  </div>
+                  <p className="text-sm text-gray-300 mt-2">{issue.message}</p>
                 </div>
-              )}
-
-              {aiResult.vulnerabilities && aiResult.vulnerabilities.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-gray-300">Vulnerabilities:</h5>
-                  {aiResult.vulnerabilities.map((vuln, index) => (
-                    <div key={index} className={`p-3 rounded border-l-4 ${
-                      vuln.severity === 'high' ? 'bg-red-900/20 border-red-500' :
-                      vuln.severity === 'medium' ? 'bg-yellow-900/20 border-yellow-500' :
-                      'bg-blue-900/20 border-blue-500'
-                    }`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          vuln.severity === 'high' ? 'bg-red-600 text-white' :
-                          vuln.severity === 'medium' ? 'bg-yellow-600 text-white' :
-                          'bg-blue-600 text-white'
-                        }`}>
-                          {vuln.type}
-                        </span>
-                        <span className={`text-xs ${
-                          vuln.severity === 'high' ? 'text-red-400' :
-                          vuln.severity === 'medium' ? 'text-yellow-400' :
-                          'text-blue-400'
-                        }`}>
-                          {vuln.severity}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-300">{vuln.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
           )}
 
-          {aiAction === 'refactoring' && (
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-cyan-400">🔧 Refactoring Suggestions</h4>
-              
-              {aiResult.refactored_code && (
-                <div className="bg-gray-700 p-3 rounded">
-                  <h5 className="text-sm font-medium text-gray-300 mb-2">Refactored Code:</h5>
-                  <pre className="bg-gray-900 p-3 rounded text-xs text-green-400 overflow-x-auto">
-                    <code>{aiResult.refactored_code}</code>
-                  </pre>
-                </div>
-              )}
-              
-              {aiResult.explanation && (
-                <div className="text-sm text-gray-300 whitespace-pre-wrap">{aiResult.explanation}</div>
-              )}
+          {codeReview.summary && (
+            <div className="mt-4 p-3 bg-gray-700 rounded">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Summary:</h4>
+              <p className="text-sm text-gray-400">{codeReview.summary}</p>
             </div>
           )}
 
-          {(aiAction === 'debugging' || aiAction === 'documenting' || aiAction === 'scanning' || aiAction === 'refactoring') && (
+          {isAnalyzing && (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-              <span className="ml-3 text-sm text-gray-400">
-                AI {aiAction === 'debugging' ? 'debugging' : 
-                     aiAction === 'documenting' ? 'documenting' :
-                     aiAction === 'scanning' ? 'scanning' :
-                     'refactoring'}...
-              </span>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+              <span className="ml-3 text-sm text-gray-400">Analyzing code...</span>
             </div>
           )}
-        </div>
-      </div>
-    );
-  };
-
-  const renderAIToolbar = () => {
-    if (!showAIToolbar) return null;
-
-    return (
-      <div className="absolute top-12 right-4 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-20 p-2 min-w-48">
-        <div className="space-y-1">
-          <button
-            onClick={() => handleAIAction('debug')}
-            className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded flex items-center text-sm text-gray-300"
-          >
-            🐛 Debug Code
-          </button>
-          <button
-            onClick={() => handleAIAction('document')}
-            className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded flex items-center text-sm text-gray-300"
-          >
-            📚 Generate Docs
-          </button>
-          <button
-            onClick={() => handleAIAction('security')}
-            className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded flex items-center text-sm text-gray-300"
-          >
-            🛡️ Security Scan
-          </button>
-          <div className="border-t border-gray-600 my-1"></div>
-          <button
-            onClick={() => handleAIAction('refactor-performance')}
-            className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded flex items-center text-sm text-gray-300"
-          >
-            ⚡ Optimize Performance
-          </button>
-          <button
-            onClick={() => handleAIAction('refactor-readability')}
-            className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded flex items-center text-sm text-gray-300"
-          >
-            📖 Improve Readability
-          </button>
         </div>
       </div>
     );
