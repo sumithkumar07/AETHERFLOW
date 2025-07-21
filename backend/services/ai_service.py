@@ -210,7 +210,7 @@ Provide functional, well-commented code."""
             # For now, return structured response format
             response = {
                 "success": True,
-                "response": f"AI response for {feature.value} using {model}",
+                "response": f"[FRONTEND_PUTER_CALL] Feature: {feature.value} | Model: {model} | Ready for Puter.js integration",
                 "model_used": model,
                 "processing_time": time.time() - start_time,
                 "prompt_prepared": prompt[:200] + "..." if len(prompt) > 200 else prompt
