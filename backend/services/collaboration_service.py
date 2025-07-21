@@ -351,8 +351,8 @@ class CollaborationManager:
         
         state_message = {
             "type": "room_state",
-            "room": room,
-            "users": active_users,
+            "room": Room(**room).dict(),
+            "users": [User(**user).dict() for user in active_users],
             "presences": presences,
             "chat_messages": [msg.dict() for msg in chat_messages],
             "timestamp": datetime.utcnow().isoformat()
