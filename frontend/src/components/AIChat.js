@@ -14,11 +14,11 @@ const AIChat = ({ currentFile }) => {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    // Add welcome message
+    // Add enhanced welcome message
     setMessages([{
       id: 'welcome',
       type: 'ai',
-      content: "👋 Hey! I'm your AI coding assistant. I can help you with:\n\n• Code explanations and debugging\n• Writing functions and classes\n• Best practices and optimization\n• Language-specific questions\n\nWhat would you like to work on?",
+      content: "🚀 **Advanced AI Coding Assistant Ready!**\n\nI can help you with:\n\n• 💬 **Smart Conversations** - Code questions & explanations\n• 🐛 **AI Debugging** - Find and fix errors automatically\n• 📚 **Auto Documentation** - Generate docs for your code\n• 🛡️ **Security Scanning** - Identify vulnerabilities\n• 🔧 **Code Refactoring** - Improve code quality\n• ✨ **Natural Language to Code** - Describe what you want, I'll code it!\n• ⚡ **Real-time Code Completion** - Smart suggestions as you type\n\nSwitch modes using the toolbar below. What would you like to work on?",
       timestamp: new Date()
     }]);
     
