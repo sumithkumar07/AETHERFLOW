@@ -617,7 +617,9 @@ const AIChat = ({ currentFile }) => {
               disabled={isLoading}
             />
             <div className="absolute bottom-1 right-1 text-xs text-gray-500">
-              {activeMode === 'nlp' ? 'Code Generation' : 'AI Chat'}
+              {activeMode === 'nlp' ? 'Contextual Code Gen' : 
+               activeMode === 'performance' ? 'Performance Analysis' :
+               activeMode === 'contextual' ? 'Project Context' : 'Advanced Chat'}
             </div>
           </div>
           <div className="flex flex-col space-y-1">
