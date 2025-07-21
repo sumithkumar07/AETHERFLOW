@@ -15,7 +15,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import NotificationProvider, { useNotifications } from './components/NotificationSystem';
 import LoadingSpinner, { LoadingOverlay } from './components/LoadingSpinner';
 import useOfflineDetection from './hooks/useOfflineDetection';
-import { useLocalStorage, useUserPreferences, useProjectCache } from './hooks/useLocalStorage';
+import useLocalStorage, { useUserPreferences, useProjectCache } from './hooks/useLocalStorage';
 import cosmicEngine from './services/cosmicVibeEngine';
 import divineBioMetrics from './services/divineBioMetrics';
 import trinityAIAltar from './services/trinityAIAltar';
