@@ -1253,6 +1253,7 @@ function AppContent() {
                             <div>Alt+G - Toggle sacred geometry</div>
                             <div>Alt+F - Enter flow state</div>
                             <div>Alt+A - Activate AetherFlow</div>
+                            <div>Alt+A - Activate AetherFlow</div>
                           </>
                         )}
                       </div>
