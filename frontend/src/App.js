@@ -779,7 +779,7 @@ function AppContent() {
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [currentFile, showChat, showPreview, showCollaboration, showCosmicInterface, cosmicMode, sacredGeometry, saveFile, handleCosmicAction]);
+  }, [currentFile, showChat, showPreview, showCollaboration, showCosmicInterface, cosmicMode, sacredGeometry, saveFile, handleCosmicAction, aetherFlowMode, activateAetherFlow, deactivateAetherFlow]);
 
   // Load projects on startup
   useEffect(() => {
