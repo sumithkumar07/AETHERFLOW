@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import FileExplorer from './components/FileExplorer';
-import CodeEditor from './components/CodeEditor';
+import CollaborativeCodeEditor from './components/CollaborativeCodeEditor';
 import AIChat from './components/AIChat';
 import AppPreview from './components/AppPreview';
 import ProjectManager from './components/ProjectManager';
+import CollaborationPanel from './components/CollaborationPanel';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationProvider, { useNotifications } from './components/NotificationSystem';
 import LoadingSpinner, { LoadingOverlay } from './components/LoadingSpinner';
@@ -13,8 +14,9 @@ import { useLocalStorage, useUserPreferences, useProjectCache } from './hooks/us
 import { 
   Folder, MessageSquare, Settings, Play, Save, Eye, Code, Monitor, Bot,
   Wifi, WifiOff, Search, Download, Upload, Share2, RotateCcw, Maximize2,
-  Minimize2, Sun, Moon, Bell, BellOff, Zap
+  Minimize2, Sun, Moon, Bell, BellOff, Zap, Users
 } from 'lucide-react';
+import collaborationService from './services/collaborationService';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api/v1`;
