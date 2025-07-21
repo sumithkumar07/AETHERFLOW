@@ -329,7 +329,7 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-900">
+    <div className="flex-1 flex flex-col bg-gray-900 relative">
       {/* File Tab */}
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -340,9 +340,25 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
           <span className="text-xs text-gray-400 uppercase">
             {language}
           </span>
+          {isLoadingCompletion && (
+            <div className="flex items-center text-xs text-blue-400">
+              <div className="animate-spin rounded-full h-3 w-3 border border-blue-400 border-t-transparent mr-2"></div>
+              AI Completing...
+            </div>
+          )}
         </div>
         
         <div className="flex items-center space-x-2">
+          <button
+            onClick={handleCodeReview}
+            className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs flex items-center space-x-1"
+            title="AI Code Review (Ctrl+R)"
+            disabled={isAnalyzing}
+          >
+            <Lightbulb size={14} />
+            <span>{isAnalyzing ? 'Analyzing...' : 'Review'}</span>
+          </button>
+          
           {language === 'javascript' || language === 'python' ? (
             <button 
               onClick={handleRun}
@@ -371,7 +387,7 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
       </div>
 
       {/* Editor */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
         <Editor
           height="100%"
           language={language}
@@ -398,9 +414,17 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
             renderLineHighlight: 'all',
             bracketMatching: 'always',
             folding: true,
-            showFoldingControls: 'mouseover'
+            showFoldingControls: 'mouseover',
+            suggestOnTriggerCharacters: true,
+            quickSuggestions: {
+              other: true,
+              comments: false,
+              strings: false
+            }
           }}
         />
+        
+        {renderCodeReviewPanel()}
       </div>
     </div>
   );
