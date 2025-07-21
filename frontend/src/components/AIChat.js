@@ -11,6 +11,9 @@ const AIChat = ({ currentFile }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random()}`);
   const [activeMode, setActiveMode] = useState('chat');
+  const [conversationHistory, setConversationHistory] = useState([]);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [selectedAnalysisType, setSelectedAnalysisType] = useState('comprehensive');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
