@@ -520,6 +520,12 @@ function AppContent() {
     }
   }, [createFile, saveFile, currentFile, showTerminal, sidebarCollapsed, showPreview, openFile, handleProfessionalAction]);
 
+  // Search functionality
+  const filteredFiles = files.filter(file => 
+    searchQuery === '' || 
+    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Professional keyboard shortcuts
   useEffect(() => {
     const handleKeydown = (e) => {
