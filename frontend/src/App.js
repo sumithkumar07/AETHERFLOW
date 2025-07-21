@@ -104,23 +104,62 @@ function AppContent() {
   const autoSaveTimerRef = useRef(null);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(preferences.autoSave);
 
-  // Initialize Cosmic Engine
+  // === INITIALIZATION EFFECTS ===
   useEffect(() => {
-    const initCosmic = async () => {
-      if (cosmicEngine.isInitialized) {
-        setVibeTokens(cosmicEngine.getVibeTokenBalance());
-        const karma = cosmicEngine.updateKarmaLevel();
-        setKarmaLevel(karma?.level || 'Novice');
+    // Initialize services
+    const initializeApp = async () => {
+      try {
+        setIsLoading(true);
         
-        // Apply sacred geometry if enabled
-        if (sacredGeometry) {
-          const layout = cosmicEngine.getGoldenRatioLayout(window.innerWidth);
-          console.log('🌌 Sacred geometry layout applied:', layout);
+        // Initialize cosmic engine
+        if (!cosmicEngine.isInitialized) {
+          await cosmicEngine.initializeCosmicEngine();
         }
+        
+        // Initialize divine biometrics
+        await divineBioMetrics.activate();
+        
+        // Subscribe to biometric updates
+        const unsubscribe = divineBioMetrics.subscribeToBiometrics((newMetrics) => {
+          setBiometrics(newMetrics);
+          
+          // Update cosmic state based on biometrics
+          if (newMetrics.flowState === 'TRANSCENDENCE') {
+            setDivineInterfaceActive(true);
+          }
+        });
+        
+        // Load user preferences (if available)
+        // await loadUserPreferences();
+        
+        // Auto-connect to websocket (if available)
+        // setTimeout(() => connectWebSocket(), 1000);
+        
+        // Initialize existing cosmic features
+        if (cosmicEngine.isInitialized) {
+          setVibeTokens(cosmicEngine.getVibeTokenBalance());
+          const karma = cosmicEngine.updateKarmaLevel();
+          setKarmaLevel(karma?.level || 'Novice');
+          
+          // Apply sacred geometry if enabled
+          if (sacredGeometry) {
+            const layout = cosmicEngine.getGoldenRatioLayout(window.innerWidth);
+            console.log('🌌 Sacred geometry layout applied:', layout);
+          }
+        }
+        
+        setIsLoading(false);
+        
+        return () => {
+          unsubscribe?.();
+        };
+      } catch (error) {
+        console.error('App initialization failed:', error);
+        setIsLoading(false);
       }
     };
-    
-    initCosmic();
+
+    initializeApp();
   }, [sacredGeometry]);
 
   // Enhanced Cosmic Action Handler with BCI integration
