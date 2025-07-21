@@ -480,7 +480,7 @@ Generate the complete code:`;
 User: ${message}`;
 
       const response = await window.puter.ai.chat(systemPrompt, {
-        model: this.models.chat,
+        model: this.getCurrentModel('chat'),
         temperature: 0.7
       });
 
