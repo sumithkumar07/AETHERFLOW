@@ -424,6 +424,21 @@ async def get_quantum_system_metrics(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Quantum metrics error: {str(e)}")
 
+# Pydantic models
+class QuantumSolveRequest(BaseModel):
+    buggy_code: str
+    language: str
+    alternate_realities: Optional[int] = 128
+
+class QuantumEntanglementRequest(BaseModel):
+    code1: str
+    code2: str
+    entanglement_strength: Optional[float] = 0.8
+
+class SuperpositionRequest(BaseModel):
+    code: str = Field(..., min_length=10)
+    states: int = Field(default=2, ge=2, le=10)
+
 # === ADVANCED QUANTUM FEATURES ===
 
 @router.post("/superposition/create")
