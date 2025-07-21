@@ -817,7 +817,7 @@ async def delete_file(file_id: str):
 # === AI CHAT ENDPOINTS ===
 
 @api_router.post("/ai/chat")
-async def chat_with_ai(request: ChatRequest):
+async def chat_with_ai_endpoint(request: ChatRequest):
     try:
         response = await ai_engine.chat_with_ai(request.message, request.context)
         
