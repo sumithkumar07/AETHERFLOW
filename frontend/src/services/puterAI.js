@@ -432,7 +432,7 @@ Requirements:
 Generate the complete code:`;
 
       const response = await window.puter.ai.chat(prompt, {
-        model: this.models.codeGeneration,
+        model: this.getCurrentModel('codeGeneration'),
         temperature: 0.4
       });
 
