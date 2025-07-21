@@ -238,7 +238,7 @@ Format response as:
 [Prevention tips]`;
 
       const response = await window.puter.ai.chat(prompt, {
-        model: this.models.debugging,
+        model: this.getCurrentModel('debugging'),
         temperature: 0.3
       });
 
