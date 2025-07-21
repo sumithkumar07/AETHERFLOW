@@ -81,6 +81,17 @@ function AppContent() {
     realityCoherence: realityCoherence / 100,
     cosmicHarmony: vibeTokens / 2000
   });
+
+  // === AETHERFLOW DIVINE STATE ===
+  const [aetherFlowMode, setAetherFlowMode] = useState(false);
+  const [biometrics, setBiometrics] = useState({
+    heartRate: 72,
+    focusLevel: 0.5,
+    stressLevel: 0.3,
+    flowState: 'MORTAL',
+    emotionalState: 'neutral'
+  });
+  const [divineInterfaceActive, setDivineInterfaceActive] = useState(false);
   
   // Enhanced hooks
   const notifications = useNotifications();
