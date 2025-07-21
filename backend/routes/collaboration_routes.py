@@ -6,11 +6,11 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 
-from ..models.collaboration_models import (
+from models.collaboration_models import (
     Room, User, CreateRoomRequest, JoinRoomRequest, SendChatRequest, 
     UpdatePresenceRequest, ApplyEditRequest, ChatMessage, EditOperation
 )
-from ..services.collaboration_service import CollaborationManager
+from services.collaboration_service import CollaborationManager
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
