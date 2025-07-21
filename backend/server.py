@@ -865,7 +865,7 @@ async def code_completion_endpoint(request: CodeCompletionRequest):
         raise HTTPException(status_code=500, detail="Code completion service unavailable")
 
 @api_router.post("/ai/code-review")
-async def review_code(request: CodeReviewRequest):
+async def code_review_endpoint(request: CodeReviewRequest):
     """Comprehensive code review - security, performance, best practices"""
     try:
         result = await ai_engine.review_code(
