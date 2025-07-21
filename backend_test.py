@@ -368,38 +368,245 @@ class VibeCodeAPITester:
 
     # === WEBSOCKET TESTS ===
     
-    async def test_websocket_ai_chat(self):
-        """Test WebSocket AI chat functionality"""
+    async def test_websocket_connection_establishment(self):
+        """Test WebSocket connection establishment and initial message"""
         try:
             ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
             
             async with websockets.connect(ws_url) as websocket:
-                # Send a test message
+                # Wait for initial connection established message
+                try:
+                    response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                    response_data = json.loads(response)
+                    
+                    if (response_data.get("type") == "connection_established" and 
+                        response_data.get("status") == "connected" and
+                        response_data.get("session_id") == self.test_session_id):
+                        self.log_test("websocket_ai", "WebSocket Connection Establishment", True)
+                        return True
+                    else:
+                        self.log_test("websocket_ai", "WebSocket Connection Establishment", False, f"Invalid connection message: {response_data}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    self.log_test("websocket_ai", "WebSocket Connection Establishment", False, "Connection establishment timeout")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("websocket_ai", "WebSocket Connection Establishment", False, str(e))
+            return False
+
+    async def test_websocket_chat_message(self):
+        """Test WebSocket chat message processing"""
+        try:
+            ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection established message
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Send a chat message
                 test_message = {
+                    "type": "chat",
                     "message": "Hello, can you help me with Python programming?",
                     "context": {"current_file": "test.py"}
                 }
                 
                 await websocket.send(json.dumps(test_message))
                 
-                # Wait for response with timeout
+                # Wait for response
                 try:
-                    response = await asyncio.wait_for(websocket.recv(), timeout=30.0)
+                    response = await asyncio.wait_for(websocket.recv(), timeout=15.0)
                     response_data = json.loads(response)
                     
-                    if response_data.get("type") == "ai_response" and response_data.get("message"):
-                        self.log_test("websocket_ai", "WebSocket AI Chat", True)
+                    if (response_data.get("type") == "ai_response" and 
+                        response_data.get("message") and
+                        response_data.get("session_id") == self.test_session_id and
+                        response_data.get("frontend_ai") == True):
+                        self.log_test("websocket_ai", "WebSocket Chat Message", True)
                         return True
                     else:
-                        self.log_test("websocket_ai", "WebSocket AI Chat", False, f"Invalid response format: {response_data}")
+                        self.log_test("websocket_ai", "WebSocket Chat Message", False, f"Invalid chat response: {response_data}")
                         return False
                         
                 except asyncio.TimeoutError:
-                    self.log_test("websocket_ai", "WebSocket AI Chat", False, "Response timeout")
+                    self.log_test("websocket_ai", "WebSocket Chat Message", False, "Chat response timeout")
                     return False
                     
         except Exception as e:
-            self.log_test("websocket_ai", "WebSocket AI Chat", False, str(e))
+            self.log_test("websocket_ai", "WebSocket Chat Message", False, str(e))
+            return False
+
+    async def test_websocket_ping_pong(self):
+        """Test WebSocket ping/pong keepalive mechanism"""
+        try:
+            ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection established message
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Send a ping message
+                ping_message = {
+                    "type": "ping",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+                
+                await websocket.send(json.dumps(ping_message))
+                
+                # Wait for pong response
+                try:
+                    response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                    response_data = json.loads(response)
+                    
+                    if (response_data.get("type") == "pong" and 
+                        response_data.get("timestamp")):
+                        self.log_test("websocket_ai", "WebSocket Ping/Pong", True)
+                        return True
+                    else:
+                        self.log_test("websocket_ai", "WebSocket Ping/Pong", False, f"Invalid pong response: {response_data}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    self.log_test("websocket_ai", "WebSocket Ping/Pong", False, "Pong response timeout")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("websocket_ai", "WebSocket Ping/Pong", False, str(e))
+            return False
+
+    async def test_websocket_keepalive_timeout(self):
+        """Test WebSocket keepalive mechanism with 30-second timeout"""
+        try:
+            ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection established message
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Wait for keepalive message (should come after 30 seconds of inactivity)
+                # We'll wait up to 35 seconds to account for timing variations
+                try:
+                    response = await asyncio.wait_for(websocket.recv(), timeout=35.0)
+                    response_data = json.loads(response)
+                    
+                    if (response_data.get("type") == "keepalive" and 
+                        response_data.get("message") == "Connection active" and
+                        response_data.get("timestamp")):
+                        self.log_test("websocket_ai", "WebSocket Keepalive Timeout", True)
+                        return True
+                    else:
+                        self.log_test("websocket_ai", "WebSocket Keepalive Timeout", False, f"Invalid keepalive message: {response_data}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    self.log_test("websocket_ai", "WebSocket Keepalive Timeout", False, "Keepalive message not received within 35 seconds")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("websocket_ai", "WebSocket Keepalive Timeout", False, str(e))
+            return False
+
+    async def test_websocket_invalid_json(self):
+        """Test WebSocket error handling with invalid JSON"""
+        try:
+            ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection established message
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Send invalid JSON
+                await websocket.send("invalid json message")
+                
+                # Wait for error response
+                try:
+                    response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                    response_data = json.loads(response)
+                    
+                    if (response_data.get("type") == "error" and 
+                        "Invalid JSON format" in response_data.get("message", "") and
+                        response_data.get("session_id") == self.test_session_id):
+                        self.log_test("websocket_ai", "WebSocket Invalid JSON Handling", True)
+                        return True
+                    else:
+                        self.log_test("websocket_ai", "WebSocket Invalid JSON Handling", False, f"Invalid error response: {response_data}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    self.log_test("websocket_ai", "WebSocket Invalid JSON Handling", False, "Error response timeout")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("websocket_ai", "WebSocket Invalid JSON Handling", False, str(e))
+            return False
+
+    async def test_websocket_unknown_message_type(self):
+        """Test WebSocket error handling with unknown message type"""
+        try:
+            ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection established message
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Send message with unknown type
+                unknown_message = {
+                    "type": "unknown_type",
+                    "message": "This is an unknown message type"
+                }
+                
+                await websocket.send(json.dumps(unknown_message))
+                
+                # Wait for error response
+                try:
+                    response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                    response_data = json.loads(response)
+                    
+                    if (response_data.get("type") == "error" and 
+                        "Unknown message type: unknown_type" in response_data.get("message", "") and
+                        response_data.get("session_id") == self.test_session_id):
+                        self.log_test("websocket_ai", "WebSocket Unknown Message Type Handling", True)
+                        return True
+                    else:
+                        self.log_test("websocket_ai", "WebSocket Unknown Message Type Handling", False, f"Invalid error response: {response_data}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    self.log_test("websocket_ai", "WebSocket Unknown Message Type Handling", False, "Error response timeout")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("websocket_ai", "WebSocket Unknown Message Type Handling", False, str(e))
+            return False
+
+    async def test_websocket_graceful_disconnect(self):
+        """Test WebSocket graceful disconnection"""
+        try:
+            ws_url = f"{WS_BASE_URL}/ws/ai/{self.test_session_id}"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection established message
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Send a message to ensure connection is active
+                test_message = {
+                    "type": "ping"
+                }
+                await websocket.send(json.dumps(test_message))
+                
+                # Wait for pong response
+                await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                
+                # Close connection gracefully
+                await websocket.close()
+                
+                # Connection should be closed without errors
+                self.log_test("websocket_ai", "WebSocket Graceful Disconnect", True)
+                return True
+                    
+        except Exception as e:
+            self.log_test("websocket_ai", "WebSocket Graceful Disconnect", False, str(e))
             return False
 
     # === CLEANUP TESTS ===
