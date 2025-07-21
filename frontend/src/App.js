@@ -3,8 +3,9 @@ import './App.css';
 import FileExplorer from './components/FileExplorer';
 import CodeEditor from './components/CodeEditor';
 import AIChat from './components/AIChat';
+import AppPreview from './components/AppPreview';
 import ProjectManager from './components/ProjectManager';
-import { Folder, MessageSquare, Settings, Play, Save } from 'lucide-react';
+import { Folder, MessageSquare, Settings, Play, Save, Eye, Code, Monitor, Bot } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
