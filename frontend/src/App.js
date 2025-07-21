@@ -1126,132 +1126,135 @@ function AppContent() {
 
             {/* Editor and Preview Area with Golden Ratio main area */}
             <div className={`flex-1 flex flex-col ${sacredGeometry && layoutStyle ? 'golden-main' : ''}`}>
-          {currentFile ? (
-            <div className="flex-1 flex">
-              {/* Code Editor */}
-              {(layout === 'code' || layout === 'split') && (
-                <div className={layout === 'split' ? 'flex-1' : 'w-full'}>
-                  <CollaborativeCodeEditor
-                    file={currentFile}
-                    onSave={saveFile}
-                    onContentChange={handleContentChange}
-                    preferences={preferences}
-                    isOnline={isOnline}
-                    autoSaveEnabled={autoSaveEnabled}
-                    cosmicMode={cosmicMode}
-                    currentAvatar={currentAvatar}
-                    flowState={flowState}
-                    chaosMode={chaosMode}
-                  />
-                </div>
-              )}
-              
-              {/* Live Preview */}
-              {showPreview && (layout === 'preview' || layout === 'split') && (
-                <div className={layout === 'split' ? 'flex-1 border-l border-gray-700' : 'w-full'}>
-                  <AppPreview
-                    currentFile={currentFile}
-                    files={files}
-                    project={currentProject}
-                    cosmicMode={cosmicMode}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <div className={`text-6xl mb-4 ${cosmicMode ? 'cosmic-pulse' : 'text-gray-600'}`}>
-                  {cosmicMode ? '🌌' : '⚡'}
-                </div>
-                <h2 className={`text-2xl font-bold mb-2 ${
-                  cosmicMode 
-                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400'
-                    : 'text-gray-400'
-                }`}>
-                  Welcome to {cosmicMode ? 'Cosmic ' : ''}VibeCode
-                </h2>
-                <p className="text-gray-500 mb-6">
-                  {currentProject 
-                    ? 'Select a file from the explorer to start coding'
-                    : 'Create or select a project to get started'
-                  }
-                </p>
-                
-                {/* Quick actions */}
-                <div className="flex flex-col space-y-2 max-w-sm mx-auto">
-                  {!currentProject && (
-                    <button
-                      onClick={() => setShowProjectManager(true)}
-                      className={`px-4 py-2 rounded-md transition-colors ${
-                        cosmicMode 
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
-                          : 'bg-blue-600 hover:bg-blue-700'
-                      } text-white`}
-                    >
-                      Open Project Manager
-                    </button>
+              {currentFile ? (
+                <div className="flex-1 flex">
+                  {/* Code Editor */}
+                  {(layout === 'code' || layout === 'split') && (
+                    <div className={layout === 'split' ? 'flex-1' : 'w-full'}>
+                      <CollaborativeCodeEditor
+                        file={currentFile}
+                        onSave={saveFile}
+                        onContentChange={handleContentChange}
+                        preferences={preferences}
+                        isOnline={isOnline}
+                        autoSaveEnabled={autoSaveEnabled}
+                        cosmicMode={cosmicMode}
+                        currentAvatar={currentAvatar}
+                        flowState={flowState}
+                        chaosMode={chaosMode}
+                      />
+                    </div>
                   )}
                   
-                  {currentProject && (
-                    <div className="text-sm text-gray-600">
-                      <p className="mb-3">✨ Available features:</p>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center space-x-2">
-                          <Bot size={16} className="text-purple-400" />
-                          <span>meta-llama/llama-4-maverick AI Assistant</span>
+                  {/* Live Preview */}
+                  {showPreview && (layout === 'preview' || layout === 'split') && (
+                    <div className={layout === 'split' ? 'flex-1 border-l border-gray-700' : 'w-full'}>
+                      <AppPreview
+                        currentFile={currentFile}
+                        files={files}
+                        project={currentProject}
+                        cosmicMode={cosmicMode}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className={`text-6xl mb-4 ${cosmicMode ? 'cosmic-pulse' : 'text-gray-600'}`}>
+                      {cosmicMode ? '🌌' : '⚡'}
+                    </div>
+                    <h2 className={`text-2xl font-bold mb-2 ${
+                      cosmicMode 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400'
+                        : 'text-gray-400'
+                    }`}>
+                      Welcome to {cosmicMode ? 'Cosmic ' : ''}VibeCode
+                    </h2>
+                    <p className="text-gray-500 mb-6">
+                      {currentProject 
+                        ? 'Select a file from the explorer to start coding'
+                        : 'Create or select a project to get started'
+                      }
+                    </p>
+                    
+                    {/* Quick actions */}
+                    <div className="flex flex-col space-y-2 max-w-sm mx-auto">
+                      {!currentProject && (
+                        <button
+                          onClick={() => setShowProjectManager(true)}
+                          className={`px-4 py-2 rounded-md transition-colors ${
+                            cosmicMode 
+                              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+                              : 'bg-blue-600 hover:bg-blue-700'
+                          } text-white`}
+                        >
+                          Open Project Manager
+                        </button>
+                      )}
+                      
+                      {currentProject && (
+                        <div className="text-sm text-gray-600">
+                          <p className="mb-3">✨ Available features:</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-center space-x-2">
+                              <Bot size={16} className="text-purple-400" />
+                              <span>meta-llama/llama-4-maverick AI Assistant</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-2">
+                              <Eye size={16} className="text-green-400" />
+                              <span>Real-time Live Preview</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-2">
+                              <Code size={16} className="text-blue-400" />
+                              <span>Advanced Code Completion</span>
+                            </div>
+                            {cosmicMode && (
+                              <>
+                                <div className="flex items-center justify-center space-x-2">
+                                  <Atom size={16} className="text-purple-400" />
+                                  <span>Cosmic Reality Engine</span>
+                                </div>
+                                <div className="flex items-center justify-center space-x-2">
+                                  <Crown size={16} className="text-yellow-400" />
+                                  <span>Avatar Pantheon</span>
+                                </div>
+                                <div className="flex items-center justify-center space-x-2">
+                                  <Sparkles size={16} className="text-pink-400" />
+                                  <span>VIBE Token Economy</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Eye size={16} className="text-green-400" />
-                          <span>Real-time Live Preview</span>
-                        </div>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Code size={16} className="text-blue-400" />
-                          <span>Advanced Code Completion</span>
-                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Enhanced keyboard shortcuts */}
+                    <div className="mt-8 text-xs text-gray-600">
+                      <p className="mb-2">Keyboard shortcuts:</p>
+                      <div className="space-y-1">
+                        <div>Ctrl+S - Save file</div>
+                        <div>Ctrl+F - Search files</div>
+                        <div>Ctrl+` - Toggle AI chat</div>
+                        <div>Ctrl+P - Toggle preview</div>
+                        <div>Ctrl+M - Toggle cosmic interface</div>
                         {cosmicMode && (
                           <>
-                            <div className="flex items-center justify-center space-x-2">
-                              <Atom size={16} className="text-purple-400" />
-                              <span>Cosmic Reality Engine</span>
-                            </div>
-                            <div className="flex items-center justify-center space-x-2">
-                              <Crown size={16} className="text-yellow-400" />
-                              <span>Avatar Pantheon</span>
-                            </div>
-                            <div className="flex items-center justify-center space-x-2">
-                              <Sparkles size={16} className="text-pink-400" />
-                              <span>VIBE Token Economy</span>
-                            </div>
+                            <div>Alt+C - Toggle cosmic mode</div>
+                            <div>Alt+G - Toggle sacred geometry</div>
+                            <div>Alt+F - Enter flow state</div>
+                            <div>Alt+A - Activate AetherFlow</div>
                           </>
                         )}
                       </div>
                     </div>
-                  )}
-                </div>
-                
-                {/* Enhanced keyboard shortcuts */}
-                <div className="mt-8 text-xs text-gray-600">
-                  <p className="mb-2">Keyboard shortcuts:</p>
-                  <div className="space-y-1">
-                    <div>Ctrl+S - Save file</div>
-                    <div>Ctrl+F - Search files</div>
-                    <div>Ctrl+` - Toggle AI chat</div>
-                    <div>Ctrl+P - Toggle preview</div>
-                    <div>Ctrl+M - Toggle cosmic interface</div>
-                    {cosmicMode && (
-                      <>
-                        <div>Alt+C - Toggle cosmic mode</div>
-                        <div>Alt+G - Toggle sacred geometry</div>
-                        <div>Alt+F - Enter flow state</div>
-                      </>
-                    )}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* AI Chat Panel */}
         {showChat && (
