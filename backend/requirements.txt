@@ -28,3 +28,4 @@ slowapi>=0.1.9
 redis>=5.0.0
 aiofiles>=23.2.1
 limits>=5.4.0
+deprecated>=1.2.18
