@@ -701,7 +701,7 @@ class VibeCodeAPITester:
                 "context": {"current_file": "main.py"}
             }
             
-            async with self.session.post(f"{API_BASE_URL}/ai/chat", json=chat_data) as response:
+            async with self.session.post(f"{API_V1_BASE_URL}/ai/chat", json=chat_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("response") and data.get("session_id"):
@@ -718,29 +718,30 @@ class VibeCodeAPITester:
             self.log_test("ai_integration", "AI Chat", False, str(e))
             return False
 
-    async def test_code_generation(self):
-        """Test AI code generation"""
+    async def test_ai_model_info(self):
+        """Test AI model information in response"""
         try:
-            code_data = {
-                "message": "def fibonacci(n):",
+            chat_data = {
+                "message": "Hello, what model are you using?",
                 "session_id": self.test_session_id
             }
             
-            async with self.session.post(f"{API_BASE_URL}/ai/generate-code", json=code_data) as response:
+            async with self.session.post(f"{API_V1_BASE_URL}/ai/chat", json=chat_data) as response:
                 if response.status == 200:
                     data = await response.json()
-                    if data.get("generated_code") is not None:
-                        self.log_test("ai_integration", "Code Generation", True)
+                    if (data.get("model") == "meta-llama/llama-4-maverick" and 
+                        data.get("frontend_processing") == True):
+                        self.log_test("ai_integration", "AI Model Information", True)
                         return True
                     else:
-                        self.log_test("ai_integration", "Code Generation", False, f"No generated code in response: {data}")
+                        self.log_test("ai_integration", "AI Model Information", False, f"Invalid model info: {data}")
                         return False
                 else:
                     error_text = await response.text()
-                    self.log_test("ai_integration", "Code Generation", False, f"HTTP {response.status}: {error_text}")
+                    self.log_test("ai_integration", "AI Model Information", False, f"HTTP {response.status}: {error_text}")
                     return False
         except Exception as e:
-            self.log_test("ai_integration", "Code Generation", False, str(e))
+            self.log_test("ai_integration", "AI Model Information", False, str(e))
             return False
 
     # === CHAT HISTORY TESTS ===
