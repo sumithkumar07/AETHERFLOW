@@ -694,8 +694,17 @@ class VibeCodeAPITester:
             print("\n💬 Testing Chat History...")
             await self.test_get_chat_history()
             
-            print("\n🔌 Testing WebSocket AI...")
-            await self.test_websocket_ai_chat()
+            print("\n🔌 Testing WebSocket AI (Comprehensive Timeout & Keepalive Tests)...")
+            await self.test_websocket_connection_establishment()
+            await self.test_websocket_chat_message()
+            await self.test_websocket_ping_pong()
+            await self.test_websocket_invalid_json()
+            await self.test_websocket_unknown_message_type()
+            await self.test_websocket_graceful_disconnect()
+            
+            # Note: Keepalive timeout test takes 35+ seconds, running separately
+            print("\n⏱️  Testing WebSocket Keepalive (30+ second test)...")
+            await self.test_websocket_keepalive_timeout()
             
             print("\n🧹 Cleanup Tests...")
             await self.test_delete_file()
