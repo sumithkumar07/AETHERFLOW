@@ -1023,7 +1023,7 @@ class VibeCodeAPITester:
             return False
             
         try:
-            async with self.session.delete(f"{API_BASE_URL}/files/{self.test_file_id}") as response:
+            async with self.session.delete(f"{API_V1_BASE_URL}/files/{self.test_file_id}") as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("message"):
@@ -1047,7 +1047,7 @@ class VibeCodeAPITester:
             return False
             
         try:
-            async with self.session.delete(f"{API_BASE_URL}/projects/{self.test_project_id}") as response:
+            async with self.session.delete(f"{API_V1_BASE_URL}/projects/{self.test_project_id}") as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("message"):
