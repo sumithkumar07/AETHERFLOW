@@ -955,7 +955,26 @@ async def startup_event():
     init_avatar_ai_service(db_manager)
     logger.info("Avatar AI service initialized - Digital twins ready!")
     
-    logger.info("VibeCode Cosmic API started successfully! 🌌⚛️🧠🎭")
+    # Initialize NEW cosmic reality services
+    init_reality_fabric_service(db_manager)
+    logger.info("Reality Fabric service initialized - Spacetime manipulation ready!")
+    
+    init_omniversal_renderer_service(db_manager)
+    logger.info("Omniversal Renderer service initialized - Multidimensional reality ready!")
+    
+    init_iching_service(db_manager)
+    logger.info("I Ching service initialized - Ancient wisdom for modern debugging!")
+    
+    init_vibranium_nft_service(db_manager)
+    logger.info("Vibranium NFT service initialized - Cosmic blockchain economy ready!")
+    
+    init_nexus_events_service(db_manager)
+    logger.info("Nexus Events service initialized - Cross-platform interventions ready!")
+    
+    init_quantum_immortality_service(db_manager)
+    logger.info("Quantum Immortality service initialized - Code preservation eternal!")
+    
+    logger.info("🌌⚛️🧠🎭💎🌉♾️ ALL COSMIC-LEVEL DIFFERENTIATORS ONLINE! 🌌⚛️🧠🎭💎🌉♾️")
 
 @app.on_event("shutdown")
 async def shutdown_event():
