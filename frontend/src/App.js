@@ -763,6 +763,14 @@ function AppContent() {
               handleCosmicAction({ type: 'flow_state', bonuses });
             }
             break;
+          case 'a':
+            e.preventDefault();
+            if (aetherFlowMode) {
+              deactivateAetherFlow();
+            } else {
+              activateAetherFlow();
+            }
+            break;
           default:
             break;
         }
