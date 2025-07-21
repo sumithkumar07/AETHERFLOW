@@ -109,63 +109,110 @@ function AppContent() {
     initCosmic();
   }, [sacredGeometry]);
 
-  // Handle cosmic actions
+  // Enhanced Cosmic Action Handler with BCI integration
   const handleCosmicAction = useCallback((action) => {
+    console.log('🌌 Cosmic Action:', action);
+    
     switch (action.type) {
       case 'avatar_summoned':
         setCurrentAvatar(action.avatar);
-        notifications.success(`${action.avatar.name} has been summoned!`, {
-          title: 'Avatar Activated',
-          duration: 5000
-        });
-        break;
-        
-      case 'shaman_activated':
-        notifications.ai('Techno-Shaman Mode activated! Voice commands are now available.', {
-          title: 'Voice Control Ready'
+        notifications.addNotification({
+          type: 'success',
+          title: 'Avatar Summoned',
+          message: `${action.avatar.name} is now assisting you!`
         });
         break;
         
       case 'tokens_mined':
-        setVibeTokens(action.result.balance);
-        notifications.success(`Mined ${action.result.mined} VIBE tokens!`, {
-          title: '💎 Token Mining'
+        setVibeTokens(prev => prev + action.result.mined);
+        notifications.addNotification({
+          type: 'info',
+          title: 'VIBE Tokens Mined',
+          message: `Earned ${action.result.mined} VIBE tokens!`
         });
         break;
         
       case 'chaos_activated':
         setChaosMode(true);
-        notifications.warning(`Chaos Forge activated! Challenge: ${action.chaos.scenario}`, {
-          title: '🔥 Chaos Mode',
-          duration: 8000
+        notifications.addNotification({
+          type: 'warning',
+          title: 'Chaos Forge Active',
+          message: action.chaos.scenario,
+          duration: 10000
         });
         setTimeout(() => setChaosMode(false), action.chaos.timeLimit);
         break;
         
-      case 'quantum_shift':
-        notifications.ai(`Quantum Vibe Shift complete! Now in: ${action.shift.toReality}`, {
-          title: '🌊 Reality Shifted'
-        });
-        break;
-        
       case 'flow_state':
         setFlowState(true);
-        notifications.success('Flow State activated! Enhanced creativity and focus enabled.', {
-          title: '🌊 Flow State'
+        notifications.addNotification({
+          type: 'success',
+          title: 'Flow State Activated',
+          message: 'Enhanced focus and creativity enabled!'
         });
         setTimeout(() => setFlowState(false), action.bonuses.duration);
         break;
         
+      case 'quantum_shift':
+        setQuantumSession({ active: true, ...action.shift });
+        notifications.addNotification({
+          type: 'cosmic',
+          title: 'Quantum Vibe Shift Complete',
+          message: `Shifted to: ${action.shift.toReality}`
+        });
+        triggerCosmicEvent('reality_shift', {
+          stability: 0.8,
+          coherence: action.shift.vibeFrequency / 1000
+        });
+        break;
+        
       case 'time_travel':
-        notifications.ai(`Time travel initiated to: ${action.timeTravel.destination}`, {
-          title: '⏰ Cosmic Debugger'
+        notifications.addNotification({
+          type: 'cosmic',
+          title: 'Cosmic Time Travel',
+          message: `Debugging at: ${action.timeTravel.destination}`
+        });
+        break;
+        
+      case 'bci_toggle':
+        setBcActive(action.active);
+        if (action.active) {
+          initializeBCISession();
+        } else {
+          terminateBCISession();
+        }
+        notifications.addNotification({
+          type: action.active ? 'success' : 'info',
+          title: 'Neural Interface',
+          message: action.message
+        });
+        break;
+        
+      case 'quantum_session':
+        setQuantumSession({ active: action.active });
+        notifications.addNotification({
+          type: 'cosmic',
+          title: 'Quantum Session',
+          message: action.message
+        });
+        break;
+        
+      case 'reality_reset':
+        resetCosmicState();
+        setRealityCoherence(99.7);
+        setBcActive(false);
+        setQuantumSession(null);
+        notifications.addNotification({
+          type: 'success',
+          title: 'Reality Reset',
+          message: action.message
         });
         break;
         
       default:
         console.log('Unknown cosmic action:', action);
     }
-  }, [notifications]);
+  }, [notifications, triggerCosmicEvent, resetCosmicState]);
 
   // Load projects with caching and error handling
   const loadProjects = useCallback(async () => {
