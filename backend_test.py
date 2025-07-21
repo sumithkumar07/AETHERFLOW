@@ -1319,6 +1319,427 @@ class VibeCodeAPITester:
             self.log_test("collaboration", "WebSocket Collaboration", False, str(e))
             return False
 
+    # === COSMIC FEATURES TESTS ===
+    
+    async def test_cosmic_reality_metrics(self):
+        """Test cosmic reality metrics endpoint"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/cosmic/reality/metrics") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["reality_metrics", "database_metrics", "cosmic_status", "reality_version"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Cosmic Reality Metrics", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check cosmic status
+                    if data.get("cosmic_status") not in ["operational", "degraded"]:
+                        self.log_test("cosmic_features", "Cosmic Reality Metrics", False, f"Invalid cosmic status: {data.get('cosmic_status')}")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Cosmic Reality Metrics", True)
+                    return True
+                else:
+                    self.log_test("cosmic_features", "Cosmic Reality Metrics", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Cosmic Reality Metrics", False, str(e))
+            return False
+
+    async def test_cosmic_status(self):
+        """Test cosmic system status endpoint"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/cosmic/reality/status") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["cosmic_status", "reality_version", "quantum_coherence", "active_features"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Cosmic System Status", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check active features
+                    expected_features = ["Code Evolution", "Karma Reincarnation", "Digital Archaeology", "Code Immortality"]
+                    active_features = data.get("active_features", [])
+                    missing_features = [f for f in expected_features if f not in active_features]
+                    
+                    if missing_features:
+                        self.log_test("cosmic_features", "Cosmic System Status", False, f"Missing features: {missing_features}")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Cosmic System Status", True)
+                    return True
+                else:
+                    self.log_test("cosmic_features", "Cosmic System Status", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Cosmic System Status", False, str(e))
+            return False
+
+    async def test_code_evolution(self):
+        """Test genetic algorithm code evolution"""
+        try:
+            evolution_data = {
+                "code": "function hello() { var message = 'Hello World'; console.log(message); }",
+                "language": "javascript",
+                "generations": 3,
+                "user_id": "test_cosmic_user"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/evolve-code", json=evolution_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "original_code", "evolved_code", "fitness_improvement", "generations", "evolution_id"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Code Evolution", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "evolution_complete":
+                        self.log_test("cosmic_features", "Code Evolution", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check that evolved code is different from original
+                    if data.get("original_code") == data.get("evolved_code"):
+                        self.log_test("cosmic_features", "Code Evolution", False, "Evolved code is identical to original")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Code Evolution", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "Code Evolution", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Code Evolution", False, str(e))
+            return False
+
+    async def test_karma_reincarnation(self):
+        """Test karma reincarnation system"""
+        try:
+            karma_data = {
+                "code": "var x = 1; if (x == true) { eval('console.log(x)'); }",
+                "language": "javascript",
+                "user_id": "test_cosmic_user"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/karma/reincarnate", json=karma_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "code_hash", "quality", "karma_debt", "reincarnation_path", "message"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Karma Reincarnation", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "reincarnation_complete":
+                        self.log_test("cosmic_features", "Karma Reincarnation", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check reincarnation path is valid
+                    valid_paths = ["tutorial-example", "refactor-candidate", "wisdom-archive"]
+                    if data.get("reincarnation_path") not in valid_paths:
+                        self.log_test("cosmic_features", "Karma Reincarnation", False, f"Invalid reincarnation path: {data.get('reincarnation_path')}")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Karma Reincarnation", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "Karma Reincarnation", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Karma Reincarnation", False, str(e))
+            return False
+
+    async def test_digital_archaeology(self):
+        """Test digital archaeology mining system"""
+        if not self.test_project_id:
+            self.log_test("cosmic_features", "Digital Archaeology", False, "No test project available")
+            return False
+            
+        try:
+            archaeology_data = {
+                "project_id": self.test_project_id,
+                "user_id": "test_cosmic_user"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/archaeology/mine", json=archaeology_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "findings", "vibe_earned", "files_analyzed", "session_id"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Digital Archaeology", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "archaeology_complete":
+                        self.log_test("cosmic_features", "Digital Archaeology", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check that files were analyzed
+                    if data.get("files_analyzed") < 0:
+                        self.log_test("cosmic_features", "Digital Archaeology", False, "No files analyzed")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Digital Archaeology", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "Digital Archaeology", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Digital Archaeology", False, str(e))
+            return False
+
+    async def test_code_immortality(self):
+        """Test code immortality activation"""
+        if not self.test_project_id:
+            self.log_test("cosmic_features", "Code Immortality", False, "No test project available")
+            return False
+            
+        try:
+            immortality_data = {
+                "project_id": self.test_project_id,
+                "user_id": "test_cosmic_user"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/immortality/activate", json=immortality_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "immortality_id", "features", "message"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Code Immortality", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "immortality_activated":
+                        self.log_test("cosmic_features", "Code Immortality", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check features are present
+                    features = data.get("features", [])
+                    if not features or len(features) == 0:
+                        self.log_test("cosmic_features", "Code Immortality", False, "No immortality features listed")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Code Immortality", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "Code Immortality", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Code Immortality", False, str(e))
+            return False
+
+    async def test_nexus_events(self):
+        """Test nexus event creation"""
+        try:
+            nexus_data = {
+                "source_platform": "web",
+                "target_platform": "mobile",
+                "action": "sync_project",
+                "payload": {"project_id": self.test_project_id or "test_project"},
+                "user_id": "test_cosmic_user"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/nexus/create", json=nexus_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "event_id", "description", "quantum_signature", "result"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Nexus Events", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "nexus_created":
+                        self.log_test("cosmic_features", "Nexus Events", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check quantum signature is present
+                    if not data.get("quantum_signature"):
+                        self.log_test("cosmic_features", "Nexus Events", False, "No quantum signature")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Nexus Events", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "Nexus Events", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Nexus Events", False, str(e))
+            return False
+
+    async def test_cosmic_debugging(self):
+        """Test cosmic debugging with time travel"""
+        if not self.test_project_id:
+            self.log_test("cosmic_features", "Cosmic Debugging", False, "No test project available")
+            return False
+            
+        try:
+            debug_data = {
+                "project_id": self.test_project_id,
+                "user_id": "test_cosmic_user"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/debug/time-travel", json=debug_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "session_id", "destination", "available_timepoints", "message", "temporal_status"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Cosmic Debugging", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "debug_session_started":
+                        self.log_test("cosmic_features", "Cosmic Debugging", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check available timepoints
+                    timepoints = data.get("available_timepoints", [])
+                    if not timepoints or len(timepoints) == 0:
+                        self.log_test("cosmic_features", "Cosmic Debugging", False, "No available timepoints")
+                        return False
+                    
+                    self.log_test("cosmic_features", "Cosmic Debugging", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "Cosmic Debugging", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "Cosmic Debugging", False, str(e))
+            return False
+
+    async def test_vibe_token_balance(self):
+        """Test VIBE token balance retrieval"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/cosmic/vibe/balance/test_cosmic_user") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["user_id", "balance", "karma_level", "total_earned", "total_spent"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "VIBE Token Balance", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check balance is a number
+                    if not isinstance(data.get("balance"), (int, float)):
+                        self.log_test("cosmic_features", "VIBE Token Balance", False, "Balance is not a number")
+                        return False
+                    
+                    self.log_test("cosmic_features", "VIBE Token Balance", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "VIBE Token Balance", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "VIBE Token Balance", False, str(e))
+            return False
+
+    async def test_vibe_token_transaction(self):
+        """Test VIBE token transaction processing"""
+        try:
+            transaction_data = {
+                "user_id": "test_cosmic_user",
+                "amount": 50,
+                "transaction_type": "mine",
+                "reason": "Test mining transaction"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/vibe/transaction", json=transaction_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "transaction_id", "amount", "type", "new_balance", "message"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "VIBE Token Transaction", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status
+                    if data.get("status") != "transaction_complete":
+                        self.log_test("cosmic_features", "VIBE Token Transaction", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check transaction amount matches
+                    if data.get("amount") != transaction_data["amount"]:
+                        self.log_test("cosmic_features", "VIBE Token Transaction", False, "Transaction amount mismatch")
+                        return False
+                    
+                    self.log_test("cosmic_features", "VIBE Token Transaction", True)
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("cosmic_features", "VIBE Token Transaction", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("cosmic_features", "VIBE Token Transaction", False, str(e))
+            return False
+
+    async def test_cosmic_utilities(self):
+        """Test cosmic utility endpoints"""
+        try:
+            # Test ritual cleanse
+            async with self.session.post(f"{API_V1_BASE_URL}/cosmic/utilities/cleanse?target=code") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("status") != "cleanse_complete":
+                        self.log_test("cosmic_features", "Cosmic Utilities - Cleanse", False, f"Invalid cleanse status: {data.get('status')}")
+                        return False
+                else:
+                    self.log_test("cosmic_features", "Cosmic Utilities - Cleanse", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test cosmic time
+            async with self.session.get(f"{API_V1_BASE_URL}/cosmic/utilities/cosmic-time") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["current_time", "cosmic_phase", "quantum_flux", "temporal_stability"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("cosmic_features", "Cosmic Utilities - Time", False, f"Missing fields: {missing_fields}")
+                        return False
+                else:
+                    self.log_test("cosmic_features", "Cosmic Utilities - Time", False, f"HTTP {response.status}")
+                    return False
+            
+            self.log_test("cosmic_features", "Cosmic Utilities", True)
+            return True
+            
+        except Exception as e:
+            self.log_test("cosmic_features", "Cosmic Utilities", False, str(e))
+            return False
+
     # === CLEANUP TESTS ===
     
     async def test_delete_file(self):
