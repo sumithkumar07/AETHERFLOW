@@ -384,7 +384,7 @@ Provide:
 Format response with clear sections.`;
 
       const response = await window.puter.ai.chat(prompt, {
-        model: this.models.refactoring,
+        model: this.getCurrentModel('refactoring'),
         temperature: 0.3
       });
 
