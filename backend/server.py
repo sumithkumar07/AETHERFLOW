@@ -7,10 +7,8 @@ import os
 import logging
 import uuid
 import json
-import re
 from datetime import datetime
 import asyncio
-import aiohttp
 from pathlib import Path
 from dotenv import load_dotenv
 
