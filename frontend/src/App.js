@@ -1080,36 +1080,52 @@ function AppContent() {
 
       {/* Main Content with Sacred Geometry Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar with Golden Ratio width if sacred geometry is enabled */}
-        <div className={`bg-gray-800 border-r border-gray-700 flex flex-col ${
-          sacredGeometry && layoutStyle ? 'golden-sidebar' : 'w-64'
-        } ${cosmicMode ? 'bg-gradient-to-b from-indigo-900/30 to-purple-900/30 border-indigo-700/50' : ''}`}>
-          <div className="p-3 border-b border-gray-700 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
-              <span>Explorer</span>
-              {cosmicMode && <Hexagon size={12} className="text-indigo-400" />}
-            </h2>
-            <span className="text-xs text-gray-500">
-              {files.length} item{files.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-          <div className="flex-1 overflow-auto">
-            {currentProject && (
-              <FileExplorer
-                files={searchQuery ? filteredFiles : files}
-                onCreateFile={createFile}
-                onOpenFile={openFile}
-                currentFile={currentFile}
-                searchQuery={searchQuery}
-                unsavedChanges={unsavedChanges}
-                cosmicMode={cosmicMode}
-              />
-            )}
-          </div>
-        </div>
+        {/* AetherFlow Divine Interface */}
+        {aetherFlowMode ? (
+          <AetherFlowInterface
+            onCosmicAction={handleCosmicAction}
+            currentFile={currentFile}
+            code={currentFile?.content || ''}
+            onCodeChange={(newCode) => {
+              if (currentFile) {
+                handleContentChange(newCode);
+              }
+            }}
+            flowState={biometrics.flowState}
+            biometrics={biometrics}
+          />
+        ) : (
+          <>
+            {/* Sidebar with Golden Ratio width if sacred geometry is enabled */}
+            <div className={`bg-gray-800 border-r border-gray-700 flex flex-col ${
+              sacredGeometry && layoutStyle ? 'golden-sidebar' : 'w-64'
+            } ${cosmicMode ? 'bg-gradient-to-b from-indigo-900/30 to-purple-900/30 border-indigo-700/50' : ''}`}>
+              <div className="p-3 border-b border-gray-700 flex items-center justify-between">
+                <h2 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+                  <span>Explorer</span>
+                  {cosmicMode && <Hexagon size={12} className="text-indigo-400" />}
+                </h2>
+                <span className="text-xs text-gray-500">
+                  {files.length} item{files.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="flex-1 overflow-auto">
+                {currentProject && (
+                  <FileExplorer
+                    files={searchQuery ? filteredFiles : files}
+                    onCreateFile={createFile}
+                    onOpenFile={openFile}
+                    currentFile={currentFile}
+                    searchQuery={searchQuery}
+                    unsavedChanges={unsavedChanges}
+                    cosmicMode={cosmicMode}
+                  />
+                )}
+              </div>
+            </div>
 
-        {/* Editor and Preview Area with Golden Ratio main area */}
-        <div className={`flex-1 flex flex-col ${sacredGeometry && layoutStyle ? 'golden-main' : ''}`}>
+            {/* Editor and Preview Area with Golden Ratio main area */}
+            <div className={`flex-1 flex flex-col ${sacredGeometry && layoutStyle ? 'golden-main' : ''}`}>
           {currentFile ? (
             <div className="flex-1 flex">
               {/* Code Editor */}
