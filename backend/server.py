@@ -257,46 +257,139 @@ async def generate_code_endpoint(request: ChatRequest):
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: Dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket, session_id: str):
         await websocket.accept()
-        self.active_connections.append(websocket)
+        self.active_connections[session_id] = websocket
+        logger.info(f"WebSocket connection established for session: {session_id}")
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, session_id: str):
+        if session_id in self.active_connections:
+            del self.active_connections[session_id]
+            logger.info(f"WebSocket connection closed for session: {session_id}")
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def send_personal_message(self, message: str, session_id: str):
+        if session_id in self.active_connections:
+            try:
+                await self.active_connections[session_id].send_text(message)
+            except Exception as e:
+                logger.error(f"Error sending message to {session_id}: {e}")
+                self.disconnect(session_id)
 
 manager = ConnectionManager()
 
 @app.websocket("/ws/ai/{session_id}")
 async def websocket_ai_chat(websocket: WebSocket, session_id: str):
-    await manager.connect(websocket)
+    await manager.connect(websocket, session_id)
+    
     try:
+        # Send initial connection confirmation
+        await manager.send_personal_message(
+            json.dumps({
+                "type": "connection_established",
+                "message": "WebSocket connection established. AI processing handled by frontend Puter.js.",
+                "session_id": session_id,
+                "status": "connected"
+            }),
+            session_id
+        )
+        
         while True:
-            data = await websocket.receive_text()
-            message_data = json.loads(data)
+            # Set a timeout for receiving data to prevent hanging connections
+            try:
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=30.0)
+            except asyncio.TimeoutError:
+                # Send keepalive ping
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "keepalive",
+                        "message": "Connection active",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }),
+                    session_id
+                )
+                continue
             
-            # Process AI request
-            response = await ai_engine.chat_with_ai(
-                message_data.get("message", ""),
-                message_data.get("context")
-            )
-            
-            # Send response back
-            await manager.send_personal_message(
-                json.dumps({
-                    "type": "ai_response",
-                    "message": response,
-                    "session_id": session_id
-                }),
-                websocket
-            )
-            
+            try:
+                message_data = json.loads(data)
+                message_type = message_data.get("type", "chat")
+                
+                if message_type == "ping":
+                    # Handle ping/pong for connection health
+                    await manager.send_personal_message(
+                        json.dumps({
+                            "type": "pong",
+                            "timestamp": datetime.utcnow().isoformat()
+                        }),
+                        session_id
+                    )
+                    continue
+                
+                elif message_type == "chat":
+                    # Handle chat message
+                    user_message = message_data.get("message", "")
+                    
+                    # Since AI processing is handled by frontend Puter.js, 
+                    # we just acknowledge the message and save it
+                    response = {
+                        "type": "ai_response",
+                        "message": "Message received. AI processing is handled by frontend Puter.js for better performance and unlimited access.",
+                        "session_id": session_id,
+                        "frontend_ai": True,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                    
+                    # Save to database for history
+                    if user_message:
+                        await ai_engine.save_chat_message(
+                            session_id, 
+                            user_message, 
+                            response["message"]
+                        )
+                    
+                    await manager.send_personal_message(
+                        json.dumps(response),
+                        session_id
+                    )
+                
+                else:
+                    # Handle unknown message types
+                    await manager.send_personal_message(
+                        json.dumps({
+                            "type": "error",
+                            "message": f"Unknown message type: {message_type}",
+                            "session_id": session_id
+                        }),
+                        session_id
+                    )
+                    
+            except json.JSONDecodeError:
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "error",
+                        "message": "Invalid JSON format",
+                        "session_id": session_id
+                    }),
+                    session_id
+                )
+            except Exception as e:
+                logger.error(f"Error processing WebSocket message: {e}")
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "error",
+                        "message": "Error processing message",
+                        "session_id": session_id
+                    }),
+                    session_id
+                )
+                
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        logger.info(f"WebSocket disconnected for session: {session_id}")
+    except Exception as e:
+        logger.error(f"WebSocket error for session {session_id}: {e}")
+    finally:
+        manager.disconnect(session_id)
 
 # Include the API router
 app.include_router(api_router)
