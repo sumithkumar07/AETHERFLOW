@@ -90,6 +90,43 @@ class ChatRequest(BaseModel):
     session_id: str
     context: Optional[Dict[str, Any]] = None
 
+class CodeCompletionRequest(BaseModel):
+    code: str
+    language: str
+    position: Dict[str, int]  # {line: int, column: int}
+    context: Optional[Dict[str, Any]] = None
+
+class CodeReviewRequest(BaseModel):
+    code: str
+    language: str
+    filename: Optional[str] = None
+
+class DebugRequest(BaseModel):
+    code: str
+    error_message: Optional[str] = None
+    language: str
+    filename: Optional[str] = None
+
+class DocumentationRequest(BaseModel):
+    code: str
+    language: str
+    function_name: Optional[str] = None
+
+class SecurityScanRequest(BaseModel):
+    code: str
+    language: str
+    filename: Optional[str] = None
+
+class RefactorRequest(BaseModel):
+    code: str
+    language: str
+    focus_area: Optional[str] = None  # 'performance', 'readability', 'security'
+
+class NaturalLanguageRequest(BaseModel):
+    description: str
+    language: str
+    context: Optional[Dict[str, Any]] = None
+
 # === HUGGING FACE AI INTEGRATION ===
 
 class HuggingFaceClient:
