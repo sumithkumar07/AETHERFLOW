@@ -1,6 +1,4 @@
-<file>
-      <absolute_file_name>/app/backend/services/cosmic_service.py</absolute_file_name>
-      <content">"""
+"""
 Cosmic Service - Backend Reality Engine
 
 This service provides server-side cosmic-level features:
