@@ -857,6 +857,9 @@ async def shutdown_event():
 # Include the API router
 app.include_router(api_router)
 
+# Include collaboration router
+app.include_router(collaboration_router)
+
 # Add a legacy API route for backward compatibility
 @app.get("/api/")
 async def legacy_root():
