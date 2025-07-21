@@ -566,7 +566,7 @@ class VibeCodeAPITester:
                 "content": "# VibeCode Test File\nprint('Hello, VibeCode!')\n\ndef main():\n    return 'Welcome to VibeCode IDE'\n\nif __name__ == '__main__':\n    main()"
             }
             
-            async with self.session.post(f"{API_BASE_URL}/projects/{self.test_project_id}/files", json=file_data) as response:
+            async with self.session.post(f"{API_V1_BASE_URL}/projects/{self.test_project_id}/files", json=file_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("name") == file_data["name"] and data.get("id"):
@@ -596,7 +596,7 @@ class VibeCodeAPITester:
                 "type": "folder"
             }
             
-            async with self.session.post(f"{API_BASE_URL}/projects/{self.test_project_id}/files", json=folder_data) as response:
+            async with self.session.post(f"{API_V1_BASE_URL}/projects/{self.test_project_id}/files", json=folder_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("name") == folder_data["name"] and data.get("type") == "folder":
@@ -620,7 +620,7 @@ class VibeCodeAPITester:
             return False
             
         try:
-            async with self.session.get(f"{API_BASE_URL}/projects/{self.test_project_id}/files") as response:
+            async with self.session.get(f"{API_V1_BASE_URL}/projects/{self.test_project_id}/files") as response:
                 if response.status == 200:
                     data = await response.json()
                     if isinstance(data, list) and len(data) > 0:
@@ -645,7 +645,7 @@ class VibeCodeAPITester:
             return False
             
         try:
-            async with self.session.get(f"{API_BASE_URL}/files/{self.test_file_id}") as response:
+            async with self.session.get(f"{API_V1_BASE_URL}/files/{self.test_file_id}") as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("id") == self.test_file_id and data.get("content"):
@@ -673,7 +673,7 @@ class VibeCodeAPITester:
                 "content": "# Updated VibeCode Test File\nprint('Hello, Updated VibeCode!')\n\ndef updated_main():\n    return 'Updated Welcome to VibeCode IDE'\n\nif __name__ == '__main__':\n    updated_main()"
             }
             
-            async with self.session.put(f"{API_BASE_URL}/files/{self.test_file_id}", json=update_data) as response:
+            async with self.session.put(f"{API_V1_BASE_URL}/files/{self.test_file_id}", json=update_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("message"):
