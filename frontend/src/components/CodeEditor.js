@@ -217,6 +217,107 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     console.log('Run functionality coming soon!');
   };
 
+  const handleCodeReview = () => {
+    if (file?.content) {
+      performCodeReview(file.content);
+      setShowCodeReview(true);
+    }
+  };
+
+  const renderCodeReviewPanel = () => {
+    if (!showCodeReview || !codeReview) return null;
+
+    return (
+      <div className="absolute top-0 right-0 w-80 h-full bg-gray-800 border-l border-gray-600 z-10 overflow-hidden flex flex-col">
+        <div className="bg-gray-700 px-4 py-3 border-b border-gray-600 flex items-center justify-between">
+          <h3 className="text-sm font-medium text-white flex items-center">
+            <AlertTriangle size={16} className="mr-2 text-yellow-400" />
+            Code Review
+          </h3>
+          <button
+            onClick={() => setShowCodeReview(false)}
+            className="text-gray-400 hover:text-white text-lg"
+          >
+            ×
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-auto p-4">
+          {codeReview.overall_score && (
+            <div className="mb-4 p-3 bg-gray-700 rounded">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-300">Code Quality Score</span>
+                <span className={`text-lg font-bold ${
+                  codeReview.overall_score >= 80 ? 'text-green-400' :
+                  codeReview.overall_score >= 60 ? 'text-yellow-400' : 'text-red-400'
+                }`}>
+                  {codeReview.overall_score}/100
+                </span>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full ${
+                    codeReview.overall_score >= 80 ? 'bg-green-400' :
+                    codeReview.overall_score >= 60 ? 'bg-yellow-400' : 'bg-red-400'
+                  }`}
+                  style={{ width: `${codeReview.overall_score}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {codeReview.issues && codeReview.issues.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-gray-300">Issues Found:</h4>
+              {codeReview.issues.map((issue, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded border-l-4 ${
+                    issue.severity === 'high' ? 'bg-red-900/20 border-red-500' :
+                    issue.severity === 'medium' ? 'bg-yellow-900/20 border-yellow-500' :
+                    'bg-blue-900/20 border-blue-500'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      issue.severity === 'high' ? 'bg-red-600 text-white' :
+                      issue.severity === 'medium' ? 'bg-yellow-600 text-white' :
+                      'bg-blue-600 text-white'
+                    }`}>
+                      {issue.type}
+                    </span>
+                    <span className={`text-xs ${
+                      issue.severity === 'high' ? 'text-red-400' :
+                      issue.severity === 'medium' ? 'text-yellow-400' :
+                      'text-blue-400'
+                    }`}>
+                      {issue.severity}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-300 mt-2">{issue.message}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {codeReview.summary && (
+            <div className="mt-4 p-3 bg-gray-700 rounded">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Summary:</h4>
+              <p className="text-sm text-gray-400">{codeReview.summary}</p>
+            </div>
+          )}
+
+          {isAnalyzing && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+              <span className="ml-3 text-sm text-gray-400">Analyzing code...</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (!file) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-900">
