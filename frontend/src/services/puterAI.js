@@ -335,7 +335,7 @@ Return JSON format:
 }`;
 
       const response = await window.puter.ai.chat(prompt, {
-        model: this.models.security,
+        model: this.getCurrentModel('security'),
         temperature: 0.1
       });
 
