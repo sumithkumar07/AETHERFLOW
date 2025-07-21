@@ -421,8 +421,10 @@ const AIChat = ({ currentFile }) => {
   };
 
   const modeButtons = [
-    { id: 'chat', label: 'Chat', icon: MessageSquare, color: 'purple' },
-    { id: 'nlp', label: 'Code Gen', icon: Languages, color: 'blue' }
+    { id: 'chat', label: 'Chat', icon: MessageSquare, color: 'purple', desc: 'Multi-turn conversation with memory' },
+    { id: 'nlp', label: 'Code Gen', icon: Languages, color: 'blue', desc: 'Contextual code generation' },
+    { id: 'performance', label: 'Analyze', icon: Lightbulb, color: 'green', desc: 'Performance optimization analysis' },
+    { id: 'contextual', label: 'Context', icon: Wand2, color: 'orange', desc: 'Project-aware assistance' }
   ];
 
   return (
