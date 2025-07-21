@@ -92,8 +92,9 @@ async def get_project_rooms(
         rooms_with_stats = []
         for room in rooms:
             stats = manager.get_room_stats(room["id"])
+            room_obj = Room(**room)
             rooms_with_stats.append({
-                **room,
+                **room_obj.dict(),
                 "stats": stats
             })
         
