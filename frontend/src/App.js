@@ -8,6 +8,7 @@ import ProjectManager from './components/ProjectManager';
 import CollaborationPanel from './components/CollaborationPanel';
 import CosmicInterface from './components/CosmicInterface';
 import CosmicRealityEngine from './components/CosmicRealityEngine';
+import AetherFlowInterface from './components/AetherFlowInterface';
 import bcInterface from './services/bcInterface';
 import useCosmicEffects from './hooks/useCosmicEffects';
 import ErrorBoundary from './components/ErrorBoundary';
