@@ -265,6 +265,32 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     }
   };
 
+  const handleAIAction = (action) => {
+    if (!file?.content) return;
+    
+    setShowAIToolbar(false);
+    
+    switch (action) {
+      case 'debug':
+        debugCode(file.content);
+        break;
+      case 'document':
+        generateDocumentation(file.content);
+        break;
+      case 'security':
+        scanSecurity(file.content);
+        break;
+      case 'refactor-performance':
+        refactorCode(file.content, 'performance');
+        break;
+      case 'refactor-readability':
+        refactorCode(file.content, 'readability');
+        break;
+      default:
+        break;
+    }
+  };
+
   const renderCodeReviewPanel = () => {
     if (!showCodeReview || !codeReview) return null;
 
