@@ -1431,6 +1431,17 @@ class VibeCodeAPITester:
             print("\n💬 Testing Chat History...")
             await self.test_get_chat_history()
             
+            print("\n🤝 Testing Real-Time Collaboration...")
+            await self.test_collaboration_health()
+            await self.test_collaboration_stats()
+            await self.test_create_collaboration_room()
+            await self.test_get_collaboration_room()
+            await self.test_get_project_rooms()
+            await self.test_send_chat_message()
+            await self.test_get_chat_history()
+            await self.test_apply_edit_operations()
+            await self.test_websocket_collaboration()
+            
             print("\n🔌 Testing WebSocket AI (Comprehensive Timeout & Keepalive Tests)...")
             await self.test_websocket_connection_establishment()
             await self.test_websocket_chat_message()
