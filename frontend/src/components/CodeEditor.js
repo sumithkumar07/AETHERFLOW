@@ -48,12 +48,57 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     return langMap[ext] || 'plaintext';
   };
 
-  useEffect(() => {
-    if (file) {
-      setLanguage(getLanguageFromFilename(file.name));
-      setIsModified(false);
+  // Real-time AI code completion
+  const getAICodeCompletion = useCallback(async (code, position) => {
+    if (!code.trim() || isLoadingCompletion) return;
+    
+    setIsLoadingCompletion(true);
+    try {
+      const response = await fetch(`${API}/ai/code-completion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language,
+          position
+        })
+      });
+      
+      const result = await response.json();
+      if (result.suggestions && result.suggestions.length > 0) {
+        setCompletionSuggestions(result.suggestions);
+      }
+    } catch (error) {
+      console.error('Code completion error:', error);
+    } finally {
+      setIsLoadingCompletion(false);
     }
-  }, [file]);
+  }, [language, isLoadingCompletion]);
+
+  // AI Code Review
+  const performCodeReview = useCallback(async (code) => {
+    if (!code.trim() || isAnalyzing) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch(`${API}/ai/code-review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language,
+          filename: file?.name || 'untitled'
+        })
+      });
+      
+      const result = await response.json();
+      setCodeReview(result);
+    } catch (error) {
+      console.error('Code review error:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [language, file?.name, isAnalyzing]);
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
