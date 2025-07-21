@@ -1239,9 +1239,9 @@ class VibeCodeAPITester:
             
         try:
             edit_data = {
-                "file_id": self.test_file_id,
                 "operations": [
                     {
+                        "file_id": self.test_file_id,
                         "operation_type": "insert",
                         "position": 0,
                         "content": "# Collaborative Edit Test\n",
