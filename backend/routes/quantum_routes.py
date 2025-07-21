@@ -445,8 +445,7 @@ class SuperpositionRequest(BaseModel):
 @limiter.limit("5/minute")
 async def create_code_superposition(
     request: Request,
-    code: str = Field(..., min_length=10),
-    states: int = Field(default=2, ge=2, le=10)
+    superposition_request: SuperpositionRequest
 ):
     """
     Create quantum superposition of code states
@@ -456,21 +455,21 @@ async def create_code_superposition(
         
         # Generate multiple code states in superposition
         code_states = []
-        for i in range(states):
+        for i in range(superposition_request.states):
             # Simulate quantum superposition variations
-            state_code = code  # In real implementation, this would create actual variations
-            probability = 1.0 / states  # Equal probability for each state
+            state_code = superposition_request.code  # In real implementation, this would create actual variations
+            probability = 1.0 / superposition_request.states  # Equal probability for each state
             
             code_states.append({
                 "state_id": i,
                 "code": state_code,
                 "probability": probability,
-                "quantum_phase": i * (2 * 3.14159 / states)
+                "quantum_phase": i * (2 * 3.14159 / superposition_request.states)
             })
 
         superposition_record = {
             "superposition_id": superposition_id,
-            "original_code": code,
+            "original_code": superposition_request.code,
             "states": code_states,
             "coherence_time": 300,  # 5 minutes
             "created_at": datetime.utcnow(),
@@ -483,7 +482,7 @@ async def create_code_superposition(
             "state_count": len(code_states),
             "coherence_time": 300,
             "quantum_states": code_states,
-            "message": f"Code superposition created with {states} quantum states"
+            "message": f"Code superposition created with {superposition_request.states} quantum states"
         }
 
     except Exception as e:
