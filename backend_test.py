@@ -1485,6 +1485,7 @@ class VibeCodeAPITester:
             ("file_management", "File Management"),
             ("ai_integration", "AI Integration"),
             ("chat_history", "Chat History"),
+            ("collaboration", "Real-Time Collaboration"),
             ("websocket_ai", "WebSocket AI")
         ]
         
