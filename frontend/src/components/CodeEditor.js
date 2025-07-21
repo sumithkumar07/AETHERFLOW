@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, Save, Lightbulb, AlertTriangle } from 'lucide-react';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { Play, Save, Lightbulb, AlertTriangle, Sparkles, Bot } from 'lucide-react';
+import puterAI from '../services/puterAI';
 
 const CodeEditor = ({ file, onSave, onContentChange }) => {
   const editorRef = useRef(null);
@@ -14,6 +12,9 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
   const [codeReview, setCodeReview] = useState(null);
   const [showCodeReview, setShowCodeReview] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showAIToolbar, setShowAIToolbar] = useState(false);
+  const [aiAction, setAiAction] = useState(null);
+  const [aiResult, setAiResult] = useState(null);
 
   // Detect language from file extension
   const getLanguageFromFilename = (filename) => {
