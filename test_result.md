@@ -248,11 +248,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Project Management API"
-    - "File Management API" 
-    - "Hugging Face AI Integration"
-  stuck_tasks: []
+  current_focus: []
+  stuck_tasks: 
+    - "WebSocket Real-time AI"
   test_all: false
   test_priority: "high_first"
 
