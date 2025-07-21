@@ -9,7 +9,7 @@ const AIChat = ({ currentFile }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random()}`);
-  const [activeMode, setActiveMode] = useState('chat'); // chat, debug, document, security, refactor, nlp
+  const [activeMode, setActiveMode] = useState('chat');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -22,7 +22,6 @@ const AIChat = ({ currentFile }) => {
       timestamp: new Date()
     }]);
     
-    // Load chat history
     loadChatHistory();
   }, []);
 
@@ -61,6 +60,27 @@ const AIChat = ({ currentFile }) => {
     } catch (error) {
       console.error('Error loading chat history:', error);
     }
+  };
+
+  // Helper functions
+  const getLanguageFromFilename = (filename) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const langMap = {
+      'js': 'javascript', 'jsx': 'javascript', 'ts': 'typescript', 'tsx': 'typescript',
+      'py': 'python', 'html': 'html', 'css': 'css', 'json': 'json', 'md': 'markdown'
+    };
+    return langMap[ext] || 'plaintext';
+  };
+
+  const addErrorMessage = (content) => {
+    const errorMessage = {
+      id: `error_${Date.now()}`,
+      type: 'ai',
+      content,
+      timestamp: new Date(),
+      isError: true
+    };
+    setMessages(prev => [...prev, errorMessage]);
   };
 
   const sendMessage = async () => {
