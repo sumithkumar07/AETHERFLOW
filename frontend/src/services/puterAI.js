@@ -114,7 +114,7 @@ ${context}
 Provide 3 different completion suggestions that would logically follow. Return only the code completions, one per line:`;
 
       const response = await window.puter.ai.chat(prompt, {
-        model: this.models.codeCompletion,
+        model: this.getCurrentModel('codeCompletion'),
         temperature: 0.3
       });
 
