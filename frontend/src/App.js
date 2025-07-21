@@ -162,6 +162,43 @@ function AppContent() {
     initializeApp();
   }, [sacredGeometry]);
 
+  // === AETHERFLOW ACTIVATION ===
+  const activateAetherFlow = useCallback(async () => {
+    try {
+      setAetherFlowMode(true);
+      setDivineInterfaceActive(true);
+      
+      // Grant activation bonus
+      cosmicEngine.mineVibeTokens(200, 'AetherFlow interface activated');
+      
+      notifications.addNotification({
+        type: 'success',
+        message: '🌌 AetherFlow Interface Activated - Digital godhood achieved!',
+        duration: 5000
+      });
+
+      // Start enhanced focus tracking
+      divineBioMetrics.focusBoost();
+      
+    } catch (error) {
+      console.error('AetherFlow activation failed:', error);
+      notifications.addNotification({
+        type: 'error',
+        message: 'Failed to activate AetherFlow interface'
+      });
+    }
+  }, [notifications]);
+
+  const deactivateAetherFlow = useCallback(() => {
+    setAetherFlowMode(false);
+    setDivineInterfaceActive(false);
+    
+    notifications.addNotification({
+      type: 'info',
+      message: 'AetherFlow interface deactivated - returning to mortal realm'
+    });
+  }, [notifications]);
+
   // Enhanced Cosmic Action Handler with BCI integration
   const handleCosmicAction = useCallback((action) => {
     console.log('🌌 Cosmic Action:', action);
