@@ -20,7 +20,7 @@ async def test_websocket_simple():
     
     try:
         # Try to connect with a shorter timeout
-        async with websockets.connect(ws_url, timeout=10) as websocket:
+        async with websockets.connect(ws_url, open_timeout=10) as websocket:
             print("✅ WebSocket connection established")
             
             # Send a simple test message
