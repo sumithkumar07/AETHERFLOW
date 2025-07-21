@@ -16,7 +16,9 @@ function App() {
   const [files, setFiles] = useState([]);
   const [projects, setProjects] = useState([]);
   const [showChat, setShowChat] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [showProjectManager, setShowProjectManager] = useState(true);
+  const [layout, setLayout] = useState('code'); // 'code', 'split', 'preview'
 
   // Load projects on startup
   useEffect(() => {
