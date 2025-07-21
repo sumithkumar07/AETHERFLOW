@@ -454,7 +454,7 @@ async def create_project(request: Request, project_request: CreateProjectRequest
         raise HTTPException(status_code=500, detail="Failed to create project")
 
 @api_router.get("/projects", response_model=List[Project])
-@limiter.limit("30/minute")
+@limiter.limit("200/minute")
 async def get_projects(request: Request, skip: int = 0, limit: int = 50, db = Depends(get_database)):
     try:
         # Add pagination and sorting
