@@ -750,6 +750,7 @@ function AppContent() {
                     <div>Ctrl+F - Search files</div>
                     <div>Ctrl+` - Toggle AI chat</div>
                     <div>Ctrl+P - Toggle preview</div>
+                    <div>Ctrl+U - Toggle collaboration</div>
                   </div>
                 </div>
               </div>
