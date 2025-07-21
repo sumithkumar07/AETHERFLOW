@@ -845,6 +845,11 @@ async def startup_event():
     """Initialize database connection and setup"""
     logger.info("Starting VibeCode API v2.0...")
     await db_manager.connect()
+    
+    # Initialize collaboration manager
+    init_collaboration_manager(db_manager.db)
+    logger.info("Collaboration manager initialized")
+    
     logger.info("VibeCode API started successfully!")
 
 @app.on_event("shutdown")
