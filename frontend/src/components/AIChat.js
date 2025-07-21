@@ -434,8 +434,9 @@ const AIChat = ({ currentFile }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bot size={18} className="text-purple-400" />
-            <h3 className="font-medium text-white">Puter.js AI</h3>
-            <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">UNLIMITED</span>
+            <h3 className="font-medium text-white">meta-llama/llama-4-maverick</h3>
+            <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">FREE</span>
+            <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">ADVANCED</span>
           </div>
           
           {/* Mode Selector */}
