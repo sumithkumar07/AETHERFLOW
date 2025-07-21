@@ -127,27 +127,27 @@ class NaturalLanguageRequest(BaseModel):
     language: str
     context: Optional[Dict[str, Any]] = None
 
-# === HUGGING FACE AI INTEGRATION ===
+# === ADVANCED AI INTEGRATION ===
 
-class HuggingFaceClient:
+class AdvancedAIEngine:
     def __init__(self):
         self.api_key = HUGGINGFACE_API_KEY
         self.headers = {"Authorization": f"Bearer {self.api_key}"}
         
-    async def generate_code(self, prompt: str, model: str = "bigcode/starcoder2-15b") -> str:
-        """Generate code using Hugging Face models"""
+        # Best models for different tasks
+        self.models = {
+            "code_completion": "bigcode/starcoder2-15b",
+            "code_generation": "codellama/CodeLlama-13b-Instruct-hf",
+            "chat": "microsoft/DialoGPT-large",
+            "code_review": "bigcode/starcoder2-15b",
+            "documentation": "microsoft/DialoGPT-large",
+            "security": "bigcode/starcoder2-15b"
+        }
+        
+    async def _call_huggingface_api(self, model: str, payload: Dict) -> Dict:
+        """Generic HuggingFace API call"""
         try:
             async with aiohttp.ClientSession() as session:
-                payload = {
-                    "inputs": prompt,
-                    "parameters": {
-                        "max_length": 512,
-                        "temperature": 0.3,
-                        "do_sample": True,
-                        "top_p": 0.95
-                    }
-                }
-                
                 async with session.post(
                     f"{HUGGINGFACE_API_URL}/{model}",
                     headers=self.headers,
@@ -155,42 +155,570 @@ class HuggingFaceClient:
                     timeout=30
                 ) as response:
                     if response.status == 200:
-                        result = await response.json()
-                        if isinstance(result, list) and len(result) > 0:
-                            generated_text = result[0].get("generated_text", "")
-                            # Clean up the response to remove the input prompt
-                            if generated_text.startswith(prompt):
-                                generated_text = generated_text[len(prompt):].strip()
-                            return generated_text
-                        return "No response generated"
+                        return await response.json()
                     else:
                         error_text = await response.text()
                         logger.error(f"HF API Error: {response.status} - {error_text}")
-                        return "Error generating code"
+                        return {"error": f"API Error: {response.status}"}
         except Exception as e:
             logger.error(f"HuggingFace API error: {e}")
-            return f"Error: {str(e)}"
+            return {"error": str(e)}
+
+    async def get_code_completion(self, code: str, language: str, position: Dict) -> Dict:
+        """Real-time code completion like GitHub Copilot"""
+        try:
+            # Extract context around cursor position
+            lines = code.split('\n')
+            current_line = position.get('line', 0)
+            
+            # Get context - previous lines for better completion
+            context_lines = max(0, current_line - 10)
+            context_code = '\n'.join(lines[context_lines:current_line + 1])
+            
+            completion_prompt = f"""// Language: {language}
+// Complete the following code with intelligent suggestions:
+
+{context_code}"""
+            
+            payload = {
+                "inputs": completion_prompt,
+                "parameters": {
+                    "max_length": 150,
+                    "temperature": 0.2,
+                    "do_sample": True,
+                    "top_p": 0.9,
+                    "stop": ["\n\n", "```", "//", "#"]
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["code_completion"], payload)
+            
+            if "error" in result:
+                return {"suggestions": [], "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(completion_prompt):
+                    completion = generated_text[len(completion_prompt):].strip()
+                    
+                    # Clean and format suggestions
+                    suggestions = []
+                    if completion:
+                        # Split by common delimiters and take first few suggestions
+                        parts = completion.split('\n')
+                        for part in parts[:3]:  # Top 3 suggestions
+                            if part.strip() and not part.strip().startswith('//'):
+                                suggestions.append({
+                                    "text": part.strip(),
+                                    "type": "code",
+                                    "confidence": 0.8
+                                })
+                    
+                    return {"suggestions": suggestions}
+            
+            return {"suggestions": []}
+            
+        except Exception as e:
+            logger.error(f"Code completion error: {e}")
+            return {"suggestions": [], "error": str(e)}
+
+    async def review_code(self, code: str, language: str, filename: str = None) -> Dict:
+        """Comprehensive code review - security, performance, best practices"""
+        try:
+            review_prompt = f"""Perform a comprehensive code review for this {language} code:
+
+```{language}
+{code}
+```
+
+Analyze for:
+1. Security vulnerabilities
+2. Performance issues  
+3. Code quality and best practices
+4. Bug potential
+5. Maintainability concerns
+
+Provide specific, actionable feedback with line references where possible."""
+
+            payload = {
+                "inputs": review_prompt,
+                "parameters": {
+                    "max_length": 800,
+                    "temperature": 0.3,
+                    "do_sample": True,
+                    "top_p": 0.9
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["code_review"], payload)
+            
+            if "error" in result:
+                return {"issues": [], "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(review_prompt):
+                    review_text = generated_text[len(review_prompt):].strip()
+                    
+                    # Parse review into structured issues
+                    issues = self._parse_code_review(review_text)
+                    return {
+                        "issues": issues,
+                        "overall_score": self._calculate_code_score(issues),
+                        "summary": review_text[:200] + "..." if len(review_text) > 200 else review_text
+                    }
+            
+            return {"issues": [], "summary": "No issues found"}
+            
+        except Exception as e:
+            logger.error(f"Code review error: {e}")
+            return {"issues": [], "error": str(e)}
+
+    def _parse_code_review(self, review_text: str) -> List[Dict]:
+        """Parse AI review text into structured issues"""
+        issues = []
+        lines = review_text.split('\n')
+        
+        current_issue = {}
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Detect issue types
+            if any(keyword in line.lower() for keyword in ['security', 'vulnerability', 'injection']):
+                if current_issue:
+                    issues.append(current_issue)
+                current_issue = {
+                    "type": "security",
+                    "severity": "high",
+                    "message": line,
+                    "line": None
+                }
+            elif any(keyword in line.lower() for keyword in ['performance', 'slow', 'inefficient']):
+                if current_issue:
+                    issues.append(current_issue)
+                current_issue = {
+                    "type": "performance", 
+                    "severity": "medium",
+                    "message": line,
+                    "line": None
+                }
+            elif any(keyword in line.lower() for keyword in ['bug', 'error', 'issue']):
+                if current_issue:
+                    issues.append(current_issue)
+                current_issue = {
+                    "type": "bug",
+                    "severity": "high", 
+                    "message": line,
+                    "line": None
+                }
+            elif current_issue:
+                current_issue["message"] += f" {line}"
+        
+        if current_issue:
+            issues.append(current_issue)
+            
+        return issues[:10]  # Limit to 10 issues
+
+    def _calculate_code_score(self, issues: List[Dict]) -> int:
+        """Calculate code quality score (0-100)"""
+        if not issues:
+            return 95
+            
+        score = 100
+        for issue in issues:
+            if issue["severity"] == "high":
+                score -= 15
+            elif issue["severity"] == "medium":
+                score -= 10
+            else:
+                score -= 5
+                
+        return max(score, 0)
+
+    async def debug_code(self, code: str, error_message: str = None, language: str = "python") -> Dict:
+        """AI-powered debugging assistance"""
+        try:
+            debug_prompt = f"""Debug this {language} code and provide solutions:
+
+Code:
+```{language}
+{code}
+```
+
+{'Error message: ' + error_message if error_message else ''}
+
+Analyze the code and provide:
+1. Potential issues and bugs
+2. Specific fixes with corrected code
+3. Explanation of the problems
+4. Best practices to prevent similar issues"""
+
+            payload = {
+                "inputs": debug_prompt,
+                "parameters": {
+                    "max_length": 800,
+                    "temperature": 0.3,
+                    "do_sample": True,
+                    "top_p": 0.9
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["code_generation"], payload)
+            
+            if "error" in result:
+                return {"fixes": [], "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(debug_prompt):
+                    debug_response = generated_text[len(debug_prompt):].strip()
+                    
+                    return {
+                        "analysis": debug_response,
+                        "fixes": self._extract_code_fixes(debug_response),
+                        "confidence": 0.8
+                    }
+            
+            return {"analysis": "Unable to debug code", "fixes": []}
+            
+        except Exception as e:
+            logger.error(f"Debug error: {e}")
+            return {"analysis": f"Debug error: {str(e)}", "fixes": []}
+
+    def _extract_code_fixes(self, debug_text: str) -> List[Dict]:
+        """Extract code fixes from debug response"""
+        fixes = []
+        
+        # Look for code blocks in the response
+        code_blocks = re.findall(r'```\w*\n(.*?)\n```', debug_text, re.DOTALL)
+        
+        for i, code_block in enumerate(code_blocks):
+            fixes.append({
+                "description": f"Fix #{i+1}",
+                "code": code_block.strip(),
+                "type": "code_replacement"
+            })
+            
+        return fixes
+
+    async def generate_documentation(self, code: str, language: str, function_name: str = None) -> Dict:
+        """Generate comprehensive documentation for code"""
+        try:
+            doc_prompt = f"""Generate comprehensive documentation for this {language} code:
+
+```{language}
+{code}
+```
+
+Generate:
+1. Function/class descriptions
+2. Parameter documentation
+3. Return value documentation
+4. Usage examples
+5. Any important notes or warnings
+
+Format as clear, professional documentation."""
+
+            payload = {
+                "inputs": doc_prompt,
+                "parameters": {
+                    "max_length": 600,
+                    "temperature": 0.2,
+                    "do_sample": True,
+                    "top_p": 0.9
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["documentation"], payload)
+            
+            if "error" in result:
+                return {"documentation": "", "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(doc_prompt):
+                    documentation = generated_text[len(doc_prompt):].strip()
+                    
+                    return {
+                        "documentation": documentation,
+                        "format": "markdown"
+                    }
+            
+            return {"documentation": "Unable to generate documentation"}
+            
+        except Exception as e:
+            logger.error(f"Documentation error: {e}")
+            return {"documentation": f"Documentation error: {str(e)}"}
+
+    async def scan_security(self, code: str, language: str) -> Dict:
+        """Security vulnerability scanning"""
+        try:
+            security_prompt = f"""Scan this {language} code for security vulnerabilities:
+
+```{language}
+{code}
+```
+
+Identify:
+1. SQL injection risks
+2. XSS vulnerabilities
+3. Authentication issues
+4. Input validation problems
+5. Data exposure risks
+6. Other security concerns
+
+Provide specific line references and fixes."""
+
+            payload = {
+                "inputs": security_prompt,
+                "parameters": {
+                    "max_length": 600,
+                    "temperature": 0.2,
+                    "do_sample": True,
+                    "top_p": 0.9
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["security"], payload)
+            
+            if "error" in result:
+                return {"vulnerabilities": [], "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(security_prompt):
+                    security_analysis = generated_text[len(security_prompt):].strip()
+                    
+                    vulnerabilities = self._parse_security_issues(security_analysis)
+                    return {
+                        "vulnerabilities": vulnerabilities,
+                        "risk_score": self._calculate_risk_score(vulnerabilities),
+                        "analysis": security_analysis
+                    }
+            
+            return {"vulnerabilities": [], "risk_score": 0}
+            
+        except Exception as e:
+            logger.error(f"Security scan error: {e}")
+            return {"vulnerabilities": [], "error": str(e)}
+
+    def _parse_security_issues(self, analysis: str) -> List[Dict]:
+        """Parse security analysis into structured vulnerabilities"""
+        vulnerabilities = []
+        lines = analysis.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if any(keyword in line.lower() for keyword in ['injection', 'xss', 'vulnerability', 'security']):
+                vulnerabilities.append({
+                    "type": "security",
+                    "description": line,
+                    "severity": "high" if any(high in line.lower() for high in ['critical', 'high', 'severe']) else "medium"
+                })
+        
+        return vulnerabilities[:5]  # Top 5 security issues
+
+    def _calculate_risk_score(self, vulnerabilities: List[Dict]) -> int:
+        """Calculate security risk score (0-100, higher is worse)"""
+        if not vulnerabilities:
+            return 0
+            
+        risk_score = 0
+        for vuln in vulnerabilities:
+            if vuln["severity"] == "high":
+                risk_score += 25
+            elif vuln["severity"] == "medium":
+                risk_score += 15
+            else:
+                risk_score += 10
+                
+        return min(risk_score, 100)
+
+    async def refactor_code(self, code: str, language: str, focus_area: str = "readability") -> Dict:
+        """Suggest code refactoring improvements"""
+        try:
+            refactor_prompt = f"""Refactor this {language} code focusing on {focus_area}:
+
+```{language}
+{code}
+```
+
+Provide:
+1. Refactored code
+2. Explanation of changes
+3. Benefits of the refactoring
+4. Any trade-offs to consider
+
+Focus on {focus_area} improvements."""
+
+            payload = {
+                "inputs": refactor_prompt,
+                "parameters": {
+                    "max_length": 700,
+                    "temperature": 0.3,
+                    "do_sample": True,
+                    "top_p": 0.9
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["code_generation"], payload)
+            
+            if "error" in result:
+                return {"refactored_code": "", "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(refactor_prompt):
+                    refactor_response = generated_text[len(refactor_prompt):].strip()
+                    
+                    refactored_code = self._extract_refactored_code(refactor_response)
+                    return {
+                        "refactored_code": refactored_code,
+                        "explanation": refactor_response,
+                        "focus_area": focus_area
+                    }
+            
+            return {"refactored_code": code, "explanation": "No refactoring suggestions"}
+            
+        except Exception as e:
+            logger.error(f"Refactor error: {e}")
+            return {"refactored_code": code, "error": str(e)}
+
+    def _extract_refactored_code(self, refactor_text: str) -> str:
+        """Extract refactored code from response"""
+        # Look for code blocks in the response
+        code_blocks = re.findall(r'```\w*\n(.*?)\n```', refactor_text, re.DOTALL)
+        
+        if code_blocks:
+            return code_blocks[0].strip()
+        
+        return ""
+
+    async def natural_language_to_code(self, description: str, language: str, context: Dict = None) -> Dict:
+        """Generate code from natural language description"""
+        try:
+            context_info = ""
+            if context:
+                if context.get('current_file'):
+                    context_info = f"\nCurrent file context:\n{context['current_file'][:500]}"
+                if context.get('project_structure'):
+                    context_info += f"\nProject structure: {context['project_structure']}"
+
+            nl_prompt = f"""Generate {language} code based on this description:
+
+Description: {description}
+{context_info}
+
+Requirements:
+- Write clean, functional {language} code
+- Include error handling where appropriate
+- Add comments explaining key parts
+- Follow {language} best practices
+- Make the code production-ready
+
+Generate the complete code:"""
+
+            payload = {
+                "inputs": nl_prompt,
+                "parameters": {
+                    "max_length": 800,
+                    "temperature": 0.4,
+                    "do_sample": True,
+                    "top_p": 0.9
+                }
+            }
+            
+            result = await self._call_huggingface_api(self.models["code_generation"], payload)
+            
+            if "error" in result:
+                return {"code": "", "error": result["error"]}
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(nl_prompt):
+                    generated_code = generated_text[len(nl_prompt):].strip()
+                    
+                    # Extract code blocks if present
+                    code_blocks = re.findall(r'```\w*\n(.*?)\n```', generated_code, re.DOTALL)
+                    if code_blocks:
+                        generated_code = code_blocks[0].strip()
+                    
+                    return {
+                        "code": generated_code,
+                        "language": language,
+                        "description": description
+                    }
+            
+            return {"code": "// Unable to generate code from description", "language": language}
+            
+        except Exception as e:
+            logger.error(f"Natural language to code error: {e}")
+            return {"code": f"// Error: {str(e)}", "error": str(e)}
 
     async def chat_with_ai(self, message: str, context: Optional[Dict] = None) -> str:
-        """Chat with AI for coding assistance"""
+        """Enhanced AI chat with better context understanding"""
         try:
-            # Format the message for code assistance
-            system_prompt = """You are an expert programming assistant. Help with coding questions, debugging, and provide clear explanations. Focus on practical, working code solutions."""
+            # Build comprehensive system prompt
+            system_prompt = """You are an expert programming assistant with deep knowledge of:
+- Multiple programming languages and frameworks
+- Code architecture and design patterns
+- Debugging and optimization techniques
+- Security best practices
+- Modern development workflows
+
+Provide helpful, accurate, and practical responses. When showing code, make it production-ready."""
             
-            full_prompt = f"{system_prompt}\n\nUser: {message}\nAssistant:"
+            context_info = ""
+            if context:
+                if context.get('current_file'):
+                    context_info = f"\n\nCurrent file context:\n```\n{context['current_file'][:500]}...\n```"
+                if context.get('recent_errors'):
+                    context_info += f"\nRecent errors: {context['recent_errors']}"
+                if context.get('project_type'):
+                    context_info += f"\nProject type: {context['project_type']}"
             
-            # Add context if provided
-            if context and context.get('current_file'):
-                full_prompt = f"Current file context:\n{context['current_file']}\n\n{full_prompt}"
+            full_prompt = f"{system_prompt}\n\nUser: {message}{context_info}\n\nAssistant:"
             
             return await self.generate_code(full_prompt, "microsoft/DialoGPT-large")
             
         except Exception as e:
-            logger.error(f"Chat AI error: {e}")
+            logger.error(f"Enhanced chat error: {e}")
             return f"Sorry, I encountered an error: {str(e)}"
 
-# Initialize HuggingFace client
-hf_client = HuggingFaceClient()
+    async def generate_code(self, prompt: str, model: str = "bigcode/starcoder2-15b") -> str:
+        """Enhanced code generation with better formatting"""
+        try:
+            payload = {
+                "inputs": prompt,
+                "parameters": {
+                    "max_length": 512,
+                    "temperature": 0.3,
+                    "do_sample": True,
+                    "top_p": 0.95
+                }
+            }
+            
+            result = await self._call_huggingface_api(model, payload)
+            
+            if "error" in result:
+                return f"Error: {result['error']}"
+                
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get("generated_text", "")
+                if generated_text.startswith(prompt):
+                    generated_text = generated_text[len(prompt):].strip()
+                return generated_text
+            
+            return "No response generated"
+            
+        except Exception as e:
+            logger.error(f"Code generation error: {e}")
+            return f"Error: {str(e)}"
+
+# Initialize the advanced AI engine
+ai_engine = AdvancedAIEngine()
 
 # === API ENDPOINTS ===
 
@@ -291,7 +819,7 @@ async def delete_file(file_id: str):
 @api_router.post("/ai/chat")
 async def chat_with_ai(request: ChatRequest):
     try:
-        response = await hf_client.chat_with_ai(request.message, request.context)
+        response = await ai_engine.chat_with_ai(request.message, request.context)
         
         # Save chat message to database
         chat_message = ChatMessage(
@@ -314,7 +842,7 @@ async def get_chat_history(session_id: str):
 @api_router.post("/ai/generate-code")
 async def generate_code_endpoint(request: ChatRequest):
     try:
-        code = await hf_client.generate_code(request.message)
+        code = await ai_engine.generate_code(request.message)
         return {"generated_code": code, "session_id": request.session_id}
     except Exception as e:
         logger.error(f"Code generation error: {e}")
@@ -347,7 +875,7 @@ async def websocket_ai_chat(websocket: WebSocket, session_id: str):
             message_data = json.loads(data)
             
             # Process AI request
-            response = await hf_client.chat_with_ai(
+            response = await ai_engine.chat_with_ai(
                 message_data.get("message", ""),
                 message_data.get("context")
             )
