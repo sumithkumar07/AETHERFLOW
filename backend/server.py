@@ -376,7 +376,7 @@ ai_engine = PuterAIEngine()
 
 # Health check with detailed status
 @api_router.get("/health")
-@limiter.limit("10/minute")
+@limiter.limit("100/minute")
 async def health_check(request: Request, db = Depends(get_database)):
     try:
         # Test database connection
