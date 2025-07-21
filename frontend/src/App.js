@@ -157,13 +157,45 @@ function App() {
           >
             <Folder size={18} />
           </button>
+          
+          <button 
+            onClick={() => setShowPreview(!showPreview)}
+            className={`p-2 hover:bg-gray-700 rounded ${showPreview ? 'text-green-400' : ''}`}
+            title="Live Preview"
+          >
+            <Eye size={18} />
+          </button>
+          
           <button 
             onClick={() => setShowChat(!showChat)}
-            className="p-2 hover:bg-gray-700 rounded"
+            className={`p-2 hover:bg-gray-700 rounded ${showChat ? 'text-purple-400' : ''}`}
             title="AI Assistant"
           >
-            <MessageSquare size={18} />
+            <Bot size={18} />
           </button>
+
+          {/* Layout Toggle */}
+          {showPreview && (
+            <div className="flex bg-gray-700 rounded-lg p-1 ml-2">
+              {[
+                { id: 'code', label: 'Code', icon: Code },
+                { id: 'split', label: 'Split', icon: Monitor },
+                { id: 'preview', label: 'Preview', icon: Eye }
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setLayout(id)}
+                  className={`px-2 py-1 rounded text-xs flex items-center space-x-1 transition-colors ${
+                    layout === id ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  <Icon size={12} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          
           {currentFile && (
             <button 
               onClick={() => saveFile(currentFile.content)}
