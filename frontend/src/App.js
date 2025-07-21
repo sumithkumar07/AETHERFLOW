@@ -896,6 +896,14 @@ function AppContent() {
           </button>
           
           <button 
+            onClick={() => setShowCosmicReality(!showCosmicReality)}
+            className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${showCosmicReality ? 'text-cyan-400' : ''}`}
+            title="Cosmic Reality Engine (Ctrl+R)"
+          >
+            <Layers size={16} />
+          </button>
+          
+          <button 
             onClick={() => setShowChat(!showChat)}
             className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${showChat ? 'text-purple-400' : ''}`}
             title="AI Assistant (Ctrl+`)"
