@@ -855,9 +855,14 @@ async def shutdown_event():
 app.include_router(api_router)
 
 # Add a legacy API route for backward compatibility
-legacy_router = APIRouter(prefix="/api")
-legacy_router.include_router(api_router, prefix="")
-app.include_router(legacy_router)
+@app.get("/api/")
+async def legacy_root():
+    return {
+        "message": "VibeCode API v2.0 - Production Ready!", 
+        "status": "healthy",
+        "version": "2.0.0",
+        "features": ["AI Integration", "Real-time Collaboration", "Advanced Security", "Rate Limiting"]
+    }
 
 if __name__ == "__main__":
     import uvicorn
