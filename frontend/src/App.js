@@ -47,7 +47,7 @@ function AppContent() {
   const [lastSaved, setLastSaved] = useState(null);
   const [collaborationEnabled, setCollaborationEnabled] = useState(true);
   
-  // Cosmic State
+  // Cosmic and BCI state
   const [cosmicMode, setCosmicMode] = useState(true);
   const [currentAvatar, setCurrentAvatar] = useState(null);
   const [vibeTokens, setVibeTokens] = useState(1000);
@@ -55,6 +55,29 @@ function AppContent() {
   const [flowState, setFlowState] = useState(false);
   const [chaosMode, setChaosMode] = useState(false);
   const [sacredGeometry, setSacredGeometry] = useState(true);
+  const [showCosmicReality, setShowCosmicReality] = useState(false);
+  
+  // BCI and Neural interface state
+  const [bcActive, setBcActive] = useState(false);
+  const [neuralSession, setNeuralSession] = useState(null);
+  const [quantumSession, setQuantumSession] = useState(null);
+  const [emotionalState, setEmotionalState] = useState('neutral');
+  const [realityCoherence, setRealityCoherence] = useState(99.7);
+
+  // Initialize cosmic effects
+  const {
+    cosmicState,
+    effectsState,
+    toggleEffect,
+    triggerCosmicEvent,
+    resetCosmicState
+  } = useCosmicEffects({
+    enableParticles: cosmicMode,
+    enableQuantumFields: quantumSession?.active || false,
+    enableNeuralWaves: bcActive,
+    realityCoherence: realityCoherence / 100,
+    cosmicHarmony: vibeTokens / 2000
+  });
   
   // Enhanced hooks
   const notifications = useNotifications();
