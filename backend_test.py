@@ -36,7 +36,15 @@ class VibeCodeAPITester:
             "websocket_ai": {"passed": 0, "failed": 0, "errors": []},
             "chat_history": {"passed": 0, "failed": 0, "errors": []},
             "collaboration": {"passed": 0, "failed": 0, "errors": []},
-            "cosmic_features": {"passed": 0, "failed": 0, "errors": []}
+            "cosmic_features": {"passed": 0, "failed": 0, "errors": []},
+            "quantum_features": {"passed": 0, "failed": 0, "errors": []},
+            "reality_fabric": {"passed": 0, "failed": 0, "errors": []},
+            "omniversal_renderer": {"passed": 0, "failed": 0, "errors": []},
+            "iching_service": {"passed": 0, "failed": 0, "errors": []},
+            "vibranium_nft": {"passed": 0, "failed": 0, "errors": []},
+            "nexus_events": {"passed": 0, "failed": 0, "errors": []},
+            "immortality_service": {"passed": 0, "failed": 0, "errors": []},
+            "neuro_sync": {"passed": 0, "failed": 0, "errors": []}
         }
         self.test_project_id = None
         self.test_file_id = None
