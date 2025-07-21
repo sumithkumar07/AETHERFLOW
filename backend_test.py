@@ -16,10 +16,10 @@ import os
 import time
 
 # Get backend URL from frontend .env file
-BACKEND_URL = "https://4268cb45-8b94-4483-b62a-57730437ba43.preview.emergentagent.com"
+BACKEND_URL = "http://localhost:8001"
 API_BASE_URL = f"{BACKEND_URL}/api"
 API_V1_BASE_URL = f"{BACKEND_URL}/api/v1"
-WS_BASE_URL = BACKEND_URL.replace("https://", "wss://")
+WS_BASE_URL = BACKEND_URL.replace("http://", "ws://")
 
 class VibeCodeAPITester:
     def __init__(self):
