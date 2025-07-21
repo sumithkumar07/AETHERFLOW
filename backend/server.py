@@ -257,15 +257,11 @@ async def delete_file(file_id: str):
 @api_router.post("/ai/chat")
 async def chat_with_ai_endpoint(request: ChatRequest):
     try:
-        response = await ai_engine.chat_with_ai(request.message, request.context)
+        # Simple fallback message - AI processing handled by frontend Puter.js
+        response = "This endpoint is now handled by Puter.js on the frontend for unlimited free AI access. Please use the frontend AI interface."
         
         # Save chat message to database
-        chat_message = ChatMessage(
-            session_id=request.session_id,
-            message=request.message,
-            response=response
-        )
-        await db.chat_messages.insert_one(chat_message.dict())
+        await ai_engine.save_chat_message(request.session_id, request.message, response)
         
         return {"response": response, "session_id": request.session_id}
     except Exception as e:
@@ -274,13 +270,18 @@ async def chat_with_ai_endpoint(request: ChatRequest):
 
 @api_router.get("/ai/chat/{session_id}")
 async def get_chat_history(session_id: str):
-    messages = await db.chat_messages.find({"session_id": session_id}).to_list(100)
-    return [ChatMessage(**msg) for msg in messages]
+    try:
+        messages = await ai_engine.get_chat_history(session_id)
+        return messages
+    except Exception as e:
+        logger.error(f"Chat history error: {e}")
+        raise HTTPException(status_code=500, detail="Chat history service unavailable")
 
 @api_router.post("/ai/generate-code")
 async def generate_code_endpoint(request: ChatRequest):
     try:
-        code = await ai_engine.generate_code(request.message)
+        # Frontend Puter.js handles code generation
+        code = "// Code generation is now handled by Puter.js in the frontend for better performance and unlimited access"
         return {"generated_code": code, "session_id": request.session_id}
     except Exception as e:
         logger.error(f"Code generation error: {e}")
