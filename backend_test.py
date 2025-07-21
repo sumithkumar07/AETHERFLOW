@@ -1016,6 +1016,307 @@ class VibeCodeAPITester:
             self.log_test("websocket_ai", "WebSocket Graceful Disconnect", False, str(e))
             return False
 
+    # === COLLABORATION TESTS ===
+    
+    async def test_collaboration_health(self):
+        """Test collaboration service health endpoint"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/collaboration/health") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "timestamp", "stats"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("collaboration", "Collaboration Health Check", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check stats structure
+                    stats = data.get("stats", {})
+                    stats_fields = ["active_rooms", "active_users", "file_versions_tracked", "operation_queues"]
+                    missing_stats = [field for field in stats_fields if field not in stats]
+                    if missing_stats:
+                        self.log_test("collaboration", "Collaboration Health Check", False, f"Missing stats: {missing_stats}")
+                        return False
+                    
+                    self.log_test("collaboration", "Collaboration Health Check", True)
+                    return True
+                else:
+                    self.log_test("collaboration", "Collaboration Health Check", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Collaboration Health Check", False, str(e))
+            return False
+
+    async def test_collaboration_stats(self):
+        """Test collaboration statistics endpoint"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/collaboration/stats") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["timestamp", "database", "active", "rooms"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("collaboration", "Collaboration Statistics", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check database stats structure
+                    db_stats = data.get("database", {})
+                    db_fields = ["total_rooms", "total_users", "total_chat_messages", "total_edit_operations"]
+                    missing_db = [field for field in db_fields if field not in db_stats]
+                    if missing_db:
+                        self.log_test("collaboration", "Collaboration Statistics", False, f"Missing database stats: {missing_db}")
+                        return False
+                    
+                    self.log_test("collaboration", "Collaboration Statistics", True)
+                    return True
+                else:
+                    self.log_test("collaboration", "Collaboration Statistics", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Collaboration Statistics", False, str(e))
+            return False
+
+    async def test_create_collaboration_room(self):
+        """Test creating a collaboration room"""
+        if not self.test_project_id:
+            self.log_test("collaboration", "Create Collaboration Room", False, "No test project ID available")
+            return False
+            
+        try:
+            room_data = {
+                "project_id": self.test_project_id,
+                "name": "VibeCode Collaboration Room",
+                "description": "A test collaboration room for real-time coding",
+                "is_public": True,
+                "max_users": 10
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/collaboration/rooms", json=room_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("name") == room_data["name"] and data.get("id"):
+                        self.test_room_id = data["id"]
+                        self.log_test("collaboration", "Create Collaboration Room", True)
+                        return True
+                    else:
+                        self.log_test("collaboration", "Create Collaboration Room", False, f"Invalid response data: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("collaboration", "Create Collaboration Room", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Create Collaboration Room", False, str(e))
+            return False
+
+    async def test_get_collaboration_room(self):
+        """Test getting collaboration room information"""
+        if not self.test_room_id:
+            self.log_test("collaboration", "Get Collaboration Room", False, "No test room ID available")
+            return False
+            
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/collaboration/rooms/{self.test_room_id}") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "room" in data and "stats" in data:
+                        room = data["room"]
+                        if room.get("id") == self.test_room_id:
+                            self.log_test("collaboration", "Get Collaboration Room", True)
+                            return True
+                        else:
+                            self.log_test("collaboration", "Get Collaboration Room", False, f"Room ID mismatch: {room}")
+                            return False
+                    else:
+                        self.log_test("collaboration", "Get Collaboration Room", False, f"Missing room or stats: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("collaboration", "Get Collaboration Room", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Get Collaboration Room", False, str(e))
+            return False
+
+    async def test_get_project_rooms(self):
+        """Test getting all collaboration rooms for a project"""
+        if not self.test_project_id:
+            self.log_test("collaboration", "Get Project Rooms", False, "No test project ID available")
+            return False
+            
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/collaboration/projects/{self.test_project_id}/rooms") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        # Should have at least our test room
+                        found_room = any(room.get("id") == self.test_room_id for room in data)
+                        if found_room:
+                            self.log_test("collaboration", "Get Project Rooms", True)
+                            return True
+                        else:
+                            self.log_test("collaboration", "Get Project Rooms", False, "Test room not found in project rooms")
+                            return False
+                    else:
+                        self.log_test("collaboration", "Get Project Rooms", False, f"Expected list, got: {type(data)}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("collaboration", "Get Project Rooms", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Get Project Rooms", False, str(e))
+            return False
+
+    async def test_send_chat_message(self):
+        """Test sending a chat message to collaboration room"""
+        if not self.test_room_id:
+            self.log_test("collaboration", "Send Chat Message", False, "No test room ID available")
+            return False
+            
+        try:
+            chat_data = {
+                "message": "Hello everyone! Let's collaborate on this VibeCode project!",
+                "message_type": "text",
+                "metadata": {"test": True}
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/collaboration/rooms/{self.test_room_id}/chat", json=chat_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("message") == chat_data["message"] and data.get("id"):
+                        self.log_test("collaboration", "Send Chat Message", True)
+                        return True
+                    else:
+                        self.log_test("collaboration", "Send Chat Message", False, f"Invalid response data: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("collaboration", "Send Chat Message", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Send Chat Message", False, str(e))
+            return False
+
+    async def test_get_chat_history(self):
+        """Test getting chat history from collaboration room"""
+        if not self.test_room_id:
+            self.log_test("collaboration", "Get Chat History", False, "No test room ID available")
+            return False
+            
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/collaboration/rooms/{self.test_room_id}/chat") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "messages" in data and isinstance(data["messages"], list):
+                        # Should have at least one message from our send test
+                        messages = data["messages"]
+                        if len(messages) > 0:
+                            self.log_test("collaboration", "Get Chat History", True)
+                        else:
+                            self.log_test("collaboration", "Get Chat History", False, "No chat messages found")
+                        return True
+                    else:
+                        self.log_test("collaboration", "Get Chat History", False, f"Expected messages list, got: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("collaboration", "Get Chat History", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Get Chat History", False, str(e))
+            return False
+
+    async def test_apply_edit_operations(self):
+        """Test applying edit operations to a file"""
+        if not self.test_file_id:
+            self.log_test("collaboration", "Apply Edit Operations", False, "No test file ID available")
+            return False
+            
+        try:
+            edit_data = {
+                "file_id": self.test_file_id,
+                "operations": [
+                    {
+                        "operation_type": "insert",
+                        "position": 0,
+                        "content": "# Collaborative Edit Test\n",
+                        "user_id": "test_user"
+                    }
+                ],
+                "base_version": 0
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/collaboration/files/{self.test_file_id}/edit", json=edit_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("success") and "new_version" in data:
+                        self.log_test("collaboration", "Apply Edit Operations", True)
+                        return True
+                    else:
+                        self.log_test("collaboration", "Apply Edit Operations", False, f"Invalid response data: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("collaboration", "Apply Edit Operations", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("collaboration", "Apply Edit Operations", False, str(e))
+            return False
+
+    async def test_websocket_collaboration(self):
+        """Test WebSocket collaboration connection"""
+        if not self.test_room_id:
+            self.log_test("collaboration", "WebSocket Collaboration", False, "No test room ID available")
+            return False
+            
+        try:
+            ws_url = f"{WS_BASE_URL}/api/v1/collaboration/rooms/{self.test_room_id}/ws?user_name=TestUser&avatar_color=%23FF5733"
+            
+            async with websockets.connect(ws_url) as websocket:
+                # Wait for connection confirmation
+                try:
+                    response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                    response_data = json.loads(response)
+                    
+                    if (response_data.get("type") == "connected" and 
+                        response_data.get("room_id") == self.test_room_id and
+                        response_data.get("user_id")):
+                        
+                        # Test ping/pong
+                        ping_message = {
+                            "type": "ping",
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                        
+                        await websocket.send(json.dumps(ping_message))
+                        
+                        # Wait for pong response
+                        pong_response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                        pong_data = json.loads(pong_response)
+                        
+                        if pong_data.get("type") == "pong":
+                            self.log_test("collaboration", "WebSocket Collaboration", True)
+                            return True
+                        else:
+                            self.log_test("collaboration", "WebSocket Collaboration", False, f"Invalid pong response: {pong_data}")
+                            return False
+                    else:
+                        self.log_test("collaboration", "WebSocket Collaboration", False, f"Invalid connection message: {response_data}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    self.log_test("collaboration", "WebSocket Collaboration", False, "Connection timeout")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("collaboration", "WebSocket Collaboration", False, str(e))
+            return False
+
     # === CLEANUP TESTS ===
     
     async def test_delete_file(self):
