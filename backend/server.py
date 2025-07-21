@@ -19,6 +19,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Import collaboration routes
+from .routes.collaboration_routes import router as collaboration_router, init_collaboration_manager
+
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
