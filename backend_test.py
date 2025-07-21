@@ -16,7 +16,7 @@ import os
 import time
 
 # Get backend URL from frontend .env file
-BACKEND_URL = "https://b29f6454-9740-48dd-a3b3-544cb6c8d60a.preview.emergentagent.com"
+BACKEND_URL = "https://4ef55e5c-6d6a-44cc-a311-44f9d34bfe9d.preview.emergentagent.com"
 API_BASE_URL = f"{BACKEND_URL}/api"
 API_V1_BASE_URL = f"{BACKEND_URL}/api/v1"
 WS_BASE_URL = BACKEND_URL.replace("https://", "wss://")
