@@ -405,6 +405,10 @@ function AppContent() {
             e.preventDefault();
             setShowPreview(!showPreview);
             break;
+          case 'u':
+            e.preventDefault();
+            setShowCollaboration(!showCollaboration);
+            break;
           case 'n':
             if (e.shiftKey) {
               e.preventDefault();
