@@ -851,7 +851,7 @@ async def generate_code_endpoint(request: ChatRequest):
 # === ADVANCED AI ENDPOINTS ===
 
 @api_router.post("/ai/code-completion")
-async def get_code_completion(request: CodeCompletionRequest):
+async def code_completion_endpoint(request: CodeCompletionRequest):
     """Real-time code completion like GitHub Copilot"""
     try:
         result = await ai_engine.get_code_completion(
