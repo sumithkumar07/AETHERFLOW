@@ -6,22 +6,25 @@ import AIChat from './components/AIChat';
 import AppPreview from './components/AppPreview';
 import ProjectManager from './components/ProjectManager';
 import CollaborationPanel from './components/CollaborationPanel';
+import CosmicInterface from './components/CosmicInterface';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationProvider, { useNotifications } from './components/NotificationSystem';
 import LoadingSpinner, { LoadingOverlay } from './components/LoadingSpinner';
 import useOfflineDetection from './hooks/useOfflineDetection';
 import { useLocalStorage, useUserPreferences, useProjectCache } from './hooks/useLocalStorage';
+import cosmicEngine from './services/cosmicVibeEngine';
 import { 
   Folder, MessageSquare, Settings, Play, Save, Eye, Code, Monitor, Bot,
   Wifi, WifiOff, Search, Download, Upload, Share2, RotateCcw, Maximize2,
-  Minimize2, Sun, Moon, Bell, BellOff, Zap, Users
+  Minimize2, Sun, Moon, Bell, BellOff, Zap, Users, Sparkles, Crown,
+  Atom, Hexagon, Triangle
 } from 'lucide-react';
 import collaborationService from './services/collaborationService';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api/v1`;
 
-// Enhanced App component with production features
+// Enhanced App component with Cosmic-Level Features
 function AppContent() {
   const [currentProject, setCurrentProject] = useState(null);
   const [currentFile, setCurrentFile] = useState(null);
@@ -30,6 +33,7 @@ function AppContent() {
   const [showChat, setShowChat] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showCollaboration, setShowCollaboration] = useState(true);
+  const [showCosmicInterface, setShowCosmicInterface] = useState(true);
   const [showProjectManager, setShowProjectManager] = useState(true);
   const [layout, setLayout] = useState('code');
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +43,15 @@ function AppContent() {
   const [unsavedChanges, setUnsavedChanges] = useState(new Set());
   const [lastSaved, setLastSaved] = useState(null);
   const [collaborationEnabled, setCollaborationEnabled] = useState(true);
+  
+  // Cosmic State
+  const [cosmicMode, setCosmicMode] = useState(true);
+  const [currentAvatar, setCurrentAvatar] = useState(null);
+  const [vibeTokens, setVibeTokens] = useState(1000);
+  const [karmaLevel, setKarmaLevel] = useState('Novice');
+  const [flowState, setFlowState] = useState(false);
+  const [chaosMode, setChaosMode] = useState(false);
+  const [sacredGeometry, setSacredGeometry] = useState(true);
   
   // Enhanced hooks
   const notifications = useNotifications();
@@ -50,6 +63,83 @@ function AppContent() {
   // Auto-save functionality
   const autoSaveTimerRef = useRef(null);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(preferences.autoSave);
+
+  // Initialize Cosmic Engine
+  useEffect(() => {
+    const initCosmic = async () => {
+      if (cosmicEngine.isInitialized) {
+        setVibeTokens(cosmicEngine.getVibeTokenBalance());
+        const karma = cosmicEngine.updateKarmaLevel();
+        setKarmaLevel(karma?.level || 'Novice');
+        
+        // Apply sacred geometry if enabled
+        if (sacredGeometry) {
+          const layout = cosmicEngine.getGoldenRatioLayout(window.innerWidth);
+          console.log('🌌 Sacred geometry layout applied:', layout);
+        }
+      }
+    };
+    
+    initCosmic();
+  }, [sacredGeometry]);
+
+  // Handle cosmic actions
+  const handleCosmicAction = useCallback((action) => {
+    switch (action.type) {
+      case 'avatar_summoned':
+        setCurrentAvatar(action.avatar);
+        notifications.success(`${action.avatar.name} has been summoned!`, {
+          title: 'Avatar Activated',
+          duration: 5000
+        });
+        break;
+        
+      case 'shaman_activated':
+        notifications.ai('Techno-Shaman Mode activated! Voice commands are now available.', {
+          title: 'Voice Control Ready'
+        });
+        break;
+        
+      case 'tokens_mined':
+        setVibeTokens(action.result.balance);
+        notifications.success(`Mined ${action.result.mined} VIBE tokens!`, {
+          title: '💎 Token Mining'
+        });
+        break;
+        
+      case 'chaos_activated':
+        setChaosMode(true);
+        notifications.warning(`Chaos Forge activated! Challenge: ${action.chaos.scenario}`, {
+          title: '🔥 Chaos Mode',
+          duration: 8000
+        });
+        setTimeout(() => setChaosMode(false), action.chaos.timeLimit);
+        break;
+        
+      case 'quantum_shift':
+        notifications.ai(`Quantum Vibe Shift complete! Now in: ${action.shift.toReality}`, {
+          title: '🌊 Reality Shifted'
+        });
+        break;
+        
+      case 'flow_state':
+        setFlowState(true);
+        notifications.success('Flow State activated! Enhanced creativity and focus enabled.', {
+          title: '🌊 Flow State'
+        });
+        setTimeout(() => setFlowState(false), action.bonuses.duration);
+        break;
+        
+      case 'time_travel':
+        notifications.ai(`Time travel initiated to: ${action.timeTravel.destination}`, {
+          title: '⏰ Cosmic Debugger'
+        });
+        break;
+        
+      default:
+        console.log('Unknown cosmic action:', action);
+    }
+  }, [notifications]);
 
   // Load projects with caching and error handling
   const loadProjects = useCallback(async () => {
@@ -180,6 +270,12 @@ function AppContent() {
       // Clear cache to force reload
       clearProjectCache('all');
       
+      // Award VIBE tokens for project creation
+      if (cosmicEngine.isInitialized) {
+        const mined = cosmicEngine.mineVibeTokens(100, `Created project: ${name}`);
+        setVibeTokens(mined.balance);
+      }
+      
       notifications.success(`Project "${name}" created successfully!`, {
         action: {
           label: 'Open',
@@ -208,6 +304,12 @@ function AppContent() {
       const filtered = prev.filter(p => p.id !== project.id);
       return [project, ...filtered].slice(0, 10);
     });
+    
+    // Mine VIBE tokens for opening projects
+    if (cosmicEngine.isInitialized) {
+      const mined = cosmicEngine.mineVibeTokens(25, `Opened project: ${project.name}`);
+      setVibeTokens(mined.balance);
+    }
     
     notifications.ai(`Opened project: ${project.name}`, {
       title: 'Project Loaded'
@@ -251,6 +353,12 @@ function AppContent() {
       
       // Clear project cache
       clearProjectCache(currentProject.id);
+      
+      // Award VIBE tokens for file creation
+      if (cosmicEngine.isInitialized) {
+        const mined = cosmicEngine.mineVibeTokens(10, `Created ${type}: ${name}`);
+        setVibeTokens(mined.balance);
+      }
       
       notifications.success(`${type === 'file' ? 'File' : 'Folder'} "${name}" created successfully!`);
       return file;
@@ -296,6 +404,12 @@ function AppContent() {
         return newSet;
       });
       
+      // Award VIBE tokens for file exploration
+      if (cosmicEngine.isInitialized) {
+        const mined = cosmicEngine.mineVibeTokens(5, `Opened file: ${file.name}`);
+        setVibeTokens(mined.balance);
+      }
+      
       notifications.ai(`Opened file: ${file.name}`);
     } catch (error) {
       console.error('Error opening file:', error);
@@ -335,6 +449,12 @@ function AppContent() {
         newSet.delete(currentFile.id);
         return newSet;
       });
+      
+      // Award VIBE tokens for saving
+      if (cosmicEngine.isInitialized) {
+        const mined = cosmicEngine.mineVibeTokens(15, `Saved file: ${currentFile.name}`);
+        setVibeTokens(mined.balance);
+      }
       
       if (showNotification) {
         notifications.success('File saved successfully!');
@@ -382,7 +502,7 @@ function AppContent() {
     file.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Keyboard shortcuts
+  // Enhanced keyboard shortcuts with cosmic commands
   useEffect(() => {
     const handleKeydown = (e) => {
       if (e.ctrlKey || e.metaKey) {
@@ -409,6 +529,10 @@ function AppContent() {
             e.preventDefault();
             setShowCollaboration(!showCollaboration);
             break;
+          case 'm':
+            e.preventDefault();
+            setShowCosmicInterface(!showCosmicInterface);
+            break;
           case 'n':
             if (e.shiftKey) {
               e.preventDefault();
@@ -419,11 +543,34 @@ function AppContent() {
             break;
         }
       }
+      
+      // Cosmic hotkeys
+      if (e.altKey) {
+        switch (e.key) {
+          case 'c':
+            e.preventDefault();
+            setCosmicMode(!cosmicMode);
+            break;
+          case 'g':
+            e.preventDefault();
+            setSacredGeometry(!sacredGeometry);
+            break;
+          case 'f':
+            e.preventDefault();
+            if (cosmicEngine.isInitialized) {
+              const bonuses = cosmicEngine.enterFlowState();
+              handleCosmicAction({ type: 'flow_state', bonuses });
+            }
+            break;
+          default:
+            break;
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [currentFile, showChat, showPreview, saveFile]);
+  }, [currentFile, showChat, showPreview, showCollaboration, showCosmicInterface, cosmicMode, sacredGeometry, saveFile, handleCosmicAction]);
 
   // Load projects on startup
   useEffect(() => {
@@ -463,7 +610,7 @@ function AppContent() {
   // Project manager view
   if (showProjectManager) {
     return (
-      <div className="min-h-screen bg-gray-900">
+      <div className={`min-h-screen ${cosmicMode ? 'bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900' : 'bg-gray-900'}`}>
         <LoadingOverlay isVisible={isLoading} message="Loading projects..." type="default" />
         <ProjectManager
           projects={projects}
@@ -472,25 +619,43 @@ function AppContent() {
           onOpenProject={openProject}
           onClose={() => setShowProjectManager(false)}
           isOnline={isOnline}
+          cosmicMode={cosmicMode}
         />
       </div>
     );
   }
 
+  // Calculate golden ratio layout if sacred geometry is enabled
+  const layoutStyle = sacredGeometry ? cosmicEngine.getGoldenRatioLayout(window.innerWidth) : null;
+
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col">
+    <div className={`h-screen text-white flex flex-col ${
+      cosmicMode 
+        ? 'bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900' 
+        : 'bg-gray-900'
+    } ${flowState ? 'cosmic-pulse' : ''} ${chaosMode ? 'chaos-mode' : ''}`}>
       <LoadingOverlay 
         isVisible={isLoading} 
         message="Processing..." 
         type="code" 
       />
       
-      {/* Enhanced Header */}
-      <header className="bg-gray-800 px-4 py-2 border-b border-gray-700 flex items-center justify-between">
+      {/* Enhanced Cosmic Header */}
+      <header className={`px-4 py-2 border-b flex items-center justify-between ${
+        cosmicMode 
+          ? 'bg-gradient-to-r from-indigo-800/80 via-purple-800/80 to-blue-800/80 border-indigo-700/50 sacred-border'
+          : 'bg-gray-800 border-gray-700'
+      }`}>
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-blue-400 flex items-center space-x-2">
-            <Zap size={20} />
-            <span>VibeCode</span>
+          <h1 className={`text-xl font-bold flex items-center space-x-2 ${
+            cosmicMode ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400' : 'text-blue-400'
+          }`}>
+            <div className="flex items-center space-x-1">
+              {cosmicMode && <Hexagon size={20} className="text-indigo-400" />}
+              <Zap size={20} />
+              <span>VibeCode</span>
+              {cosmicMode && <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 rounded-full">COSMIC</span>}
+            </div>
           </h1>
           
           <div className="flex items-center space-x-2">
@@ -517,6 +682,37 @@ function AppContent() {
             )}
           </div>
           
+          {/* Cosmic Status Indicators */}
+          {cosmicMode && (
+            <div className="flex items-center space-x-2">
+              {currentAvatar && (
+                <div className="flex items-center space-x-1 text-xs bg-indigo-900/50 px-2 py-1 rounded">
+                  <Crown size={12} className="text-yellow-400" />
+                  <span className="text-gray-300">{currentAvatar.name.split(' ')[0]}</span>
+                </div>
+              )}
+              
+              {flowState && (
+                <div className="flex items-center space-x-1 text-xs bg-blue-900/50 px-2 py-1 rounded karma-aura">
+                  <Sparkles size={12} className="text-blue-400" />
+                  <span className="text-blue-300">Flow</span>
+                </div>
+              )}
+              
+              {chaosMode && (
+                <div className="flex items-center space-x-1 text-xs bg-red-900/50 px-2 py-1 rounded cosmic-pulse">
+                  <Triangle size={12} className="text-red-400" />
+                  <span className="text-red-300">Chaos</span>
+                </div>
+              )}
+              
+              <div className="flex items-center space-x-1 text-xs bg-yellow-900/50 px-2 py-1 rounded">
+                <Atom size={12} className="text-yellow-400" />
+                <span className="text-yellow-300">{vibeTokens} VIBE</span>
+              </div>
+            </div>
+          )}
+          
           {/* Connection status */}
           <div className="flex items-center space-x-1">
             {isOnline ? (
@@ -530,7 +726,7 @@ function AppContent() {
         <div className="flex items-center space-x-2">
           {/* Search */}
           {showSearch && (
-            <div className="flex items-center bg-gray-700 rounded px-2 py-1">
+            <div className="flex items-center bg-gray-700/50 rounded px-2 py-1">
               <Search size={14} className="text-gray-400 mr-2" />
               <input
                 type="text"
@@ -549,7 +745,7 @@ function AppContent() {
           {!showSearch && (
             <button 
               onClick={() => setShowSearch(true)}
-              className="p-2 hover:bg-gray-700 rounded"
+              className="p-2 hover:bg-gray-700/50 rounded transition-colors"
               title="Search files (Ctrl+F)"
             >
               <Search size={16} />
@@ -558,7 +754,7 @@ function AppContent() {
           
           <button 
             onClick={() => setShowProjectManager(true)}
-            className="p-2 hover:bg-gray-700 rounded"
+            className="p-2 hover:bg-gray-700/50 rounded transition-colors"
             title="Projects"
           >
             <Folder size={16} />
@@ -566,7 +762,7 @@ function AppContent() {
           
           <button 
             onClick={() => setShowPreview(!showPreview)}
-            className={`p-2 hover:bg-gray-700 rounded ${showPreview ? 'text-green-400' : ''}`}
+            className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${showPreview ? 'text-green-400' : ''}`}
             title="Live Preview (Ctrl+P)"
           >
             <Eye size={16} />
@@ -574,15 +770,23 @@ function AppContent() {
           
           <button 
             onClick={() => setShowCollaboration(!showCollaboration)}
-            className={`p-2 hover:bg-gray-700 rounded ${showCollaboration ? 'text-green-400' : ''}`}
+            className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${showCollaboration ? 'text-green-400' : ''}`}
             title="Collaboration Panel (Ctrl+U)"
           >
             <Users size={16} />
           </button>
           
           <button 
+            onClick={() => setShowCosmicInterface(!showCosmicInterface)}
+            className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${showCosmicInterface ? 'text-purple-400' : ''}`}
+            title="Cosmic Interface (Ctrl+M)"
+          >
+            <Atom size={16} />
+          </button>
+          
+          <button 
             onClick={() => setShowChat(!showChat)}
-            className={`p-2 hover:bg-gray-700 rounded ${showChat ? 'text-purple-400' : ''}`}
+            className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${showChat ? 'text-purple-400' : ''}`}
             title="AI Assistant (Ctrl+`)"
           >
             <Bot size={16} />
@@ -590,7 +794,7 @@ function AppContent() {
 
           {/* Layout Toggle */}
           {showPreview && (
-            <div className="flex bg-gray-700 rounded-lg p-1 ml-2">
+            <div className="flex bg-gray-700/50 rounded-lg p-1 ml-2">
               {[
                 { id: 'code', label: 'Code', icon: Code },
                 { id: 'split', label: 'Split', icon: Monitor },
@@ -610,13 +814,24 @@ function AppContent() {
             </div>
           )}
 
+          {/* Cosmic Mode Toggle */}
+          <button
+            onClick={() => setCosmicMode(!cosmicMode)}
+            className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${
+              cosmicMode ? 'text-purple-400' : 'text-gray-400'
+            }`}
+            title={`Cosmic Mode ${cosmicMode ? 'On' : 'Off'} (Alt+C)`}
+          >
+            <Sparkles size={16} />
+          </button>
+
           {/* Auto-save toggle */}
           <button
             onClick={() => {
               setAutoSaveEnabled(!autoSaveEnabled);
               updatePreference('autoSave', !autoSaveEnabled);
             }}
-            className={`p-2 hover:bg-gray-700 rounded text-xs ${
+            className={`p-2 hover:bg-gray-700/50 rounded text-xs transition-colors ${
               autoSaveEnabled ? 'text-green-400' : 'text-gray-400'
             }`}
             title={`Auto-save ${autoSaveEnabled ? 'enabled' : 'disabled'}`}
@@ -627,7 +842,7 @@ function AppContent() {
           {currentFile && (
             <button 
               onClick={() => saveFile(currentFile.content)}
-              className={`p-2 hover:bg-gray-700 rounded ${
+              className={`p-2 hover:bg-gray-700/50 rounded transition-colors ${
                 unsavedChanges.has(currentFile.id) 
                   ? 'text-green-400' 
                   : 'text-gray-400'
@@ -641,12 +856,17 @@ function AppContent() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content with Sacred Geometry Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+        {/* Sidebar with Golden Ratio width if sacred geometry is enabled */}
+        <div className={`bg-gray-800 border-r border-gray-700 flex flex-col ${
+          sacredGeometry && layoutStyle ? 'golden-sidebar' : 'w-64'
+        } ${cosmicMode ? 'bg-gradient-to-b from-indigo-900/30 to-purple-900/30 border-indigo-700/50' : ''}`}>
           <div className="p-3 border-b border-gray-700 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-gray-300">Explorer</h2>
+            <h2 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+              <span>Explorer</span>
+              {cosmicMode && <Hexagon size={12} className="text-indigo-400" />}
+            </h2>
             <span className="text-xs text-gray-500">
               {files.length} item{files.length !== 1 ? 's' : ''}
             </span>
@@ -660,13 +880,14 @@ function AppContent() {
                 currentFile={currentFile}
                 searchQuery={searchQuery}
                 unsavedChanges={unsavedChanges}
+                cosmicMode={cosmicMode}
               />
             )}
           </div>
         </div>
 
-        {/* Editor and Preview Area */}
-        <div className="flex-1 flex flex-col">
+        {/* Editor and Preview Area with Golden Ratio main area */}
+        <div className={`flex-1 flex flex-col ${sacredGeometry && layoutStyle ? 'golden-main' : ''}`}>
           {currentFile ? (
             <div className="flex-1 flex">
               {/* Code Editor */}
@@ -679,6 +900,10 @@ function AppContent() {
                     preferences={preferences}
                     isOnline={isOnline}
                     autoSaveEnabled={autoSaveEnabled}
+                    cosmicMode={cosmicMode}
+                    currentAvatar={currentAvatar}
+                    flowState={flowState}
+                    chaosMode={chaosMode}
                   />
                 </div>
               )}
@@ -690,15 +915,24 @@ function AppContent() {
                     currentFile={currentFile}
                     files={files}
                     project={currentProject}
+                    cosmicMode={cosmicMode}
                   />
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-900">
+            <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-6xl text-gray-600 mb-4">⚡</div>
-                <h2 className="text-2xl font-bold text-gray-400 mb-2">Welcome to VibeCode</h2>
+                <div className={`text-6xl mb-4 ${cosmicMode ? 'cosmic-pulse' : 'text-gray-600'}`}>
+                  {cosmicMode ? '🌌' : '⚡'}
+                </div>
+                <h2 className={`text-2xl font-bold mb-2 ${
+                  cosmicMode 
+                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400'
+                    : 'text-gray-400'
+                }`}>
+                  Welcome to {cosmicMode ? 'Cosmic ' : ''}VibeCode
+                </h2>
                 <p className="text-gray-500 mb-6">
                   {currentProject 
                     ? 'Select a file from the explorer to start coding'
@@ -711,7 +945,11 @@ function AppContent() {
                   {!currentProject && (
                     <button
                       onClick={() => setShowProjectManager(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                      className={`px-4 py-2 rounded-md transition-colors ${
+                        cosmicMode 
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      } text-white`}
                     >
                       Open Project Manager
                     </button>
@@ -733,16 +971,28 @@ function AppContent() {
                           <Code size={16} className="text-blue-400" />
                           <span>Advanced Code Completion</span>
                         </div>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Zap size={16} className="text-yellow-400" />
-                          <span>Performance Analysis</span>
-                        </div>
+                        {cosmicMode && (
+                          <>
+                            <div className="flex items-center justify-center space-x-2">
+                              <Atom size={16} className="text-purple-400" />
+                              <span>Cosmic Reality Engine</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-2">
+                              <Crown size={16} className="text-yellow-400" />
+                              <span>Avatar Pantheon</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-2">
+                              <Sparkles size={16} className="text-pink-400" />
+                              <span>VIBE Token Economy</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
                 </div>
                 
-                {/* Keyboard shortcuts */}
+                {/* Enhanced keyboard shortcuts */}
                 <div className="mt-8 text-xs text-gray-600">
                   <p className="mb-2">Keyboard shortcuts:</p>
                   <div className="space-y-1">
@@ -750,7 +1000,14 @@ function AppContent() {
                     <div>Ctrl+F - Search files</div>
                     <div>Ctrl+` - Toggle AI chat</div>
                     <div>Ctrl+P - Toggle preview</div>
-                    <div>Ctrl+U - Toggle collaboration</div>
+                    <div>Ctrl+M - Toggle cosmic interface</div>
+                    {cosmicMode && (
+                      <>
+                        <div>Alt+C - Toggle cosmic mode</div>
+                        <div>Alt+G - Toggle sacred geometry</div>
+                        <div>Alt+F - Enter flow state</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -765,6 +1022,8 @@ function AppContent() {
               currentFile={currentFile} 
               isOnline={isOnline}
               preferences={preferences}
+              cosmicMode={cosmicMode}
+              currentAvatar={currentAvatar}
             />
           </div>
         )}
@@ -777,8 +1036,17 @@ function AppContent() {
               currentFile={currentFile}
               isVisible={showCollaboration}
               onToggle={() => setShowCollaboration(!showCollaboration)}
+              cosmicMode={cosmicMode}
             />
           </div>
+        )}
+        
+        {/* Cosmic Interface Panel */}
+        {showCosmicInterface && cosmicMode && (
+          <CosmicInterface
+            onCosmicAction={handleCosmicAction}
+            isVisible={showCosmicInterface}
+          />
         )}
       </div>
     </div>

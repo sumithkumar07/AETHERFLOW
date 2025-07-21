@@ -22,6 +22,12 @@ from dotenv import load_dotenv
 # Import collaboration routes
 from routes.collaboration_routes import router as collaboration_router, init_collaboration_manager
 
+# Import cosmic routes
+from routes.cosmic_routes import router as cosmic_router
+
+# Import cosmic service
+from services.cosmic_service import init_cosmic_service
+
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -112,6 +118,14 @@ class DatabaseManager:
             await self.db.chat_messages.create_index("session_id")
             await self.db.chat_messages.create_index([("timestamp", -1)])
             
+            # Cosmic indexes
+            await self.db.code_evolutions.create_index("user_id")
+            await self.db.karma_records.create_index("user_id")
+            await self.db.archaeology_sessions.create_index("user_id")
+            await self.db.code_immortality.create_index("project_id")
+            await self.db.nexus_events.create_index("timestamp")
+            await self.db.cosmic_debug_sessions.create_index("user_id")
+            
             logger.info("Database indexes created successfully")
         except Exception as e:
             logger.warning(f"Failed to create indexes: {e}")
@@ -126,9 +140,9 @@ db_manager = DatabaseManager()
 
 # Create the main app with enhanced configuration
 app = FastAPI(
-    title="VibeCode API",
-    description="AI-Powered IDE with Enhanced Production Features",
-    version="2.0.0",
+    title="VibeCode Cosmic API",
+    description="AI-Powered IDE with Cosmic-Level Features & Reality Engine",
+    version="2.0.cosmic",
     docs_url="/docs" if config.DEBUG else None,
     redoc_url="/redoc" if config.DEBUG else None,
 )
@@ -312,12 +326,13 @@ class PuterAIEngine:
             )
         
         try:
-            response = "This endpoint now provides enhanced message routing to frontend Puter.js for unlimited free AI access with advanced features."
+            response = "This endpoint now provides enhanced message routing to frontend Puter.js for unlimited free AI access with advanced cosmic-level features and reality modification capabilities."
             return {
                 "response": response,
                 "session_id": session_id,
                 "model": "meta-llama/llama-4-maverick",
-                "frontend_processing": True
+                "frontend_processing": True,
+                "cosmic_mode": True
             }
         except Exception as e:
             logger.error(f"AI chat error: {e}")
@@ -342,19 +357,32 @@ async def health_check(request: Request, db = Depends(get_database)):
     return {
         "status": "healthy" if db_status == "healthy" else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
-        "version": "2.0.0",
+        "version": "2.0.cosmic",
         "database": db_status,
         "ai_engine": "operational",
-        "environment": config.ENVIRONMENT
+        "cosmic_engine": "reality_stable",
+        "environment": config.ENVIRONMENT,
+        "features": ["AI Integration", "Real-time Collaboration", "Cosmic Reality Engine", "Advanced Security"]
     }
 
 @api_router.get("/")
 async def root():
     return {
-        "message": "VibeCode API v2.0 - Production Ready!", 
+        "message": "VibeCode Cosmic API v2.0 - Reality Engine Online!", 
         "status": "healthy",
-        "version": "2.0.0",
-        "features": ["AI Integration", "Real-time Collaboration", "Advanced Security", "Rate Limiting"]
+        "version": "2.0.cosmic",
+        "features": [
+            "AI Integration", 
+            "Real-time Collaboration", 
+            "Cosmic Reality Engine",
+            "Code Evolution",
+            "Karma Reincarnation",
+            "Digital Archaeology",
+            "VIBE Token Economy",
+            "Sacred Geometry UI",
+            "Avatar Pantheon",
+            "Quantum Vibe Shifting"
+        ]
     }
 
 # === ENHANCED PROJECT MANAGEMENT ===
@@ -743,15 +771,24 @@ async def websocket_ai_chat(websocket: WebSocket, session_id: str):
     await manager.connect(websocket, session_id)
     
     try:
-        # Send enhanced connection confirmation
+        # Send enhanced connection confirmation with cosmic features
         await manager.send_personal_message(
             json.dumps({
                 "type": "connection_established",
-                "message": "Enhanced WebSocket connection established with production features",
+                "message": "Cosmic WebSocket connection established with reality engine access",
                 "session_id": session_id,
                 "status": "connected",
-                "features": ["rate_limiting", "error_recovery", "enhanced_logging"],
-                "ai_model": "meta-llama/llama-4-maverick"
+                "features": [
+                    "rate_limiting", 
+                    "error_recovery", 
+                    "enhanced_logging",
+                    "cosmic_reality_engine",
+                    "vibe_token_integration",
+                    "quantum_communication"
+                ],
+                "ai_model": "meta-llama/llama-4-maverick",
+                "cosmic_mode": True,
+                "reality_version": "2.0.cosmic"
             }),
             session_id
         )
@@ -770,25 +807,40 @@ async def websocket_ai_chat(websocket: WebSocket, session_id: str):
                             json.dumps({
                                 "type": "pong",
                                 "timestamp": datetime.utcnow().isoformat(),
-                                "server_time": time.time()
+                                "server_time": time.time(),
+                                "cosmic_status": "reality_stable"
                             }),
                             session_id
                         )
                     elif message_type == "chat":
                         user_message = message_data.get("message", "")
                         if user_message:
-                            # Enhanced AI response with error handling
+                            # Enhanced AI response with cosmic features
                             response = {
                                 "type": "ai_response",
-                                "message": "Enhanced message processing with production-grade error handling and rate limiting. Frontend Puter.js handles AI processing for optimal performance.",
+                                "message": "Enhanced message processing with cosmic-grade error handling, reality manipulation, and unlimited AI access via Puter.js. The reality engine is operational.",
                                 "session_id": session_id,
                                 "frontend_ai": True,
+                                "cosmic_mode": True,
                                 "timestamp": datetime.utcnow().isoformat(),
-                                "model": "meta-llama/llama-4-maverick"
+                                "model": "meta-llama/llama-4-maverick",
+                                "reality_coherence": "99.7%"
                             }
                             
                             await ai_engine.save_chat_message(session_id, user_message, response["message"])
                             await manager.send_personal_message(json.dumps(response), session_id)
+                    elif message_type == "cosmic_command":
+                        command = message_data.get("command", "")
+                        await manager.send_personal_message(
+                            json.dumps({
+                                "type": "cosmic_response",
+                                "command": command,
+                                "message": f"Cosmic command '{command}' processed by reality engine",
+                                "session_id": session_id,
+                                "cosmic_status": "command_executed"
+                            }),
+                            session_id
+                        )
                     else:
                         await manager.send_personal_message(
                             json.dumps({
@@ -821,12 +873,14 @@ async def websocket_ai_chat(websocket: WebSocket, session_id: str):
                     )
                     
             except asyncio.TimeoutError:
-                # Send keepalive
+                # Send cosmic keepalive
                 await manager.send_personal_message(
                     json.dumps({
                         "type": "keepalive",
-                        "message": "Connection active",
-                        "timestamp": datetime.utcnow().isoformat()
+                        "message": "Cosmic connection active",
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "reality_status": "stable",
+                        "quantum_coherence": "optimal"
                     }),
                     session_id
                 )
@@ -843,21 +897,25 @@ async def websocket_ai_chat(websocket: WebSocket, session_id: str):
 @app.on_event("startup")
 async def startup_event():
     """Initialize database connection and setup"""
-    logger.info("Starting VibeCode API v2.0...")
+    logger.info("Starting VibeCode Cosmic API v2.0...")
     await db_manager.connect()
     
     # Initialize collaboration manager
     init_collaboration_manager(db_manager.db)
     logger.info("Collaboration manager initialized")
     
-    logger.info("VibeCode API started successfully!")
+    # Initialize cosmic service
+    init_cosmic_service(db_manager)
+    logger.info("Cosmic service initialized - Reality engine online!")
+    
+    logger.info("VibeCode Cosmic API started successfully! 🌌")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup resources"""
-    logger.info("Shutting down VibeCode API...")
+    logger.info("Shutting down VibeCode Cosmic API...")
     await db_manager.disconnect()
-    logger.info("VibeCode API shutdown complete")
+    logger.info("VibeCode Cosmic API shutdown complete")
 
 # Include the API router
 app.include_router(api_router)
@@ -865,14 +923,26 @@ app.include_router(api_router)
 # Include collaboration router
 app.include_router(collaboration_router)
 
+# Include cosmic router
+app.include_router(cosmic_router)
+
 # Add a legacy API route for backward compatibility
 @app.get("/api/")
 async def legacy_root():
     return {
-        "message": "VibeCode API v2.0 - Production Ready!", 
+        "message": "VibeCode Cosmic API v2.0 - Reality Engine Online!", 
         "status": "healthy",
-        "version": "2.0.0",
-        "features": ["AI Integration", "Real-time Collaboration", "Advanced Security", "Rate Limiting"]
+        "version": "2.0.cosmic",
+        "features": [
+            "AI Integration", 
+            "Real-time Collaboration", 
+            "Cosmic Reality Engine", 
+            "Advanced Security",
+            "Code Evolution",
+            "Karma Reincarnation",
+            "Digital Archaeology",
+            "VIBE Token Economy"
+        ]
     }
 
 if __name__ == "__main__":
