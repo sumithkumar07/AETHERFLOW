@@ -360,9 +360,14 @@ metadata:
 test_plan:
   current_focus:
     - "Frontend cosmic features comprehensive testing"
+    - "Sacred geometry UI system"
+    - "Voice-driven Techno-Shaman mode"
+    - "Avatar Pantheon system"
+    - "Genetic algorithm code evolution UI"
+    - "VIBE token economy frontend"
   stuck_tasks: []
-  test_all: false
-  test_priority: "frontend_cosmic_features"
+  test_all: true
+  test_priority: "all_frontend_features"
 
 agent_communication:
     - agent: "main"
