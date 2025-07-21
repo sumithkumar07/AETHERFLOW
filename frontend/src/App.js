@@ -17,6 +17,8 @@ import LoadingSpinner, { LoadingOverlay } from './components/LoadingSpinner';
 import useOfflineDetection from './hooks/useOfflineDetection';
 import { useLocalStorage, useUserPreferences, useProjectCache } from './hooks/useLocalStorage';
 import cosmicEngine from './services/cosmicVibeEngine';
+import divineBioMetrics from './services/divineBioMetrics';
+import trinityAIAltar from './services/trinityAIAltar';
 import { 
   Folder, MessageSquare, Settings, Play, Save, Eye, Code, Monitor, Bot,
   Wifi, WifiOff, Search, Download, Upload, Share2, RotateCcw, Maximize2,
