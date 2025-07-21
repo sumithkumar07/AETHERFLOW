@@ -310,10 +310,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Puter.js AI Service"
-    - "Monaco Editor with Puter.js AI"
-    - "Enhanced AI Chat with Puter.js"
-    - "Puter.js AI Integration Backend"
+    - "meta-llama/llama-4-maverick AI Integration"
+    - "Phase 2: Real-time App Preview"
+    - "Phase 2: Enhanced Live Code Completion"
+    - "Phase 3: Contextual Code Generation"
+    - "Phase 3: Advanced Multi-turn Conversations"
+    - "Phase 3: Performance Optimization Analysis"
+    - "Phase 2: Enhanced IDE Interface"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
