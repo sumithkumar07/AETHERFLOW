@@ -953,6 +953,12 @@ app.include_router(collaboration_router)
 # Include cosmic router
 app.include_router(cosmic_router)
 
+# Include neuro router
+app.include_router(neuro_router)
+
+# Include quantum router
+app.include_router(quantum_router)
+
 # Add a legacy API route for backward compatibility
 @app.get("/api/")
 async def legacy_root():
