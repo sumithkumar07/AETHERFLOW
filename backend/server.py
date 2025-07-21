@@ -24,7 +24,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app
-app = FastAPI(title="VibeCode API", description="Web-based coding IDE like emergent.ai")
+app = FastAPI(title="VibeCode API", description="AI-Powered IDE with Puter.js")
 
 # Create API router
 api_router = APIRouter(prefix="/api")
