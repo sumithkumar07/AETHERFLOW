@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Code, Sparkles, Loader } from 'lucide-react';
+import { Send, Bot, User, Code, Sparkles, Loader, Bug, FileText, Shield, Wrench, MessageSquare, Lightbulb } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -9,6 +9,7 @@ const AIChat = ({ currentFile }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random()}`);
+  const [activeMode, setActiveMode] = useState('chat'); // chat, debug, document, security, refactor, nlp
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
