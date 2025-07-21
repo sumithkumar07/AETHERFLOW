@@ -49,23 +49,13 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     return langMap[ext] || 'plaintext';
   };
 
-  // Real-time AI code completion
+  // Real-time AI code completion using Puter.js
   const getAICodeCompletion = useCallback(async (code, position) => {
     if (!code.trim() || isLoadingCompletion) return;
     
     setIsLoadingCompletion(true);
     try {
-      const response = await fetch(`${API}/ai/code-completion`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          language,
-          position
-        })
-      });
-      
-      const result = await response.json();
+      const result = await puterAI.getCodeCompletion(code, language, position);
       if (result.suggestions && result.suggestions.length > 0) {
         setCompletionSuggestions(result.suggestions);
       }
@@ -76,23 +66,13 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     }
   }, [language, isLoadingCompletion]);
 
-  // AI Code Review
+  // AI Code Review using Puter.js
   const performCodeReview = useCallback(async (code) => {
     if (!code.trim() || isAnalyzing) return;
     
     setIsAnalyzing(true);
     try {
-      const response = await fetch(`${API}/ai/code-review`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          language,
-          filename: file?.name || 'untitled'
-        })
-      });
-      
-      const result = await response.json();
+      const result = await puterAI.reviewCode(code, language, file?.name || 'untitled');
       setCodeReview(result);
     } catch (error) {
       console.error('Code review error:', error);
@@ -100,6 +80,66 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
       setIsAnalyzing(false);
     }
   }, [language, file?.name, isAnalyzing]);
+
+  // AI Debug Code
+  const debugCode = useCallback(async (code, errorMessage = null) => {
+    if (!code.trim()) return;
+    
+    setAiAction('debugging');
+    try {
+      const result = await puterAI.debugCode(code, errorMessage, language);
+      setAiResult(result);
+    } catch (error) {
+      console.error('Debug error:', error);
+    } finally {
+      setAiAction(null);
+    }
+  }, [language]);
+
+  // Generate Documentation
+  const generateDocumentation = useCallback(async (code) => {
+    if (!code.trim()) return;
+    
+    setAiAction('documenting');
+    try {
+      const result = await puterAI.generateDocumentation(code, language);
+      setAiResult(result);
+    } catch (error) {
+      console.error('Documentation error:', error);
+    } finally {
+      setAiAction(null);
+    }
+  }, [language]);
+
+  // Security Scan
+  const scanSecurity = useCallback(async (code) => {
+    if (!code.trim()) return;
+    
+    setAiAction('scanning');
+    try {
+      const result = await puterAI.scanSecurity(code, language);
+      setAiResult(result);
+    } catch (error) {
+      console.error('Security scan error:', error);
+    } finally {
+      setAiAction(null);
+    }
+  }, [language]);
+
+  // Refactor Code
+  const refactorCode = useCallback(async (code, focusArea = 'readability') => {
+    if (!code.trim()) return;
+    
+    setAiAction('refactoring');
+    try {
+      const result = await puterAI.refactorCode(code, language, focusArea);
+      setAiResult(result);
+    } catch (error) {
+      console.error('Refactor error:', error);
+    } finally {
+      setAiAction(null);
+    }
+  }, [language]);
 
   useEffect(() => {
     if (file) {
