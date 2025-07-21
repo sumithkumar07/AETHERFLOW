@@ -135,23 +135,41 @@ backend:
           agent: "testing"
           comment: "✅ FULLY TESTED: All file management endpoints working perfectly. Create file (✅), Create folder (✅), Get project files (✅), Get single file (✅), Update file content (✅), Delete file (✅). Hierarchical structure and MongoDB persistence confirmed."
 
-  - task: "Puter.js AI Integration Backend"
+  - task: "meta-llama/llama-4-maverick AI Integration"
     implemented: true
     working: true
-    file: "/app/backend/server.py"
+    file: "/app/frontend/src/services/puterAI.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
-          comment: "Completely replaced HuggingFace with simplified Puter.js backend integration. Removed complex AI processing from backend - now handled by frontend Puter.js for unlimited free access to GPT-4o, Claude 3.5, and 400+ AI models"
-        - working: true
+          comment: "Completely migrated from GPT-4o/Claude to meta-llama/llama-4-maverick as primary model for unlimited free AI access. Added fallback models and model switching capabilities. Enhanced all AI functions to use the new open source model."
+
+  - task: "Phase 2: Real-time App Preview"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/AppPreview.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
           agent: "main"
-          comment: "✅ BACKEND SIMPLIFIED: Successfully transformed from complex HuggingFace API system to clean Puter.js integration. Backend now focuses on data persistence while frontend handles all AI processing for unlimited free usage."
-        - working: true
-          agent: "testing"
-          comment: "✅ PUTER.JS BACKEND INTEGRATION FULLY TESTED: All simplified AI endpoints working perfectly. AI Chat endpoint (✅) properly redirects to frontend Puter.js interface, Code Generation endpoint (✅) returns appropriate fallback message, Chat History Management (✅) saves and retrieves messages from MongoDB. PuterAIEngine class functioning correctly for data persistence. Backend transformation from HuggingFace to Puter.js integration is successful - backend now focuses on data operations while frontend handles AI processing. Minor: WebSocket connection timeout due to known infrastructure limitations."
+          comment: "Created comprehensive real-time app preview component with support for HTML, React, JavaScript, CSS projects. Features responsive preview (desktop/tablet/mobile), live console, auto-refresh, and error handling. Integrated into main IDE interface with split-view and layout options."
+
+  - task: "Phase 2: Enhanced Live Code Completion"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/CodeEditor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Enhanced Monaco Editor with sophisticated live code completion using meta-llama/llama-4-maverick. Added contextual awareness (10 lines before/after), confidence scoring, 5 different suggestions, and enhanced prompting for better accuracy."
 
   - task: "Chat History Management"
     implemented: true
