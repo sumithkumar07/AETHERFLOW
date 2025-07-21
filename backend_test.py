@@ -60,22 +60,55 @@ class VibeCodeAPITester:
             print(f"❌ {test_name}: {error}")
 
     async def test_health_check(self):
-        """Test API health check"""
+        """Test basic API health check"""
         try:
             async with self.session.get(f"{API_BASE_URL}/") as response:
                 if response.status == 200:
                     data = await response.json()
                     if data.get("status") == "healthy":
-                        print("✅ API Health Check: Backend is healthy")
+                        self.log_test("health_checks", "Basic API Health Check", True)
                         return True
                     else:
-                        print(f"❌ API Health Check: Unexpected response: {data}")
+                        self.log_test("health_checks", "Basic API Health Check", False, f"Unexpected response: {data}")
                         return False
                 else:
-                    print(f"❌ API Health Check: HTTP {response.status}")
+                    self.log_test("health_checks", "Basic API Health Check", False, f"HTTP {response.status}")
                     return False
         except Exception as e:
-            print(f"❌ API Health Check: Connection error: {e}")
+            self.log_test("health_checks", "Basic API Health Check", False, str(e))
+            return False
+
+    async def test_enhanced_health_check(self):
+        """Test enhanced /api/v1/health endpoint with detailed status"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/health") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["status", "timestamp", "version", "database", "ai_engine", "environment"]
+                    
+                    # Check all required fields are present
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test("health_checks", "Enhanced Health Check", False, f"Missing fields: {missing_fields}")
+                        return False
+                    
+                    # Check status is healthy or degraded
+                    if data.get("status") not in ["healthy", "degraded"]:
+                        self.log_test("health_checks", "Enhanced Health Check", False, f"Invalid status: {data.get('status')}")
+                        return False
+                    
+                    # Check version is present
+                    if not data.get("version"):
+                        self.log_test("health_checks", "Enhanced Health Check", False, "Version not specified")
+                        return False
+                    
+                    self.log_test("health_checks", "Enhanced Health Check", True)
+                    return True
+                else:
+                    self.log_test("health_checks", "Enhanced Health Check", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("health_checks", "Enhanced Health Check", False, str(e))
             return False
 
     # === PROJECT MANAGEMENT TESTS ===
