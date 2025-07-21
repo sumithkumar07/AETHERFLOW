@@ -55,7 +55,7 @@ class CosmicService:
             logger.info(f"🧬 Starting genetic evolution for {language} code ({generations} generations)")
             
             # Create initial population
-            population = await self._create_initial_population(code, language)
+            population = self._create_initial_population(code, language)
             evolution_id = str(uuid.uuid4())
             
             best_fitness = 0
