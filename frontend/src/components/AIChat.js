@@ -110,13 +110,52 @@ const AIChat = ({ currentFile }) => {
       } : null;
 
       if (activeMode === 'nlp') {
-        // Natural Language to Code mode
+        // Enhanced contextual Natural Language to Code mode
         const language = currentFile ? getLanguageFromFilename(currentFile.name) : 'javascript';
-        const result = await puterAI.naturalLanguageToCode(messageContent, language, context);
-        response = `## ✨ Generated Code\n\n\`\`\`${result.language}\n${result.code}\n\`\`\`\n\n*Generated from: "${result.description}"*`;
+        const projectContext = {
+          current_file: currentFile ? `${currentFile.name}\n\n${currentFile.content}` : null,
+          framework: detectFramework(),
+          dependencies: extractDependencies()
+        };
+        const result = await puterAI.generateContextualCode(messageContent, language, projectContext);
+        response = `## ✨ Contextual Code Generation (meta-llama/llama-4-maverick)\n\n\`\`\`${result.language}\n${result.code}\n\`\`\`\n\n**Context Used:** ${result.contextual ? '✅ Project context analyzed' : '❌ No context'}\n\n**Explanation:**\n${result.explanation}\n\n*Generated from: "${result.description}"*`;
+      } else if (activeMode === 'performance') {
+        // Advanced Performance Analysis mode
+        if (!currentFile?.content) {
+          response = "⚠️ Please select a file to analyze performance.";
+        } else {
+          const language = getLanguageFromFilename(currentFile.name);
+          const result = await puterAI.analyzePerformance(currentFile.content, language, selectedAnalysisType);
+          response = formatPerformanceAnalysis(result);
+        }
+      } else if (activeMode === 'contextual') {
+        // Enhanced contextual chat with project understanding
+        const enhancedContext = {
+          current_file: currentFile ? {
+            name: currentFile.name,
+            content: currentFile.content
+          } : null,
+          project_structure: generateProjectStructure(),
+          conversation_history: conversationHistory.slice(-3).map(h => `${h.user} -> ${h.assistant}`).join('\n'),
+          recent_errors: extractRecentErrors()
+        };
+        response = await puterAI.chatWithAI(messageContent, enhancedContext);
       } else {
-        // Regular AI chat
-        response = await puterAI.chatWithAI(messageContent, context);
+        // Enhanced multi-turn conversation with memory
+        const conversationData = await puterAI.continueConversation(
+          messageContent, 
+          conversationHistory,
+          context
+        );
+        response = conversationData.response;
+        
+        // Update conversation history
+        setConversationHistory(prev => [...prev.slice(-9), {
+          user: messageContent,
+          assistant: response,
+          turn: conversationData.conversation_turn,
+          timestamp: new Date()
+        }]);
       }
 
       const aiMessage = {
