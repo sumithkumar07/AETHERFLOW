@@ -29,4 +29,4 @@ redis>=5.0.0
 aiofiles>=23.2.1
 limits>=5.4.0
 deprecated>=1.2.18
-wrapt>=1.14.0
+wrapt>=1.14.0websockets
