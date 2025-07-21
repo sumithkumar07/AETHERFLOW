@@ -672,7 +672,7 @@ function AppContent() {
               {/* Code Editor */}
               {(layout === 'code' || layout === 'split') && (
                 <div className={layout === 'split' ? 'flex-1' : 'w-full'}>
-                  <CodeEditor
+                  <CollaborativeCodeEditor
                     file={currentFile}
                     onSave={saveFile}
                     onContentChange={handleContentChange}
