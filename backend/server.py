@@ -221,7 +221,7 @@ class CreateProjectRequest(BaseModel):
 
 class CreateFileRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
-    type: str = Field(..., regex="^(file|folder)$")
+    type: str = Field(..., pattern="^(file|folder)$")
     parent_id: Optional[str] = None
     content: Optional[str] = Field("", max_length=config.MAX_FILE_SIZE)
 
