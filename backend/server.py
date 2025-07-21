@@ -160,7 +160,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 class FileNode(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str = Field(..., min_length=1, max_length=255)
-    type: str = Field(..., regex="^(file|folder)$")
+    type: str = Field(..., pattern="^(file|folder)$")
     content: Optional[str] = Field(None, max_length=config.MAX_FILE_SIZE)
     parent_id: Optional[str] = None
     project_id: str
