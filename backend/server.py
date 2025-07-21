@@ -848,6 +848,105 @@ async def generate_code_endpoint(request: ChatRequest):
         logger.error(f"Code generation error: {e}")
         raise HTTPException(status_code=500, detail="Code generation service unavailable")
 
+# === ADVANCED AI ENDPOINTS ===
+
+@api_router.post("/ai/code-completion")
+async def get_code_completion(request: CodeCompletionRequest):
+    """Real-time code completion like GitHub Copilot"""
+    try:
+        result = await ai_engine.get_code_completion(
+            request.code, 
+            request.language, 
+            request.position
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Code completion error: {e}")
+        raise HTTPException(status_code=500, detail="Code completion service unavailable")
+
+@api_router.post("/ai/code-review")
+async def review_code(request: CodeReviewRequest):
+    """Comprehensive code review - security, performance, best practices"""
+    try:
+        result = await ai_engine.review_code(
+            request.code,
+            request.language,
+            request.filename
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Code review error: {e}")
+        raise HTTPException(status_code=500, detail="Code review service unavailable")
+
+@api_router.post("/ai/debug")
+async def debug_code(request: DebugRequest):
+    """AI-powered debugging assistance"""
+    try:
+        result = await ai_engine.debug_code(
+            request.code,
+            request.error_message,
+            request.language
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Debug error: {e}")
+        raise HTTPException(status_code=500, detail="Debug service unavailable")
+
+@api_router.post("/ai/documentation")
+async def generate_documentation(request: DocumentationRequest):
+    """Generate comprehensive documentation for code"""
+    try:
+        result = await ai_engine.generate_documentation(
+            request.code,
+            request.language,
+            request.function_name
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Documentation error: {e}")
+        raise HTTPException(status_code=500, detail="Documentation service unavailable")
+
+@api_router.post("/ai/security-scan")
+async def scan_security(request: SecurityScanRequest):
+    """Security vulnerability scanning"""
+    try:
+        result = await ai_engine.scan_security(
+            request.code,
+            request.language
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Security scan error: {e}")
+        raise HTTPException(status_code=500, detail="Security scan service unavailable")
+
+@api_router.post("/ai/refactor")
+async def refactor_code(request: RefactorRequest):
+    """Suggest code refactoring improvements"""
+    try:
+        result = await ai_engine.refactor_code(
+            request.code,
+            request.language,
+            request.focus_area or "readability"
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Refactor error: {e}")
+        raise HTTPException(status_code=500, detail="Refactor service unavailable")
+
+@api_router.post("/ai/natural-language-to-code")
+async def natural_language_to_code(request: NaturalLanguageRequest):
+    """Generate code from natural language description"""
+    try:
+        result = await ai_engine.natural_language_to_code(
+            request.description,
+            request.language,
+            request.context
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Natural language to code error: {e}")
+        raise HTTPException(status_code=500, detail="Natural language to code service unavailable")
+
 # === WEBSOCKET FOR REAL-TIME AI ===
 
 class ConnectionManager:
