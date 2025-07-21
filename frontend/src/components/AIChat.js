@@ -280,7 +280,7 @@ const AIChat = ({ currentFile }) => {
     }
   };
 
-  // Helper functions
+  // Helper functions for enhanced AI features
   const getLanguageFromFilename = (filename) => {
     const ext = filename.split('.').pop()?.toLowerCase();
     const langMap = {
@@ -288,6 +288,52 @@ const AIChat = ({ currentFile }) => {
       'py': 'python', 'html': 'html', 'css': 'css', 'json': 'json', 'md': 'markdown'
     };
     return langMap[ext] || 'plaintext';
+  };
+
+  const detectFramework = () => {
+    if (!currentFile) return 'vanilla';
+    // Simple framework detection based on file content and names
+    const content = currentFile.content || '';
+    if (content.includes('import React') || currentFile.name.includes('.jsx')) return 'react';
+    if (content.includes('import Vue') || currentFile.name.includes('.vue')) return 'vue';
+    if (content.includes('import { Component }') && content.includes('@angular')) return 'angular';
+    if (content.includes('import express') || content.includes('app.listen')) return 'express';
+    if (content.includes('from flask') || content.includes('from django')) return 'python-web';
+    return 'vanilla';
+  };
+
+  const extractDependencies = () => {
+    if (!currentFile?.content) return 'none';
+    const content = currentFile.content;
+    const imports = [];
+    
+    // Extract ES6 imports
+    const es6Imports = content.match(/import.*from ['"][^'"]*['"]/g);
+    if (es6Imports) imports.push(...es6Imports);
+    
+    // Extract require statements
+    const requires = content.match(/require\(['"][^'"]*['"]\)/g);
+    if (requires) imports.push(...requires);
+    
+    return imports.slice(0, 5).join(', ') || 'none';
+  };
+
+  const generateProjectStructure = () => {
+    // Simple project structure from file names
+    return 'Current project files available'; // Simplified for now
+  };
+
+  const extractRecentErrors = () => {
+    // In a real implementation, this would track recent console errors
+    return 'No recent errors tracked';
+  };
+
+  const formatPerformanceAnalysis = (data) => {
+    if (data.error) {
+      return `## ❌ Performance Analysis Error\n\n${data.error}`;
+    }
+
+    return `## ⚡ Performance Analysis Report\n\n**Overall Score:** ${data.overall_score}/100\n\n**Time Complexity:** ${data.time_complexity || 'Not analyzed'}\n\n**Space Complexity:** ${data.space_complexity || 'Not analyzed'}\n\n**Analysis:**\n${data.analysis || 'Analysis completed'}\n\n**Powered by meta-llama/llama-4-maverick**`;
   };
 
   const formatDebugResponse = (data) => {
