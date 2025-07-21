@@ -25,8 +25,23 @@ from routes.collaboration_routes import router as collaboration_router, init_col
 # Import cosmic routes
 from routes.cosmic_routes import router as cosmic_router
 
+# Import neuro routes
+from routes.neuro_routes import router as neuro_router
+
+# Import quantum routes  
+from routes.quantum_routes import router as quantum_router
+
 # Import cosmic service
 from services.cosmic_service import init_cosmic_service
+
+# Import neuro sync service
+from services.neuro_sync_service import init_neuro_sync_service
+
+# Import quantum service
+from services.quantum_service import init_quantum_service
+
+# Import avatar AI service
+from services.avatar_ai_service import init_avatar_ai_service
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
