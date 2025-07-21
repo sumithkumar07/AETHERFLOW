@@ -923,7 +923,19 @@ async def startup_event():
     init_cosmic_service(db_manager)
     logger.info("Cosmic service initialized - Reality engine online!")
     
-    logger.info("VibeCode Cosmic API started successfully! 🌌")
+    # Initialize neuro sync service
+    init_neuro_sync_service(db_manager)
+    logger.info("Neuro-Sync service initialized - BCI capabilities ready!")
+    
+    # Initialize quantum service
+    init_quantum_service(db_manager)
+    logger.info("Quantum service initialized - Multiverse access enabled!")
+    
+    # Initialize avatar AI service
+    init_avatar_ai_service(db_manager)
+    logger.info("Avatar AI service initialized - Digital twins ready!")
+    
+    logger.info("VibeCode Cosmic API started successfully! 🌌⚛️🧠🎭")
 
 @app.on_event("shutdown")
 async def shutdown_event():
