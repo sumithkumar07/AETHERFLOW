@@ -121,7 +121,303 @@ const AIChat = ({ currentFile }) => {
     }
   };
 
-  const generateCode = async () => {
+  // Advanced AI Functions
+  const debugCode = async () => {
+    if (!currentFile?.content || isLoading) return;
+    
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      type: 'user',
+      content: `Debug this ${getLanguageFromFilename(currentFile.name)} code`,
+      timestamp: new Date(),
+      mode: 'debug'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API}/ai/debug`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: currentFile.content,
+          language: getLanguageFromFilename(currentFile.name),
+          filename: currentFile.name
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage = {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: formatDebugResponse(data),
+          timestamp: new Date(),
+          mode: 'debug'
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to debug code');
+      }
+    } catch (error) {
+      console.error('Debug error:', error);
+      addErrorMessage('Sorry, debugging service is unavailable right now.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateDocumentation = async () => {
+    if (!currentFile?.content || isLoading) return;
+    
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      type: 'user',
+      content: `Generate documentation for ${currentFile.name}`,
+      timestamp: new Date(),
+      mode: 'documentation'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API}/ai/documentation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: currentFile.content,
+          language: getLanguageFromFilename(currentFile.name)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage = {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: `## 📚 Generated Documentation\n\n${data.documentation}`,
+          timestamp: new Date(),
+          mode: 'documentation'
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to generate documentation');
+      }
+    } catch (error) {
+      console.error('Documentation error:', error);
+      addErrorMessage('Sorry, documentation service is unavailable right now.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const scanSecurity = async () => {
+    if (!currentFile?.content || isLoading) return;
+    
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      type: 'user',
+      content: `Scan ${currentFile.name} for security vulnerabilities`,
+      timestamp: new Date(),
+      mode: 'security'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API}/ai/security-scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: currentFile.content,
+          language: getLanguageFromFilename(currentFile.name),
+          filename: currentFile.name
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage = {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: formatSecurityResponse(data),
+          timestamp: new Date(),
+          mode: 'security'
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to scan security');
+      }
+    } catch (error) {
+      console.error('Security scan error:', error);
+      addErrorMessage('Sorry, security scanning service is unavailable right now.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refactorCode = async (focusArea = 'readability') => {
+    if (!currentFile?.content || isLoading) return;
+    
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      type: 'user',
+      content: `Refactor code for better ${focusArea}`,
+      timestamp: new Date(),
+      mode: 'refactor'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API}/ai/refactor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: currentFile.content,
+          language: getLanguageFromFilename(currentFile.name),
+          focus_area: focusArea
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage = {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: formatRefactorResponse(data),
+          timestamp: new Date(),
+          mode: 'refactor'
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to refactor code');
+      }
+    } catch (error) {
+      console.error('Refactor error:', error);
+      addErrorMessage('Sorry, code refactoring service is unavailable right now.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const naturalLanguageToCode = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      type: 'user',
+      content: input.trim(),
+      timestamp: new Date(),
+      mode: 'nlp'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const context = currentFile ? {
+        current_file: currentFile.content,
+        project_structure: currentFile.name
+      } : null;
+
+      const response = await fetch(`${API}/ai/natural-language-to-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: userMessage.content,
+          language: currentFile ? getLanguageFromFilename(currentFile.name) : 'javascript',
+          context
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage = {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: `## ✨ Generated Code\n\n\`\`\`${data.language}\n${data.code}\n\`\`\`\n\n*Generated from: "${data.description}"*`,
+          timestamp: new Date(),
+          mode: 'nlp'
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to generate code from description');
+      }
+    } catch (error) {
+      console.error('Natural language to code error:', error);
+      addErrorMessage('Sorry, natural language to code service is unavailable right now.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper functions
+  const getLanguageFromFilename = (filename) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const langMap = {
+      'js': 'javascript', 'jsx': 'javascript', 'ts': 'typescript', 'tsx': 'typescript',
+      'py': 'python', 'html': 'html', 'css': 'css', 'json': 'json', 'md': 'markdown'
+    };
+    return langMap[ext] || 'plaintext';
+  };
+
+  const formatDebugResponse = (data) => {
+    let response = "## 🐛 Debug Analysis\n\n";
+    if (data.analysis) {
+      response += `**Analysis:**\n${data.analysis}\n\n`;
+    }
+    if (data.fixes && data.fixes.length > 0) {
+      response += "**Suggested Fixes:**\n";
+      data.fixes.forEach((fix, index) => {
+        response += `\n${index + 1}. ${fix.description}\n\`\`\`\n${fix.code}\n\`\`\`\n`;
+      });
+    }
+    return response;
+  };
+
+  const formatSecurityResponse = (data) => {
+    let response = "## 🛡️ Security Analysis\n\n";
+    if (data.risk_score !== undefined) {
+      response += `**Risk Score:** ${data.risk_score}/100\n\n`;
+    }
+    if (data.vulnerabilities && data.vulnerabilities.length > 0) {
+      response += "**Vulnerabilities Found:**\n";
+      data.vulnerabilities.forEach((vuln, index) => {
+        response += `\n${index + 1}. **${vuln.type}** (${vuln.severity})\n   ${vuln.description}\n`;
+      });
+    } else {
+      response += "✅ No security vulnerabilities detected!";
+    }
+    return response;
+  };
+
+  const formatRefactorResponse = (data) => {
+    let response = "## 🔧 Refactoring Suggestions\n\n";
+    if (data.refactored_code) {
+      response += `**Refactored Code:**\n\`\`\`\n${data.refactored_code}\n\`\`\`\n\n`;
+    }
+    if (data.explanation) {
+      response += `**Explanation:**\n${data.explanation}`;
+    }
+    return response;
+  };
+
+  const addErrorMessage = (content) => {
+    const errorMessage = {
+      id: `error_${Date.now()}`,
+      type: 'ai',
+      content,
+      timestamp: new Date(),
+      isError: true
+    };
+    setMessages(prev => [...prev, errorMessage]);
+  };
     if (!input.trim() || isLoading) return;
 
     const userMessage = {
