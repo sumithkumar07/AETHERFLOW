@@ -227,27 +227,64 @@ function App() {
           </div>
         </div>
 
-        {/* Editor Area */}
+        {/* Editor and Preview Area */}
         <div className="flex-1 flex flex-col">
           {currentFile ? (
-            <CodeEditor
-              file={currentFile}
-              onSave={saveFile}
-              onContentChange={(content) => 
-                setCurrentFile({ ...currentFile, content })
-              }
-            />
+            <div className="flex-1 flex">
+              {/* Code Editor */}
+              {(layout === 'code' || layout === 'split') && (
+                <div className={layout === 'split' ? 'flex-1' : 'w-full'}>
+                  <CodeEditor
+                    file={currentFile}
+                    onSave={saveFile}
+                    onContentChange={(content) => 
+                      setCurrentFile({ ...currentFile, content })
+                    }
+                  />
+                </div>
+              )}
+              
+              {/* Live Preview */}
+              {showPreview && (layout === 'preview' || layout === 'split') && (
+                <div className={layout === 'split' ? 'flex-1 border-l border-gray-700' : 'w-full'}>
+                  <AppPreview
+                    currentFile={currentFile}
+                    files={files}
+                    project={currentProject}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-900">
               <div className="text-center">
                 <div className="text-6xl text-gray-600 mb-4">⚡</div>
                 <h2 className="text-2xl font-bold text-gray-400 mb-2">Welcome to VibeCode</h2>
-                <p className="text-gray-500">
+                <p className="text-gray-500 mb-4">
                   {currentProject 
                     ? 'Select a file from the explorer to start coding'
                     : 'Create or select a project to get started'
                   }
                 </p>
+                {currentProject && (
+                  <div className="text-sm text-gray-600">
+                    <p>✨ Features available:</p>
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center justify-center space-x-2">
+                        <Bot size={16} className="text-purple-400" />
+                        <span>meta-llama/llama-4-maverick AI Assistant</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Eye size={16} className="text-green-400" />
+                        <span>Real-time Live Preview</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Code size={16} className="text-blue-400" />
+                        <span>Advanced Code Completion</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
