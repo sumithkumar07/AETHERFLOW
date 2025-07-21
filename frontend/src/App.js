@@ -573,6 +573,14 @@ function AppContent() {
           </button>
           
           <button 
+            onClick={() => setShowCollaboration(!showCollaboration)}
+            className={`p-2 hover:bg-gray-700 rounded ${showCollaboration ? 'text-green-400' : ''}`}
+            title="Collaboration Panel (Ctrl+U)"
+          >
+            <Users size={16} />
+          </button>
+          
+          <button 
             onClick={() => setShowChat(!showChat)}
             className={`p-2 hover:bg-gray-700 rounded ${showChat ? 'text-purple-400' : ''}`}
             title="AI Assistant (Ctrl+`)"
