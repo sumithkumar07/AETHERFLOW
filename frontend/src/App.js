@@ -640,6 +640,10 @@ function AppContent() {
             e.preventDefault();
             setShowCosmicInterface(!showCosmicInterface);
             break;
+          case 'r':
+            e.preventDefault();
+            setShowCosmicReality(!showCosmicReality);
+            break;
           case 'n':
             if (e.shiftKey) {
               e.preventDefault();
