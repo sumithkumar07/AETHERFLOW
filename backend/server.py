@@ -920,7 +920,7 @@ async def security_scan_endpoint(request: SecurityScanRequest):
         raise HTTPException(status_code=500, detail="Security scan service unavailable")
 
 @api_router.post("/ai/refactor")
-async def refactor_code(request: RefactorRequest):
+async def refactor_code_endpoint(request: RefactorRequest):
     """Suggest code refactoring improvements"""
     try:
         result = await ai_engine.refactor_code(
