@@ -283,7 +283,7 @@ Generate professional documentation including:
 Format as clean markdown:`;
 
       const documentation = await window.puter.ai.chat(prompt, {
-        model: this.models.documentation,
+        model: this.getCurrentModel('documentation'),
         temperature: 0.2
       });
 
