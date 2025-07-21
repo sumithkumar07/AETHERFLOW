@@ -49,22 +49,66 @@ const CodeEditor = ({ file, onSave, onContentChange }) => {
     return langMap[ext] || 'plaintext';
   };
 
-  // Real-time AI code completion using Puter.js
+  // Enhanced Real-time AI code completion using meta-llama/llama-4-maverick
   const getAICodeCompletion = useCallback(async (code, position) => {
     if (!code.trim() || isLoadingCompletion) return;
     
     setIsLoadingCompletion(true);
     try {
-      const result = await puterAI.getCodeCompletion(code, language, position);
+      // Get more context for better completion
+      const lines = code.split('\n');
+      const currentLine = position.line || 0;
+      const beforeContext = lines.slice(Math.max(0, currentLine - 10), currentLine + 1).join('\n');
+      const afterContext = lines.slice(currentLine + 1, currentLine + 6).join('\n');
+      
+      // Enhanced contextual prompt for meta-llama/llama-4-maverick
+      const prompt = `You are an expert ${language} programming assistant. Complete this code with intelligent, contextually aware suggestions.
+
+Context Before:
+\`\`\`${language}
+${beforeContext}
+\`\`\`
+
+Context After:
+\`\`\`${language}
+${afterContext}
+\`\`\`
+
+Current cursor position: Line ${position.line + 1}, Column ${position.column + 1}
+
+Provide 5 different completion suggestions that would logically follow at the cursor position. Each suggestion should be:
+1. Syntactically correct for ${language}
+2. Contextually appropriate based on surrounding code
+3. Following best practices and modern patterns
+4. Varying in complexity (simple to advanced)
+5. Considering the file type: ${file?.name || 'untitled'}
+
+Return only the code completions, one per line, without explanations:`;
+
+      const result = await puterAI.getCodeCompletion(prompt, language, position);
       if (result.suggestions && result.suggestions.length > 0) {
-        setCompletionSuggestions(result.suggestions);
+        // Enhanced suggestions with confidence scoring
+        const enhancedSuggestions = result.suggestions.map((suggestion, index) => ({
+          ...suggestion,
+          confidence: 0.95 - (index * 0.1), // Higher confidence for first suggestions
+          source: 'meta-llama-4-maverick',
+          contextual: true
+        }));
+        setCompletionSuggestions(enhancedSuggestions);
       }
     } catch (error) {
-      console.error('Code completion error:', error);
+      console.error('Enhanced code completion error:', error);
+      // Fallback to basic completion
+      try {
+        const fallbackResult = await puterAI.getCodeCompletion(code, language, position);
+        setCompletionSuggestions(fallbackResult.suggestions || []);
+      } catch (fallbackError) {
+        console.error('Fallback completion failed:', fallbackError);
+      }
     } finally {
       setIsLoadingCompletion(false);
     }
-  }, [language, isLoadingCompletion]);
+  }, [language, isLoadingCompletion, file?.name]);
 
   // AI Code Review using Puter.js
   const performCodeReview = useCallback(async (code) => {
