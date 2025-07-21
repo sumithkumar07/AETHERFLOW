@@ -418,6 +418,61 @@ const AIChat = ({ currentFile }) => {
     };
     setMessages(prev => [...prev, errorMessage]);
   };
+
+  const generateCode = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      type: 'user',
+      content: input.trim(),
+      timestamp: new Date(),
+      isCodeGen: true
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API}/ai/generate-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          session_id: sessionId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage = {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: data.generated_code,
+          timestamp: new Date(),
+          isCodeGen: true
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to generate code');
+      }
+    } catch (error) {
+      console.error('Error generating code:', error);
+      const errorMessage = {
+        id: `error_${Date.now()}`,
+        type: 'ai',
+        content: "Sorry, I couldn't generate code right now. Please try again later.",
+        timestamp: new Date(),
+        isError: true
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
     if (!input.trim() || isLoading) return;
 
     const userMessage = {
