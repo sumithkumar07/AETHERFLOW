@@ -879,7 +879,7 @@ async def code_review_endpoint(request: CodeReviewRequest):
         raise HTTPException(status_code=500, detail="Code review service unavailable")
 
 @api_router.post("/ai/debug")
-async def debug_code(request: DebugRequest):
+async def debug_code_endpoint(request: DebugRequest):
     """AI-powered debugging assistance"""
     try:
         result = await ai_engine.debug_code(
