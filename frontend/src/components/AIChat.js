@@ -18,13 +18,14 @@ const AIChat = ({ currentFile }) => {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    // Enhanced welcome message for Puter.js AI
+    // Enhanced welcome message for meta-llama/llama-4-maverick
     setMessages([{
       id: 'welcome',
       type: 'ai',
-      content: "🚀 **VibeCode AI Assistant - Powered by Puter.js**\n\nUnlimited free AI access with advanced capabilities:\n\n💬 **Smart Chat** - Context-aware programming assistance\n🤖 **Code Generation** - From natural language descriptions\n🔧 **Auto-Complete** - Real-time suggestions as you type\n🐛 **Debug Assistant** - Find and fix errors instantly\n📚 **Documentation** - Generate comprehensive docs\n🛡️ **Security Scanner** - Identify vulnerabilities\n⚡ **Code Optimizer** - Performance & readability improvements\n🌍 **Multi-Language** - Support for 40+ programming languages\n\n**Available Models:**\n• GPT-4o for chat & completion\n• Claude 3.5 Sonnet for complex analysis\n• All powered by Puter.js - no API limits!\n\nWhat would you like to build today?",
+      content: "🚀 **VibeCode AI Assistant - Powered by meta-llama/llama-4-maverick**\n\n**🆓 Unlimited Free AI Access with Advanced Capabilities:**\n\n**💬 Advanced Chat Features:**\n• Context-aware programming assistance\n• Multi-turn conversation memory\n• Project-wide code understanding\n• Conversation history tracking\n\n**🤖 Sophisticated AI Tools:**\n• Contextual code generation from natural language\n• Comprehensive performance optimization analysis\n• Advanced debugging with multiple analysis types\n• Real-time code completion with 95% accuracy\n• Security vulnerability scanning\n• Documentation generation\n\n**🔧 Performance Analysis:**\n• Time & space complexity analysis\n• Bottleneck identification\n• Optimization recommendations\n• Benchmarking suggestions\n\n**🌍 Multi-Language Support:**\n• 40+ programming languages\n• Framework-specific optimizations\n• Best practice recommendations\n\n**Available Models:**\n• 🦙 **meta-llama/llama-4-maverick** (Primary - Free & Open Source)\n• 🔄 GPT-4o & Claude 3.5 (Fallback when needed)\n\nWhat advanced feature would you like to explore first?",
       timestamp: new Date(),
-      isPuterAI: true
+      isPuterAI: true,
+      modelUsed: 'meta-llama/llama-4-maverick'
     }]);
     
     loadChatHistory();
