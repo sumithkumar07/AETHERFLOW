@@ -979,6 +979,14 @@ app.include_router(neuro_router)
 # Include quantum router
 app.include_router(quantum_router)
 
+# Include NEW cosmic reality routers
+app.include_router(reality_fabric_router)
+app.include_router(omniversal_router)
+app.include_router(iching_router)
+app.include_router(vibranium_router)
+app.include_router(nexus_router)
+app.include_router(immortality_router)
+
 # Add a legacy API route for backward compatibility
 @app.get("/api/")
 async def legacy_root():
