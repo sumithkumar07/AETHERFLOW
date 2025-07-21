@@ -953,6 +953,19 @@ function AppContent() {
             </button>
           )}
           
+          {/* AetherFlow Toggle */}
+          <button
+            onClick={aetherFlowMode ? deactivateAetherFlow : activateAetherFlow}
+            className={`p-2 rounded-lg transition-all ${
+              aetherFlowMode
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white cosmic-pulse'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+            }`}
+            title={aetherFlowMode ? 'Deactivate AetherFlow' : 'Activate AetherFlow - Ascend to Digital Godhood'}
+          >
+            {aetherFlowMode ? <Crown size={16} /> : <Atom size={16} />}
+          </button>
+
           <button 
             onClick={() => setShowProjectManager(true)}
             className="p-2 hover:bg-gray-700/50 rounded transition-colors"
