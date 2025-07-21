@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-VibeCode IDE Backend API Testing Suite
-Tests all backend functionality including Project Management, File Management, AI Integration, and WebSocket
+VibeCode IDE Backend API Testing Suite - Production Enhancement Tests
+Tests all backend functionality including enhanced health checks, validation, rate limiting, 
+error handling, pagination, and performance improvements
 """
 
 import asyncio
@@ -12,10 +13,12 @@ import websockets
 from datetime import datetime
 import sys
 import os
+import time
 
 # Get backend URL from frontend .env file
 BACKEND_URL = "https://836f7437-c3f5-4a50-9e1e-b9c583472e5d.preview.emergentagent.com"
 API_BASE_URL = f"{BACKEND_URL}/api"
+API_V1_BASE_URL = f"{BACKEND_URL}/api/v1"
 WS_BASE_URL = BACKEND_URL.replace("https://", "wss://")
 
 class VibeCodeAPITester:
