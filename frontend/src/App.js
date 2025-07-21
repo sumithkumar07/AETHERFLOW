@@ -831,215 +831,286 @@ function AppContent() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Professional Sidebar */}
-        <div className={`professional-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-          <div className="sidebar-header">
-            <div className="flex items-center space-x-2">
-              <button 
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="btn btn-ghost btn-sm"
-              >
-                {sidebarCollapsed ? <Menu size={16} /> : <X size={16} />}
-              </button>
-              {!sidebarCollapsed && (
-                <>
-                  <h2 className="text-sm font-medium text-gray-300">Explorer</h2>
-                  <span className="text-xs text-gray-500 ml-auto">
-                    {files.length} item{files.length !== 1 ? 's' : ''}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-          
-          {!sidebarCollapsed && (
-            <div className="sidebar-content">
-              {currentProject && (
-                <FileExplorer
-                  files={searchQuery ? filteredFiles : files}
-                  onCreateFile={createFile}
-                  onOpenFile={openFile}
-                  currentFile={currentFile}
-                  searchQuery={searchQuery}
-                  unsavedChanges={unsavedChanges}
-                  professionalMode={true}
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Editor Panel */}
-        <div className="editor-panel">
-          {currentFile ? (
-            <div className="flex-1 flex">
-              {/* Code Editor */}
-              {(layout === 'code' || layout === 'split') && (
-                <div className={layout === 'split' ? 'flex-1' : 'w-full'}>
-                  <CollaborativeCodeEditor
-                    file={currentFile}
-                    onSave={saveFile}
-                    onContentChange={handleContentChange}
-                    preferences={preferences}
-                    isOnline={isOnline}
-                    autoSaveEnabled={autoSaveEnabled}
-                    professionalMode={true}
-                    currentAssistant={currentAssistant}
-                    focusMode={focusMode}
-                  />
-                </div>
-              )}
-              
-              {/* Live Preview */}
-              {showPreview && (layout === 'preview' || layout === 'split') && (
-                <div className={layout === 'split' ? 'flex-1 border-l border-gray-700' : 'w-full'}>
-                  <AppPreview
-                    currentFile={currentFile}
-                    files={files}
-                    project={currentProject}
-                    professionalMode={true}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="welcome-screen">
-              <div className="welcome-logo">
-                <Zap />
-              </div>
-              <h1 className="welcome-title">Welcome to AETHERFLOW</h1>
-              <p className="welcome-subtitle">
-                Professional development environment for modern developers
-              </p>
-              
-              <div className="quick-actions">
-                {!currentProject ? (
-                  <button
-                    onClick={() => setShowProjectManager(true)}
-                    className="feature-card hover:border-primary-500 cursor-pointer"
-                  >
-                    <div className="feature-icon">
-                      <Folder size={24} />
-                    </div>
-                    <h3 className="font-semibold mb-2">Open Project</h3>
-                    <p className="text-sm text-gray-400">Start coding with an existing project</p>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => createFile('index.js', 'file')}
-                    className="feature-card hover:border-primary-500 cursor-pointer"
-                  >
-                    <div className="feature-icon">
-                      <Plus size={24} />
-                    </div>
-                    <h3 className="font-semibold mb-2">New File</h3>
-                    <p className="text-sm text-gray-400">Create a new file to start coding</p>
-                  </button>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex overflow-hidden">
+          {/* Professional Sidebar */}
+          <div className={`professional-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+            <div className="sidebar-header">
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="btn btn-ghost btn-sm"
+                  title="Toggle Sidebar (Ctrl+B)"
+                >
+                  {sidebarCollapsed ? <Menu size={16} /> : <X size={16} />}
+                </button>
+                {!sidebarCollapsed && (
+                  <>
+                    <h2 className="text-sm font-medium text-gray-300">Explorer</h2>
+                    <span className="text-xs text-gray-500 ml-auto">
+                      {files.length} item{files.length !== 1 ? 's' : ''}
+                    </span>
+                  </>
                 )}
-                
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <Bot size={24} />
-                  </div>
-                  <h3 className="font-semibold mb-2">AI Assistant</h3>
-                  <p className="text-sm text-gray-400">Get help with coding and debugging</p>
-                </div>
-                
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <Eye size={24} />
-                  </div>
-                  <h3 className="font-semibold mb-2">Live Preview</h3>
-                  <p className="text-sm text-gray-400">See your changes in real-time</p>
-                </div>
-                
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <Users size={24} />
-                  </div>
-                  <h3 className="font-semibold mb-2">Collaboration</h3>
-                  <p className="text-sm text-gray-400">Work together with your team</p>
-                </div>
               </div>
             </div>
-          )}
-        </div>
+            
+            {!sidebarCollapsed && (
+              <div className="sidebar-content">
+                {currentProject && (
+                  <FileExplorer
+                    files={searchQuery ? filteredFiles : files}
+                    onCreateFile={createFile}
+                    onOpenFile={openFile}
+                    currentFile={currentFile}
+                    searchQuery={searchQuery}
+                    unsavedChanges={unsavedChanges}
+                    professionalMode={true}
+                  />
+                )}
+              </div>
+            )}
+          </div>
 
-        {/* AI Assistant Panel */}
-        {showChat && (
-          <div className="ai-panel">
-            <AIChat 
-              currentFile={currentFile} 
-              isOnline={isOnline}
-              preferences={preferences}
-              professionalMode={true}
+          {/* Git Panel */}
+          {showGitPanel && (
+            <GitIntegrationPanel
+              isVisible={showGitPanel}
+              onToggle={() => setShowGitPanel(!showGitPanel)}
+              currentProject={currentProject}
+              onCommand={handleCommand}
+            />
+          )}
+
+          {/* Editor Panel */}
+          <div className="editor-panel">
+            {currentFile ? (
+              <div className="flex-1 flex flex-col">
+                {/* Editor Tabs */}
+                <div className="editor-tabs">
+                  <div className="editor-tab active">
+                    <Code size={14} />
+                    <span>{currentFile.name}</span>
+                    {unsavedChanges.has(currentFile.id) && (
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex-1 flex">
+                  {/* Code Editor */}
+                  {(layout === 'code' || layout === 'split') && (
+                    <div className={layout === 'split' ? 'flex-1' : 'w-full'}>
+                      <CollaborativeCodeEditor
+                        file={currentFile}
+                        onSave={saveFile}
+                        onContentChange={handleContentChange}
+                        preferences={preferences}
+                        isOnline={isOnline}
+                        autoSaveEnabled={autoSaveEnabled}
+                        professionalMode={true}
+                        currentAssistant={currentAssistant}
+                        focusMode={focusMode}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Live Preview */}
+                  {showPreview && (layout === 'preview' || layout === 'split') && (
+                    <div className={layout === 'split' ? 'flex-1 border-l border-gray-700' : 'w-full'}>
+                      <AppPreview
+                        currentFile={currentFile}
+                        files={files}
+                        project={currentProject}
+                        professionalMode={true}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="welcome-screen">
+                <div className="welcome-logo">
+                  <Zap />
+                </div>
+                <h1 className="welcome-title">Welcome to AETHERFLOW</h1>
+                <p className="welcome-subtitle">
+                  Professional development environment for modern developers
+                </p>
+                
+                <div className="quick-actions">
+                  {!currentProject ? (
+                    <button
+                      onClick={() => setShowProjectManager(true)}
+                      className="feature-card hover:border-primary-500 cursor-pointer"
+                    >
+                      <div className="feature-icon">
+                        <Folder size={24} />
+                      </div>
+                      <h3 className="font-semibold mb-2">Open Project</h3>
+                      <p className="text-sm text-gray-400">Start coding with an existing project</p>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => createFile('index.js', 'file')}
+                      className="feature-card hover:border-primary-500 cursor-pointer"
+                    >
+                      <div className="feature-icon">
+                        <Plus size={24} />
+                      </div>
+                      <h3 className="font-semibold mb-2">New File</h3>
+                      <p className="text-sm text-gray-400">Create a new file to start coding</p>
+                    </button>
+                  )}
+                  
+                  <div className="feature-card">
+                    <div className="feature-icon">
+                      <Bot size={24} />
+                    </div>
+                    <h3 className="font-semibold mb-2">AI Assistant</h3>
+                    <p className="text-sm text-gray-400">Get help with coding and debugging</p>
+                  </div>
+                  
+                  <div className="feature-card">
+                    <div className="feature-icon">
+                      <Eye size={24} />
+                    </div>
+                    <h3 className="font-semibold mb-2">Live Preview</h3>
+                    <p className="text-sm text-gray-400">See your changes in real-time</p>
+                  </div>
+                  
+                  <div className="feature-card">
+                    <div className="feature-icon">
+                      <Users size={24} />
+                    </div>
+                    <h3 className="font-semibold mb-2">Collaboration</h3>
+                    <p className="text-sm text-gray-400">Work together with your team</p>
+                  </div>
+                </div>
+
+                {/* Keyboard Shortcuts Reference */}
+                <div className="mt-8 p-4 bg-slate-800/50 rounded-xl">
+                  <h4 className="text-lg font-semibold mb-4 text-center">Keyboard Shortcuts</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Command Palette</span>
+                        <span className="text-gray-400">Ctrl+Shift+P</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Quick Open</span>
+                        <span className="text-gray-400">Ctrl+P</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Toggle Terminal</span>
+                        <span className="text-gray-400">Ctrl+`</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Toggle Sidebar</span>
+                        <span className="text-gray-400">Ctrl+B</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Save File</span>
+                        <span className="text-gray-400">Ctrl+S</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Git Panel</span>
+                        <span className="text-gray-400">Ctrl+Shift+G</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Settings</span>
+                        <span className="text-gray-400">Ctrl+,</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Focus Mode</span>
+                        <span className="text-gray-400">Alt+F</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* AI Assistant Panel */}
+          {showChat && (
+            <div className="ai-panel">
+              <AIChat 
+                currentFile={currentFile} 
+                isOnline={isOnline}
+                preferences={preferences}
+                professionalMode={true}
+                currentAssistant={currentAssistant}
+              />
+            </div>
+          )}
+          
+          {/* Collaboration Panel */}
+          {showCollaboration && (
+            <div className="w-80">
+              <CollaborationPanel
+                project={currentProject}
+                currentFile={currentFile}
+                isVisible={showCollaboration}
+                onToggle={() => setShowCollaboration(!showCollaboration)}
+                professionalMode={true}
+              />
+            </div>
+          )}
+          
+          {/* Professional Tools Panel */}
+          {showToolsPanel && (
+            <ProfessionalToolsPanel
+              onAction={handleProfessionalAction}
+              isVisible={showToolsPanel}
+              onClose={() => setShowToolsPanel(false)}
+              credits={credits}
+              userLevel={userLevel}
               currentAssistant={currentAssistant}
             />
-          </div>
-        )}
-        
-        {/* Collaboration Panel */}
-        {showCollaboration && (
-          <div className="w-80">
-            <CollaborationPanel
-              project={currentProject}
-              currentFile={currentFile}
-              isVisible={showCollaboration}
-              onToggle={() => setShowCollaboration(!showCollaboration)}
-              professionalMode={true}
-            />
-          </div>
-        )}
-        
-        {/* Professional Tools Panel */}
-        {showToolsPanel && (
-          <ProfessionalToolsPanel
-            onAction={handleProfessionalAction}
-            isVisible={showToolsPanel}
-            onClose={() => setShowToolsPanel(false)}
-            credits={credits}
-            userLevel={userLevel}
-            currentAssistant={currentAssistant}
+          )}
+        </div>
+
+        {/* Integrated Terminal */}
+        {showTerminal && (
+          <IntegratedTerminal
+            isVisible={showTerminal}
+            onToggle={() => setShowTerminal(!showTerminal)}
+            currentProject={currentProject}
+            height={terminalHeight}
           />
         )}
+
+        {/* Enhanced Status Bar */}
+        <EnhancedStatusBar
+          isOnline={isOnline}
+          currentFile={currentFile}
+          currentProject={currentProject}
+          credits={credits}
+          userLevel={userLevel}
+          notifications={[]}
+          autoSaveEnabled={autoSaveEnabled}
+          lastSaved={lastSaved}
+          unsavedChanges={unsavedChanges}
+          collaborators={[]}
+          terminalVisible={showTerminal}
+          onToggleTerminal={() => setShowTerminal(!showTerminal)}
+          onOpenSettings={() => setShowToolsPanel(true)}
+          onToggleNotifications={() => {}}
+        />
       </div>
-      
-      {/* Status Bar */}
-      <div className="status-bar">
-        <div className="flex items-center space-x-4">
-          <div className="status-item">
-            <div className={`status-indicator ${isOnline ? 'status-online' : 'status-offline'}`}></div>
-            <span>{isOnline ? 'Online' : 'Offline'}</span>
-          </div>
-          
-          {currentFile && (
-            <div className="status-item">
-              <Code size={12} />
-              <span>{currentFile.name}</span>
-            </div>
-          )}
-          
-          <div className="status-item">
-            <Gauge size={12} />
-            <span>{userLevel}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          {autoSaveEnabled && (
-            <div className="status-item">
-              <RotateCcw size={12} />
-              <span>Auto-save on</span>
-            </div>
-          )}
-          
-          <div className="status-item">
-            <Star size={12} />
-            <span>{credits} credits</span>
-          </div>
-        </div>
-      </div>
+
+      {/* Command Palette */}
+      <CommandPalette
+        isVisible={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onCommand={handleCommand}
+        recentCommands={[]}
+        currentProject={currentProject}
+        files={files}
+      />
     </div>
   );
 }
