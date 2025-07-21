@@ -1066,19 +1066,48 @@ class VibeCodeAPITester:
 
     async def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting VibeCode IDE Backend API Tests")
+        print("🚀 Starting VibeCode IDE Backend API Production Enhancement Tests")
         print(f"📡 Testing API at: {API_BASE_URL}")
+        print(f"📡 Testing API v1 at: {API_V1_BASE_URL}")
         print(f"🔌 Testing WebSocket at: {WS_BASE_URL}")
-        print("=" * 60)
+        print("=" * 80)
         
         await self.setup_session()
         
         try:
-            # Health check first
+            # Health checks first
+            print("\n🏥 Testing Health Checks...")
             health_ok = await self.test_health_check()
+            await self.test_enhanced_health_check()
+            
             if not health_ok:
-                print("❌ Backend health check failed. Stopping tests.")
-                return
+                print("❌ Basic backend health check failed. Continuing with other tests...")
+            
+            # Validation tests
+            print("\n✅ Testing Input Validation...")
+            await self.test_project_validation_valid()
+            await self.test_project_validation_invalid_name()
+            await self.test_project_validation_invalid_chars()
+            await self.test_file_validation_valid()
+            await self.test_file_validation_invalid_name()
+            await self.test_file_validation_invalid_type()
+            
+            # Rate limiting tests
+            print("\n🚦 Testing Rate Limiting...")
+            await self.test_rate_limiting_health_check()
+            await self.test_rate_limiting_project_creation()
+            
+            # Error handling tests
+            print("\n🚨 Testing Error Handling...")
+            await self.test_error_handling_404()
+            await self.test_error_handling_409_duplicate()
+            await self.test_error_handling_400_bad_request()
+            
+            # Pagination tests
+            print("\n📄 Testing Pagination...")
+            await self.test_pagination_default()
+            await self.test_pagination_with_limit()
+            await self.test_pagination_with_skip()
             
             print("\n📁 Testing Project Management API...")
             await self.test_create_project()
@@ -1094,7 +1123,7 @@ class VibeCodeAPITester:
             
             print("\n🤖 Testing AI Integration...")
             await self.test_ai_chat()
-            await self.test_code_generation()
+            await self.test_ai_model_info()
             
             print("\n💬 Testing Chat History...")
             await self.test_get_chat_history()
