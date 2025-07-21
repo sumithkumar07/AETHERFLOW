@@ -40,6 +40,7 @@ class VibeCodeAPITester:
         self.test_project_id = None
         self.test_file_id = None
         self.test_session_id = str(uuid.uuid4())
+        self.test_room_id = None
 
     async def setup_session(self):
         """Initialize HTTP session"""
