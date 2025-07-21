@@ -47,10 +47,32 @@ class PuterAIService {
         await this.waitForPuter();
       }
       this.isInitialized = true;
-      console.log('🚀 Puter.js AI Service initialized with unlimited free access!');
+      console.log('🚀 Puter.js AI Service initialized with unlimited free LLaMA-4-Maverick access!');
+      console.log('💡 Primary model: meta-llama/llama-4-maverick (Free & Open Source)');
+      console.log('🔄 Fallback models: GPT-4o & Claude 3.5 available if needed');
     } catch (error) {
       console.error('Failed to initialize Puter.js:', error);
+      console.log('⚠️ Falling back to secondary models if needed');
     }
+  }
+
+  // Method to switch between model sets
+  switchModelSet(modelSet = 'primary') {
+    this.currentModelSet = modelSet;
+    console.log(`🔄 Switched to ${modelSet} model set`);
+    if (modelSet === 'primary') {
+      console.log('Using meta-llama/llama-4-maverick for all AI tasks');
+    } else {
+      console.log('Using GPT-4o/Claude 3.5 fallback models');
+    }
+  }
+
+  // Get current model for specific task
+  getCurrentModel(task) {
+    if (this.currentModelSet === 'fallback') {
+      return this.models.fallback[task];
+    }
+    return this.models[task];
   }
 
   async waitForPuter() {
