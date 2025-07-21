@@ -814,6 +814,33 @@ Respond with context awareness of our previous conversation and current project 
     
     return '';
   }
+
+  // New helper methods for Phase 3 features
+  extractScoreFromText(text) {
+    const scoreMatch = text.match(/score[:\s]*(\d+)/i);
+    return scoreMatch ? parseInt(scoreMatch[1]) : 75;
+  }
+
+  extractMemoryItems(response) {
+    // Extract key concepts, variables, or important points for conversation memory
+    const items = [];
+    
+    // Look for code blocks
+    const codeBlocks = response.match(/```[\w]*\n([\s\S]*?)\n```/g);
+    if (codeBlocks) {
+      items.push({ type: 'code', content: codeBlocks[0] });
+    }
+    
+    // Look for important concepts (words in bold or quotes)
+    const concepts = response.match(/\*\*(.*?)\*\*/g);
+    if (concepts) {
+      concepts.forEach(concept => {
+        items.push({ type: 'concept', content: concept.replace(/\*\*/g, '') });
+      });
+    }
+    
+    return items.slice(0, 5); // Keep only top 5 memory items
+  }
 }
 
 // Export singleton instance
