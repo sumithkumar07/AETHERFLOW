@@ -16,15 +16,27 @@ class PuterAIService {
   constructor() {
     this.isInitialized = false;
     this.models = {
-      codeCompletion: 'gpt-4o',
-      codeGeneration: 'claude-3-5-sonnet-20241022', 
-      chat: 'gpt-4o',
-      codeReview: 'claude-3-5-sonnet-20241022',
-      documentation: 'gpt-4o',
-      security: 'claude-3-5-sonnet-20241022',
-      debugging: 'gpt-4o',
-      refactoring: 'claude-3-5-sonnet-20241022'
+      codeCompletion: 'meta-llama/llama-4-maverick',
+      codeGeneration: 'meta-llama/llama-4-maverick', 
+      chat: 'meta-llama/llama-4-maverick',
+      codeReview: 'meta-llama/llama-4-maverick',
+      documentation: 'meta-llama/llama-4-maverick',
+      security: 'meta-llama/llama-4-maverick',
+      debugging: 'meta-llama/llama-4-maverick',
+      refactoring: 'meta-llama/llama-4-maverick',
+      // Fallback models for comparison/backup
+      fallback: {
+        codeCompletion: 'gpt-4o',
+        codeGeneration: 'claude-3-5-sonnet-20241022', 
+        chat: 'gpt-4o',
+        codeReview: 'claude-3-5-sonnet-20241022',
+        documentation: 'gpt-4o',
+        security: 'claude-3-5-sonnet-20241022',
+        debugging: 'gpt-4o',
+        refactoring: 'claude-3-5-sonnet-20241022'
+      }
     };
+    this.currentModelSet = 'primary'; // 'primary' uses llama-4-maverick, 'fallback' uses gpt-4o/claude
     this.initializePuter();
   }
 
