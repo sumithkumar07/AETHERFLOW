@@ -1922,6 +1922,7 @@ class VibeCodeAPITester:
             ("ai_integration", "AI Integration"),
             ("chat_history", "Chat History"),
             ("collaboration", "Real-Time Collaboration"),
+            ("cosmic_features", "Cosmic Features"),
             ("websocket_ai", "WebSocket AI")
         ]
         
