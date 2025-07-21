@@ -934,7 +934,7 @@ async def refactor_code_endpoint(request: RefactorRequest):
         raise HTTPException(status_code=500, detail="Refactor service unavailable")
 
 @api_router.post("/ai/natural-language-to-code")
-async def natural_language_to_code(request: NaturalLanguageRequest):
+async def natural_language_to_code_endpoint(request: NaturalLanguageRequest):
     """Generate code from natural language description"""
     try:
         result = await ai_engine.natural_language_to_code(
