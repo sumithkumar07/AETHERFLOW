@@ -482,11 +482,43 @@ function AppContent() {
     }
   }, [currentFile, autoSaveEnabled, saveFile]);
 
-  // Search functionality
-  const filteredFiles = files.filter(file => 
-    searchQuery === '' || 
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Handle commands from palette and other sources
+  const handleCommand = useCallback((command) => {
+    console.log('🎯 Executing command:', command);
+    
+    switch (command.id) {
+      case 'file.new':
+        createFile('untitled.js', 'file');
+        break;
+      case 'file.save':
+        if (currentFile) saveFile(currentFile.content);
+        break;
+      case 'view.terminal':
+        setShowTerminal(!showTerminal);
+        break;
+      case 'view.sidebar':
+        setSidebarCollapsed(!sidebarCollapsed);
+        break;
+      case 'view.preview':
+        setShowPreview(!showPreview);
+        break;
+      case 'view.commandPalette':
+        setShowCommandPalette(true);
+        break;
+      case 'git.status':
+        setShowGitPanel(true);
+        break;
+      case 'tools.settings':
+        setShowToolsPanel(true);
+        break;
+      default:
+        if (command.id.startsWith('file.open.')) {
+          openFile(command.file);
+        } else {
+          handleProfessionalAction(command);
+        }
+    }
+  }, [createFile, saveFile, currentFile, showTerminal, sidebarCollapsed, showPreview, openFile, handleProfessionalAction]);
 
   // Professional keyboard shortcuts
   useEffect(() => {
