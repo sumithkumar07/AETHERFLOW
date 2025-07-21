@@ -634,7 +634,7 @@ const AIChat = ({ currentFile }) => {
           </div>
         </div>
         <div className="text-xs text-gray-500 mt-1 text-center">
-          Powered by Puter.js • GPT-4o & Claude 3.5 • Unlimited Free Access
+          Powered by meta-llama/llama-4-maverick • Free & Open Source • Advanced AI Features • Multi-turn Memory
         </div>
       </div>
     </div>
