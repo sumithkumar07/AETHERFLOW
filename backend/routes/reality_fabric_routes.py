@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 import logging
 
-from ..services.reality_fabric_service import get_reality_fabric_service
+from services.reality_fabric_service import get_reality_fabric_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/reality-fabric", tags=["reality-fabric"])
