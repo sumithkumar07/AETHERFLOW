@@ -380,7 +380,7 @@ function AppContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [isOnline, getCachedProject, cacheProject, notifications]);
+  }, [isOnline, getCachedProject, cacheProject]);
 
   // Load project files with enhanced error handling
   const loadProjectFiles = useCallback(async () => {
