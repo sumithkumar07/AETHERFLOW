@@ -749,18 +749,19 @@ class VibeCodeAPITester:
     async def test_get_chat_history(self):
         """Test chat history retrieval"""
         try:
-            async with self.session.get(f"{API_BASE_URL}/ai/chat/{self.test_session_id}") as response:
+            async with self.session.get(f"{API_V1_BASE_URL}/ai/chat/{self.test_session_id}") as response:
                 if response.status == 200:
                     data = await response.json()
-                    if isinstance(data, list):
+                    if isinstance(data, dict) and "messages" in data:
                         # Should have at least one message from our AI chat test
-                        if len(data) > 0:
+                        messages = data.get("messages", [])
+                        if len(messages) > 0:
                             self.log_test("chat_history", "Get Chat History", True)
                         else:
                             self.log_test("chat_history", "Get Chat History", False, "No chat history found")
                         return True
                     else:
-                        self.log_test("chat_history", "Get Chat History", False, f"Expected list, got: {type(data)}")
+                        self.log_test("chat_history", "Get Chat History", False, f"Expected dict with messages, got: {type(data)}")
                         return False
                 else:
                     error_text = await response.text()
