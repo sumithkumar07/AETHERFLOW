@@ -1,20 +1,14 @@
+/* VibeCode - Modern Web-based IDE */
+
 .App {
     text-align: center;
-}
-
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+    background-color: #111827;
+    color: #ffffff;
+    min-height: 100vh;
 }
 
 .App-header {
-    background-color: #0f0f10;
+    background-color: #1f2937;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -22,17 +16,179 @@
     justify-content: center;
     font-size: calc(10px + 2vmin);
     color: white;
+    border: 2px solid #3b82f6;
+    border-radius: 16px;
 }
 
 .App-link {
-    color: #61dafb;
+    color: #60a5fa;
+    text-decoration: none;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
+.App-link:hover {
+    color: #93c5fd;
+}
+
+/* IDE specific styles */
+.ide-container {
+    display: flex;
+    height: 100vh;
+    background-color: #111827;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #1f2937;
+    border-right: 1px solid #374151;
+}
+
+.editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #111827;
+}
+
+.chat-panel {
+    width: 300px;
+    background-color: #1f2937;
+    border-left: 1px solid #374151;
+}
+
+/* File explorer styles */
+.file-explorer {
+    padding: 1rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.file-item:hover {
+    background-color: #374151;
+}
+
+.file-item.selected {
+    background-color: #1d4ed8;
+    color: white;
+}
+
+/* Editor tab styles */
+.editor-tabs {
+    display: flex;
+    background-color: #1f2937;
+    border-bottom: 1px solid #374151;
+}
+
+.editor-tab {
+    padding: 0.75rem 1rem;
+    background-color: #374151;
+    border-right: 1px solid #4b5563;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.editor-tab:hover {
+    background-color: #4b5563;
+}
+
+.editor-tab.active {
+    background-color: #111827;
+    color: #60a5fa;
+}
+
+/* AI chat styles */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.chat-message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.chat-message.user {
+    background-color: #1d4ed8;
+    margin-left: 2rem;
+}
+
+.chat-message.ai {
+    background-color: #374151;
+    margin-right: 2rem;
+}
+
+.chat-input {
+    padding: 1rem;
+    border-top: 1px solid #374151;
+}
+
+.chat-input input {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+    color: white;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: #60a5fa;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ide-container {
+        flex-direction: column;
     }
-    to {
-        transform: rotate(360deg);
+    
+    .sidebar {
+        width: 100%;
+        height: 200px;
     }
+    
+    .chat-panel {
+        width: 100%;
+        height: 200px;
+    }
+}
+
+/* Loading animations */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Syntax highlighting overrides for Monaco */
+.monaco-editor .token.keyword {
+    color: #f472b6 !important;
+}
+
+.monaco-editor .token.string {
+    color: #34d399 !important;
+}
+
+.monaco-editor .token.comment {
+    color: #6b7280 !important;
+    font-style: italic;
+}
+
+.monaco-editor .token.number {
+    color: #fbbf24 !important;
+}
+
+.monaco-editor .token.operator {
+    color: #60a5fa !important;
 }
