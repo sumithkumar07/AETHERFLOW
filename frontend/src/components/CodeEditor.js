@@ -1,11 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, Save } from 'lucide-react';
+import { Play, Save, Lightbulb, AlertTriangle } from 'lucide-react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const CodeEditor = ({ file, onSave, onContentChange }) => {
   const editorRef = useRef(null);
   const [isModified, setIsModified] = useState(false);
   const [language, setLanguage] = useState('javascript');
+  const [completionSuggestions, setCompletionSuggestions] = useState([]);
+  const [isLoadingCompletion, setIsLoadingCompletion] = useState(false);
+  const [codeReview, setCodeReview] = useState(null);
+  const [showCodeReview, setShowCodeReview] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Detect language from file extension
   const getLanguageFromFilename = (filename) => {
