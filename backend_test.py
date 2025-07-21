@@ -25,8 +25,13 @@ class VibeCodeAPITester:
     def __init__(self):
         self.session = None
         self.test_results = {
+            "health_checks": {"passed": 0, "failed": 0, "errors": []},
             "project_management": {"passed": 0, "failed": 0, "errors": []},
             "file_management": {"passed": 0, "failed": 0, "errors": []},
+            "validation_tests": {"passed": 0, "failed": 0, "errors": []},
+            "rate_limiting": {"passed": 0, "failed": 0, "errors": []},
+            "error_handling": {"passed": 0, "failed": 0, "errors": []},
+            "pagination": {"passed": 0, "failed": 0, "errors": []},
             "ai_integration": {"passed": 0, "failed": 0, "errors": []},
             "websocket_ai": {"passed": 0, "failed": 0, "errors": []},
             "chat_history": {"passed": 0, "failed": 0, "errors": []}
