@@ -153,7 +153,7 @@ async def test_collaboration():
             ws_url = f"{WS_BASE_URL}/api/v1/collaboration/rooms/{room_id}/ws?user_name=TestUser&avatar_color=%23FF5733"
             print(f"Connecting to WebSocket: {ws_url}")
             
-            async with websockets.connect(ws_url, timeout=10) as websocket:
+            async with websockets.connect(ws_url) as websocket:
                 # Wait for connection message
                 response = await asyncio.wait_for(websocket.recv(), timeout=10.0)
                 response_data = json.loads(response)
