@@ -328,6 +328,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Phase 1: Real-Time Collaboration Infrastructure"
     - "meta-llama/llama-4-maverick AI Integration"
     - "Phase 2: Real-time App Preview"
     - "Phase 2: Enhanced Live Code Completion"
