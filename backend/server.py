@@ -31,6 +31,14 @@ from routes.neuro_routes import router as neuro_router
 # Import quantum routes  
 from routes.quantum_routes import router as quantum_router
 
+# Import NEW cosmic reality routes
+from routes.reality_fabric_routes import router as reality_fabric_router
+from routes.omniversal_routes import router as omniversal_router
+from routes.iching_routes import router as iching_router
+from routes.vibranium_routes import router as vibranium_router
+from routes.nexus_routes import router as nexus_router
+from routes.immortality_routes import router as immortality_router
+
 # Import cosmic service
 from services.cosmic_service import init_cosmic_service
 
@@ -42,6 +50,14 @@ from services.quantum_service import init_quantum_service
 
 # Import avatar AI service
 from services.avatar_ai_service import init_avatar_ai_service
+
+# Import NEW cosmic reality services
+from services.reality_fabric_service import init_reality_fabric_service
+from services.omniversal_renderer_service import init_omniversal_renderer_service
+from services.iching_service import init_iching_service
+from services.vibranium_nft_service import init_vibranium_nft_service
+from services.nexus_events_service import init_nexus_events_service
+from services.quantum_immortality_service import init_quantum_immortality_service
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
