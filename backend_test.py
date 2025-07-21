@@ -1239,6 +1239,7 @@ class VibeCodeAPITester:
             
         try:
             edit_data = {
+                "file_id": self.test_file_id,
                 "operations": [
                     {
                         "file_id": self.test_file_id,
