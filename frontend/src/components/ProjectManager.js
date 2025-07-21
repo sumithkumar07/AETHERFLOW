@@ -1,242 +1,426 @@
-import React, { useState } from 'react';
-import { Plus, Folder, Calendar, X, Github, Globe } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { 
+  Plus, Folder, Search, Clock, Star, GitBranch, Globe, 
+  Archive, Trash2, MoreVertical, X, Calendar, User,
+  Code, Eye, Play, Settings, ChevronRight, FolderOpen
+} from 'lucide-react';
 
-const ProjectManager = ({ projects, onCreateProject, onOpenProject, onClose }) => {
+const ProjectManager = ({
+  projects = [],
+  recentProjects = [],
+  onCreateProject,
+  onOpenProject,
+  onClose,
+  isOnline = true,
+  professionalMode = true
+}) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [projectName, setProjectName] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: '',
+    template: 'blank'
+  });
 
-  const handleCreateProject = async (e) => {
+  const projectTemplates = [
+    {
+      id: 'blank',
+      name: 'Blank Project',
+      description: 'Start with an empty project',
+      icon: Folder
+    },
+    {
+      id: 'react',
+      name: 'React App',
+      description: 'Modern React application',
+      icon: Code
+    },
+    {
+      id: 'node',
+      name: 'Node.js API',
+      description: 'Backend API with Node.js',
+      icon: Globe
+    },
+    {
+      id: 'fullstack',
+      name: 'Full Stack',
+      description: 'React + Node.js application',
+      icon: GitBranch
+    }
+  ];
+
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (project.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCreateProject = useCallback(async (e) => {
     e.preventDefault();
-    if (!projectName.trim()) return;
+    
+    if (!newProject.name.trim()) return;
 
-    await onCreateProject(projectName.trim(), projectDescription.trim());
-    setProjectName('');
-    setProjectDescription('');
-    setShowCreateForm(false);
+    const project = await onCreateProject(newProject.name.trim(), newProject.description.trim());
+    
+    if (project) {
+      setShowCreateForm(false);
+      setNewProject({ name: '', description: '', template: 'blank' });
+    }
+  }, [newProject, onCreateProject]);
+
+  const getProjectStats = (project) => {
+    // Mock stats - in real app this would come from the project data
+    return {
+      files: Math.floor(Math.random() * 50) + 5,
+      lastModified: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+      language: ['JavaScript', 'TypeScript', 'Python', 'Go'][Math.floor(Math.random() * 4)]
+    };
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
+  const formatDate = (date) => {
+    const now = new Date();
+    const diff = now - date;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    return date.toLocaleDateString();
   };
 
-  const getProjectIcon = (name) => {
-    const lower = name.toLowerCase();
-    if (lower.includes('react') || lower.includes('web') || lower.includes('frontend')) {
-      return '⚛️';
-    }
-    if (lower.includes('api') || lower.includes('backend') || lower.includes('server')) {
-      return '🚀';
-    }
-    if (lower.includes('mobile') || lower.includes('app')) {
-      return '📱';
-    }
-    if (lower.includes('ai') || lower.includes('ml') || lower.includes('bot')) {
-      return '🤖';
-    }
-    return '📁';
+  const ProjectCard = ({ project, isRecent = false }) => {
+    const stats = getProjectStats(project);
+    
+    return (
+      <div 
+        className="feature-card cursor-pointer group"
+        onClick={() => onOpenProject(project)}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center space-x-3">
+            <div className="feature-icon">
+              <FolderOpen size={20} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
+                {project.name}
+              </h3>
+              {project.description && (
+                <p className="text-sm text-gray-400 mt-1 line-clamp-2">
+                  {project.description}
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {isRecent && (
+            <Star size={14} className="text-yellow-400 flex-shrink-0" />
+          )}
+        </div>
+
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1">
+              <Folder size={12} />
+              <span>{stats.files} files</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Code size={12} />
+              <span>{stats.language}</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Clock size={12} />
+            <span>{formatDate(stats.lastModified)}</span>
+          </div>
+        </div>
+
+        <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-2">
+            <button className="btn btn-primary btn-sm">
+              <Play size={12} />
+              Open
+            </button>
+            <button className="btn btn-ghost btn-sm">
+              <Eye size={12} />
+              Preview
+            </button>
+            <button className="btn btn-ghost btn-sm">
+              <MoreVertical size={12} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-blue-400">VibeCode</h1>
-            <p className="text-gray-400 text-sm mt-1">Your projects, your code, your creativity</p>
+      <header className="professional-header">
+        <div className="header-content">
+          <div className="logo">
+            <Folder size={24} />
+            <span>Project Manager</span>
           </div>
-          {projects.length > 0 && (
-            <button 
-              onClick={onClose}
-              className="p-2 hover:bg-gray-700 rounded-lg"
-              title="Close"
+          
+          <div className="flex items-center space-x-4">
+            {/* Search */}
+            <div className="glass-surface px-3 py-2">
+              <div className="flex items-center space-x-2">
+                <Search size={16} className="text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent text-white text-sm outline-none w-64"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="btn btn-primary"
+              disabled={!isOnline}
             >
-              <X size={20} />
+              <Plus size={16} />
+              New Project
             </button>
-          )}
+
+            <button
+              onClick={onClose}
+              className="btn btn-ghost"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-64 bg-slate-800 border-r border-slate-700 p-4">
+          <nav className="space-y-2">
+            {[
+              { id: 'all', label: 'All Projects', icon: Folder, count: projects.length },
+              { id: 'recent', label: 'Recent', icon: Clock, count: recentProjects.length },
+              { id: 'starred', label: 'Starred', icon: Star, count: 0 },
+              { id: 'archived', label: 'Archived', icon: Archive, count: 0 }
+            ].map(({ id, label, icon: Icon, count }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                  activeTab === id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Icon size={16} />
+                  <span>{label}</span>
+                </div>
+                <span className="text-xs opacity-75">{count}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Quick Stats */}
+          <div className="mt-8 p-4 bg-slate-700/50 rounded-lg">
+            <h4 className="text-sm font-medium text-gray-300 mb-3">Quick Stats</h4>
+            <div className="space-y-2 text-xs text-gray-400">
+              <div className="flex justify-between">
+                <span>Total Projects</span>
+                <span className="text-white">{projects.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Recent Activity</span>
+                <span className="text-green-400">{recentProjects.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Storage Used</span>
+                <span className="text-blue-400">2.4 GB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-slate-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  {activeTab === 'all' && 'All Projects'}
+                  {activeTab === 'recent' && 'Recent Projects'}
+                  {activeTab === 'starred' && 'Starred Projects'}
+                  {activeTab === 'archived' && 'Archived Projects'}
+                </h1>
+                <p className="text-gray-400 mt-1">
+                  {activeTab === 'all' && `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''}`}
+                  {activeTab === 'recent' && `${recentProjects.length} recently accessed`}
+                  {activeTab === 'starred' && 'Your favorite projects'}
+                  {activeTab === 'archived' && 'Archived and inactive projects'}
+                </p>
+              </div>
+              
+              {!isOnline && (
+                <div className="flex items-center space-x-2 text-orange-400 text-sm">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                  <span>Offline Mode</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Project Grid */}
+            {activeTab === 'all' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProjects.length > 0 ? (
+                  filteredProjects.map(project => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))
+                ) : (
+                  <div className="col-span-full flex flex-col items-center justify-center py-16">
+                    <Folder size={48} className="text-gray-600 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-400 mb-2">
+                      {searchQuery ? 'No projects found' : 'No projects yet'}
+                    </h3>
+                    <p className="text-gray-500 mb-6 text-center max-w-md">
+                      {searchQuery 
+                        ? `No projects match "${searchQuery}". Try a different search term.`
+                        : 'Create your first project to get started with AETHERFLOW.'
+                      }
+                    </p>
+                    {!searchQuery && (
+                      <button
+                        onClick={() => setShowCreateForm(true)}
+                        className="btn btn-primary"
+                        disabled={!isOnline}
+                      >
+                        <Plus size={16} />
+                        Create Your First Project
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'recent' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {recentProjects.length > 0 ? (
+                  recentProjects.map(project => (
+                    <ProjectCard key={project.id} project={project} isRecent />
+                  ))
+                ) : (
+                  <div className="col-span-full flex flex-col items-center justify-center py-16">
+                    <Clock size={48} className="text-gray-600 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-400 mb-2">No recent projects</h3>
+                    <p className="text-gray-500">Projects you've worked on recently will appear here.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Welcome Section */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">⚡</div>
-          <h2 className="text-3xl font-bold mb-2">Welcome to VibeCode</h2>
-          <p className="text-gray-400 text-lg">
-            A modern, AI-powered web-based IDE for all your coding needs
-          </p>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex justify-center mb-8">
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-lg font-medium transition-colors"
-          >
-            <Plus size={20} />
-            <span>Create New Project</span>
-          </button>
-        </div>
-
-        {/* Create Project Form */}
-        {showCreateForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold">Create New Project</h3>
-                <button 
+      {/* Create Project Modal */}
+      {showCreateForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-600 rounded-xl shadow-2xl w-full max-w-md">
+            <div className="p-6 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-white">Create New Project</h2>
+                <button
                   onClick={() => setShowCreateForm(false)}
-                  className="p-1 hover:bg-gray-700 rounded"
+                  className="btn btn-ghost btn-sm"
                 >
-                  <X size={20} />
+                  <X size={16} />
                 </button>
               </div>
-
-              <form onSubmit={handleCreateProject}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">
-                    Project Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="My Awesome Project"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                    required
-                    autoFocus
-                  />
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={projectDescription}
-                    onChange={(e) => setProjectDescription(e.target.value)}
-                    placeholder="Brief description of your project..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                    rows="3"
-                  />
-                </div>
-
-                <div className="flex space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateForm(false)}
-                    className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
-                  >
-                    Create Project
-                  </button>
-                </div>
-              </form>
             </div>
-          </div>
-        )}
 
-        {/* Projects Grid */}
-        {projects.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xl font-bold mb-4">Your Projects</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg p-6 cursor-pointer transition-all duration-200 transform hover:scale-[1.02]"
-                  onClick={() => onOpenProject(project)}
+            <form onSubmit={handleCreateProject} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Project Name *
+                </label>
+                <input
+                  type="text"
+                  value={newProject.name}
+                  onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                  placeholder="My Awesome Project"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                  placeholder="A brief description of your project..."
+                  rows={3}
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Template
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {projectTemplates.map((template) => {
+                    const Icon = template.icon;
+                    return (
+                      <button
+                        key={template.id}
+                        type="button"
+                        onClick={() => setNewProject({ ...newProject, template: template.id })}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          newProject.template === template.id
+                            ? 'border-blue-500 bg-blue-500/10'
+                            : 'border-slate-600 hover:border-slate-500'
+                        }`}
+                      >
+                        <Icon size={16} className="text-blue-400 mb-2" />
+                        <div className="text-sm font-medium text-white">{template.name}</div>
+                        <div className="text-xs text-gray-400">{template.description}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="submit"
+                  className="btn btn-primary flex-1"
+                  disabled={!newProject.name.trim() || !isOnline}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="text-3xl mb-2">
-                      {getProjectIcon(project.name)}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-400">
-                      <Calendar size={12} className="mr-1" />
-                      {formatDate(project.created_at)}
-                    </div>
-                  </div>
-                  
-                  <h4 className="font-bold text-lg mb-2 text-white">
-                    {project.name}
-                  </h4>
-                  
-                  {project.description && (
-                    <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                      {project.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 text-xs text-gray-500">
-                      <span className="flex items-center">
-                        <Folder size={12} className="mr-1" />
-                        Files
-                      </span>
-                    </div>
-                    
-                    <button 
-                      className="text-blue-400 hover:text-blue-300 text-sm font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenProject(project);
-                      }}
-                    >
-                      Open →
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {projects.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
-              <Folder size={48} className="mx-auto" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">No projects yet</h3>
-            <p className="text-gray-400 mb-6">
-              Create your first project to start coding!
-            </p>
-          </div>
-        )}
-
-        {/* Features Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
-            <div className="text-3xl mb-3">🤖</div>
-            <h4 className="font-bold text-lg mb-2">AI Assistant</h4>
-            <p className="text-gray-400 text-sm">
-              Get help with coding, debugging, and optimization from our AI assistant
-            </p>
-          </div>
-          
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
-            <div className="text-3xl mb-3">⚡</div>
-            <h4 className="font-bold text-lg mb-2">Fast Editor</h4>
-            <p className="text-gray-400 text-sm">
-              Monaco Editor with syntax highlighting, auto-completion, and more
-            </p>
-          </div>
-          
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
-            <div className="text-3xl mb-3">🌐</div>
-            <h4 className="font-bold text-lg mb-2">Web-Based</h4>
-            <p className="text-gray-400 text-sm">
-              Access your projects from anywhere, no installation required
-            </p>
+                  <Plus size={16} />
+                  Create Project
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateForm(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
