@@ -461,7 +461,7 @@ Generate the complete code:`;
   }
 
   /**
-   * Enhanced AI Chat with Context
+   * Enhanced AI Chat with Context and Memory (Phase 3)
    */
   async chatWithAI(message, context = null) {
     await this.ensureInitialized();
@@ -474,8 +474,23 @@ Generate the complete code:`;
       if (context?.recent_errors) {
         contextInfo += `\n\nRecent errors: ${context.recent_errors}`;
       }
+      if (context?.project_structure) {
+        contextInfo += `\n\nProject structure: ${context.project_structure}`;
+      }
+      if (context?.conversation_history) {
+        contextInfo += `\n\nPrevious conversation: ${context.conversation_history.slice(-500)}`;
+      }
 
-      const systemPrompt = `You are an expert programming assistant with deep knowledge of multiple programming languages, frameworks, debugging, security, and modern development practices. Provide helpful, accurate, and practical responses.${contextInfo}
+      const systemPrompt = `You are an advanced programming assistant powered by meta-llama/llama-4-maverick. You have deep knowledge of multiple programming languages, frameworks, debugging, security, and modern development practices. 
+
+Key capabilities:
+- Contextual code generation based on entire project structure
+- Advanced performance optimization analysis
+- Multi-turn conversation with memory of previous interactions
+- Real-time code completion and suggestions
+- Comprehensive debugging and security analysis
+
+Provide helpful, accurate, and practical responses with deep context awareness.${contextInfo}
 
 User: ${message}`;
 
@@ -489,6 +504,215 @@ User: ${message}`;
     } catch (error) {
       console.error('AI chat error:', error);
       return `Sorry, I'm temporarily unavailable. Error: ${error.message}`;
+    }
+  }
+
+  /**
+   * Advanced Contextual Code Generation (Phase 3)
+   */
+  async generateContextualCode(description, language, projectContext = null) {
+    await this.ensureInitialized();
+
+    try {
+      let contextInfo = '';
+      if (projectContext?.current_file) {
+        contextInfo = `\n\nCurrent file:\n\`\`\`${language}\n${projectContext.current_file.substring(0, 800)}\n\`\`\``;
+      }
+      if (projectContext?.related_files) {
+        contextInfo += `\n\nRelated files structure:\n${projectContext.related_files}`;
+      }
+      if (projectContext?.dependencies) {
+        contextInfo += `\n\nProject dependencies: ${projectContext.dependencies}`;
+      }
+      if (projectContext?.framework) {
+        contextInfo += `\n\nFramework/Stack: ${projectContext.framework}`;
+      }
+
+      const prompt = `Generate ${language} code with full project context awareness:
+
+**Task:** ${description}${contextInfo}
+
+Requirements:
+- Generate production-ready ${language} code
+- Follow project patterns and conventions visible in context
+- Include proper imports/dependencies based on project structure
+- Add comprehensive error handling
+- Include helpful comments explaining the logic
+- Ensure compatibility with existing codebase
+- Follow ${language} best practices and modern patterns
+- Consider performance implications
+
+Provide complete, contextually-aware code:`;
+
+      const response = await window.puter.ai.chat(prompt, {
+        model: this.getCurrentModel('codeGeneration'),
+        temperature: 0.4
+      });
+
+      // Extract code from response
+      const codeBlocks = response.match(/```[\w]*\n([\s\S]*?)\n```/g);
+      let generatedCode = response;
+      
+      if (codeBlocks && codeBlocks.length > 0) {
+        generatedCode = codeBlocks[0].replace(/```[\w]*\n?|\n```/g, '').trim();
+      }
+
+      return {
+        code: generatedCode,
+        language,
+        description,
+        contextual: true,
+        explanation: response
+      };
+
+    } catch (error) {
+      console.error('Contextual code generation error:', error);
+      return {
+        code: `// Error generating contextual code: ${error.message}`,
+        language,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Advanced Performance Optimization Analysis (Phase 3)
+   */
+  async analyzePerformance(code, language, analysisType = 'comprehensive') {
+    await this.ensureInitialized();
+
+    try {
+      const prompt = `Perform comprehensive performance analysis for this ${language} code:
+
+\`\`\`${language}
+${code}
+\`\`\`
+
+Analysis Type: ${analysisType}
+
+Provide detailed analysis including:
+
+1. **Time Complexity Analysis**
+   - Big O notation for all operations
+   - Worst, average, and best case scenarios
+   - Bottleneck identification
+
+2. **Space Complexity Analysis**
+   - Memory usage patterns
+   - Memory leaks potential
+   - Optimization opportunities
+
+3. **Performance Bottlenecks**
+   - Slow operations identification
+   - Database query optimization
+   - Algorithm inefficiencies
+   - Resource-intensive operations
+
+4. **Optimization Recommendations**
+   - Specific code improvements
+   - Algorithm replacements
+   - Caching strategies
+   - Parallel processing opportunities
+
+5. **Benchmarking Suggestions**
+   - Key metrics to measure
+   - Performance testing strategies
+   - Load testing considerations
+
+Return detailed JSON analysis:
+{
+  "overall_score": 85,
+  "time_complexity": "O(n²)",
+  "space_complexity": "O(n)",
+  "bottlenecks": [...],
+  "optimizations": [...],
+  "benchmark_suggestions": [...],
+  "performance_improvements": [...]
+}`;
+
+      const response = await window.puter.ai.chat(prompt, {
+        model: this.getCurrentModel('refactoring'),
+        temperature: 0.2
+      });
+
+      // Try to parse JSON response
+      try {
+        const parsed = JSON.parse(response);
+        return parsed;
+      } catch {
+        // Fallback if not JSON
+        return {
+          analysis: response,
+          overall_score: this.extractScoreFromText(response),
+          type: analysisType,
+          comprehensive: true
+        };
+      }
+
+    } catch (error) {
+      console.error('Performance analysis error:', error);
+      return {
+        analysis: 'Performance analysis temporarily unavailable',
+        error: error.message,
+        overall_score: 0
+      };
+    }
+  }
+
+  /**
+   * Enhanced Multi-turn Conversation with Memory (Phase 3)
+   */
+  async continueConversation(message, conversationHistory = [], context = null) {
+    await this.ensureInitialized();
+
+    try {
+      // Build conversation context from history
+      let historyContext = '';
+      if (conversationHistory.length > 0) {
+        historyContext = '\n\nConversation History:\n';
+        conversationHistory.slice(-5).forEach((turn, index) => {
+          historyContext += `\nTurn ${index + 1}:\nUser: ${turn.user}\nAssistant: ${turn.assistant}\n`;
+        });
+      }
+
+      let projectContext = '';
+      if (context?.current_file) {
+        projectContext = `\n\nCurrent File: ${context.current_file.name}\n\`\`\`\n${context.current_file.content.substring(0, 600)}...\n\`\`\``;
+      }
+
+      const systemPrompt = `You are an advanced AI programming assistant with conversation memory. You remember previous interactions and can build upon them contextually.
+
+Key capabilities:
+- Remember and reference previous parts of our conversation
+- Build upon previous code suggestions and improvements
+- Maintain context across multiple exchanges
+- Provide evolving solutions based on conversation progression
+- Learn from user feedback and preferences in this session
+
+${historyContext}${projectContext}
+
+Current user message: ${message}
+
+Respond with context awareness of our previous conversation and current project state.`;
+
+      const response = await window.puter.ai.chat(systemPrompt, {
+        model: this.getCurrentModel('chat'),
+        temperature: 0.6
+      });
+
+      return {
+        response,
+        context_used: true,
+        conversation_turn: conversationHistory.length + 1,
+        memory_items: this.extractMemoryItems(response)
+      };
+
+    } catch (error) {
+      console.error('Multi-turn conversation error:', error);
+      return {
+        response: `Sorry, I'm having trouble with multi-turn conversation. Error: ${error.message}`,
+        error: error.message
+      };
     }
   }
 
