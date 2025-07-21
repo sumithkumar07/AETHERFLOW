@@ -111,6 +111,368 @@ class VibeCodeAPITester:
             self.log_test("health_checks", "Enhanced Health Check", False, str(e))
             return False
 
+    # === VALIDATION TESTS ===
+    
+    async def test_project_validation_valid(self):
+        """Test project creation with valid data"""
+        try:
+            project_data = {
+                "name": "Valid Project Name",
+                "description": "A valid project description for testing validation"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects", json=project_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("name") == project_data["name"] and data.get("id"):
+                        self.test_project_id = data["id"]  # Store for later tests
+                        self.log_test("validation_tests", "Project Creation - Valid Data", True)
+                        return True
+                    else:
+                        self.log_test("validation_tests", "Project Creation - Valid Data", False, f"Invalid response: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("validation_tests", "Project Creation - Valid Data", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("validation_tests", "Project Creation - Valid Data", False, str(e))
+            return False
+
+    async def test_project_validation_invalid_name(self):
+        """Test project creation with invalid name (empty)"""
+        try:
+            project_data = {
+                "name": "",  # Invalid: empty name
+                "description": "Test description"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects", json=project_data) as response:
+                if response.status == 422:  # Validation error expected
+                    self.log_test("validation_tests", "Project Creation - Invalid Empty Name", True)
+                    return True
+                else:
+                    self.log_test("validation_tests", "Project Creation - Invalid Empty Name", False, f"Expected 422, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("validation_tests", "Project Creation - Invalid Empty Name", False, str(e))
+            return False
+
+    async def test_project_validation_invalid_chars(self):
+        """Test project creation with invalid characters"""
+        try:
+            project_data = {
+                "name": "Invalid<>Name",  # Invalid: contains < and >
+                "description": "Test description"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects", json=project_data) as response:
+                if response.status == 422:  # Validation error expected
+                    self.log_test("validation_tests", "Project Creation - Invalid Characters", True)
+                    return True
+                else:
+                    self.log_test("validation_tests", "Project Creation - Invalid Characters", False, f"Expected 422, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("validation_tests", "Project Creation - Invalid Characters", False, str(e))
+            return False
+
+    async def test_file_validation_valid(self):
+        """Test file creation with valid data"""
+        if not self.test_project_id:
+            self.log_test("validation_tests", "File Creation - Valid Data", False, "No test project available")
+            return False
+            
+        try:
+            file_data = {
+                "name": "valid_file.py",
+                "type": "file",
+                "content": "# Valid Python file\nprint('Hello World')"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects/{self.test_project_id}/files", json=file_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("name") == file_data["name"] and data.get("id"):
+                        self.test_file_id = data["id"]  # Store for later tests
+                        self.log_test("validation_tests", "File Creation - Valid Data", True)
+                        return True
+                    else:
+                        self.log_test("validation_tests", "File Creation - Valid Data", False, f"Invalid response: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_test("validation_tests", "File Creation - Valid Data", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_test("validation_tests", "File Creation - Valid Data", False, str(e))
+            return False
+
+    async def test_file_validation_invalid_name(self):
+        """Test file creation with invalid name (path traversal)"""
+        if not self.test_project_id:
+            self.log_test("validation_tests", "File Creation - Invalid Name", False, "No test project available")
+            return False
+            
+        try:
+            file_data = {
+                "name": "../../../etc/passwd",  # Invalid: path traversal
+                "type": "file",
+                "content": "malicious content"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects/{self.test_project_id}/files", json=file_data) as response:
+                if response.status == 422:  # Validation error expected
+                    self.log_test("validation_tests", "File Creation - Invalid Name", True)
+                    return True
+                else:
+                    self.log_test("validation_tests", "File Creation - Invalid Name", False, f"Expected 422, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("validation_tests", "File Creation - Invalid Name", False, str(e))
+            return False
+
+    async def test_file_validation_invalid_type(self):
+        """Test file creation with invalid type"""
+        if not self.test_project_id:
+            self.log_test("validation_tests", "File Creation - Invalid Type", False, "No test project available")
+            return False
+            
+        try:
+            file_data = {
+                "name": "test.txt",
+                "type": "invalid_type",  # Invalid: not 'file' or 'folder'
+                "content": "test content"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects/{self.test_project_id}/files", json=file_data) as response:
+                if response.status == 422:  # Validation error expected
+                    self.log_test("validation_tests", "File Creation - Invalid Type", True)
+                    return True
+                else:
+                    self.log_test("validation_tests", "File Creation - Invalid Type", False, f"Expected 422, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("validation_tests", "File Creation - Invalid Type", False, str(e))
+            return False
+
+    # === RATE LIMITING TESTS ===
+    
+    async def test_rate_limiting_health_check(self):
+        """Test rate limiting on health check endpoint (10/minute)"""
+        try:
+            # Make 12 rapid requests to exceed the 10/minute limit
+            success_count = 0
+            rate_limited = False
+            
+            for i in range(12):
+                async with self.session.get(f"{API_V1_BASE_URL}/health") as response:
+                    if response.status == 200:
+                        success_count += 1
+                    elif response.status == 429:  # Rate limited
+                        rate_limited = True
+                        break
+                    await asyncio.sleep(0.1)  # Small delay between requests
+            
+            if rate_limited and success_count >= 10:
+                self.log_test("rate_limiting", "Health Check Rate Limiting", True)
+                return True
+            else:
+                self.log_test("rate_limiting", "Health Check Rate Limiting", False, f"Expected rate limiting after 10 requests, got {success_count} successes, rate_limited: {rate_limited}")
+                return False
+                
+        except Exception as e:
+            self.log_test("rate_limiting", "Health Check Rate Limiting", False, str(e))
+            return False
+
+    async def test_rate_limiting_project_creation(self):
+        """Test rate limiting on project creation (10/minute)"""
+        try:
+            # Make 12 rapid requests to exceed the 10/minute limit
+            success_count = 0
+            rate_limited = False
+            created_projects = []
+            
+            for i in range(12):
+                project_data = {
+                    "name": f"Rate Limit Test Project {i}",
+                    "description": f"Test project {i} for rate limiting"
+                }
+                
+                async with self.session.post(f"{API_V1_BASE_URL}/projects", json=project_data) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        created_projects.append(data.get("id"))
+                        success_count += 1
+                    elif response.status == 429:  # Rate limited
+                        rate_limited = True
+                        break
+                    await asyncio.sleep(0.1)  # Small delay between requests
+            
+            # Clean up created projects
+            for project_id in created_projects:
+                if project_id:
+                    try:
+                        async with self.session.delete(f"{API_V1_BASE_URL}/projects/{project_id}") as response:
+                            pass  # Ignore cleanup errors
+                    except:
+                        pass
+            
+            if rate_limited and success_count >= 10:
+                self.log_test("rate_limiting", "Project Creation Rate Limiting", True)
+                return True
+            else:
+                self.log_test("rate_limiting", "Project Creation Rate Limiting", False, f"Expected rate limiting after 10 requests, got {success_count} successes, rate_limited: {rate_limited}")
+                return False
+                
+        except Exception as e:
+            self.log_test("rate_limiting", "Project Creation Rate Limiting", False, str(e))
+            return False
+
+    # === ERROR HANDLING TESTS ===
+    
+    async def test_error_handling_404(self):
+        """Test 404 error handling for non-existent project"""
+        try:
+            fake_project_id = str(uuid.uuid4())
+            async with self.session.get(f"{API_V1_BASE_URL}/projects/{fake_project_id}") as response:
+                if response.status == 404:
+                    data = await response.json()
+                    if "detail" in data and "not found" in data["detail"].lower():
+                        self.log_test("error_handling", "404 Error Handling", True)
+                        return True
+                    else:
+                        self.log_test("error_handling", "404 Error Handling", False, f"Invalid error response: {data}")
+                        return False
+                else:
+                    self.log_test("error_handling", "404 Error Handling", False, f"Expected 404, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("error_handling", "404 Error Handling", False, str(e))
+            return False
+
+    async def test_error_handling_409_duplicate(self):
+        """Test 409 error handling for duplicate project name"""
+        if not self.test_project_id:
+            self.log_test("error_handling", "409 Duplicate Error Handling", False, "No test project available")
+            return False
+            
+        try:
+            # Get the existing project name
+            async with self.session.get(f"{API_V1_BASE_URL}/projects/{self.test_project_id}") as response:
+                if response.status != 200:
+                    self.log_test("error_handling", "409 Duplicate Error Handling", False, "Could not get existing project")
+                    return False
+                
+                existing_project = await response.json()
+                existing_name = existing_project.get("name")
+                
+                if not existing_name:
+                    self.log_test("error_handling", "409 Duplicate Error Handling", False, "Could not get existing project name")
+                    return False
+            
+            # Try to create a project with the same name
+            duplicate_data = {
+                "name": existing_name,
+                "description": "Duplicate project for testing"
+            }
+            
+            async with self.session.post(f"{API_V1_BASE_URL}/projects", json=duplicate_data) as response:
+                if response.status == 409:
+                    data = await response.json()
+                    if "detail" in data and "already exists" in data["detail"].lower():
+                        self.log_test("error_handling", "409 Duplicate Error Handling", True)
+                        return True
+                    else:
+                        self.log_test("error_handling", "409 Duplicate Error Handling", False, f"Invalid error response: {data}")
+                        return False
+                else:
+                    self.log_test("error_handling", "409 Duplicate Error Handling", False, f"Expected 409, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("error_handling", "409 Duplicate Error Handling", False, str(e))
+            return False
+
+    async def test_error_handling_400_bad_request(self):
+        """Test 400 error handling for malformed request"""
+        try:
+            # Send malformed JSON (missing required fields)
+            async with self.session.post(f"{API_V1_BASE_URL}/projects", json={}) as response:
+                if response.status in [400, 422]:  # Either is acceptable for validation errors
+                    data = await response.json()
+                    if "detail" in data:
+                        self.log_test("error_handling", "400 Bad Request Error Handling", True)
+                        return True
+                    else:
+                        self.log_test("error_handling", "400 Bad Request Error Handling", False, f"Invalid error response: {data}")
+                        return False
+                else:
+                    self.log_test("error_handling", "400 Bad Request Error Handling", False, f"Expected 400/422, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("error_handling", "400 Bad Request Error Handling", False, str(e))
+            return False
+
+    # === PAGINATION TESTS ===
+    
+    async def test_pagination_default(self):
+        """Test default pagination on project listing"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/projects") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        # Default should return projects (could be empty or have projects)
+                        self.log_test("pagination", "Default Pagination", True)
+                        return True
+                    else:
+                        self.log_test("pagination", "Default Pagination", False, f"Expected list, got: {type(data)}")
+                        return False
+                else:
+                    self.log_test("pagination", "Default Pagination", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("pagination", "Default Pagination", False, str(e))
+            return False
+
+    async def test_pagination_with_limit(self):
+        """Test pagination with limit parameter"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/projects?limit=5") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list) and len(data) <= 5:
+                        self.log_test("pagination", "Pagination with Limit", True)
+                        return True
+                    else:
+                        self.log_test("pagination", "Pagination with Limit", False, f"Expected list with ≤5 items, got: {len(data) if isinstance(data, list) else type(data)}")
+                        return False
+                else:
+                    self.log_test("pagination", "Pagination with Limit", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("pagination", "Pagination with Limit", False, str(e))
+            return False
+
+    async def test_pagination_with_skip(self):
+        """Test pagination with skip parameter"""
+        try:
+            async with self.session.get(f"{API_V1_BASE_URL}/projects?skip=0&limit=10") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        self.log_test("pagination", "Pagination with Skip", True)
+                        return True
+                    else:
+                        self.log_test("pagination", "Pagination with Skip", False, f"Expected list, got: {type(data)}")
+                        return False
+                else:
+                    self.log_test("pagination", "Pagination with Skip", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("pagination", "Pagination with Skip", False, str(e))
+            return False
+
     # === PROJECT MANAGEMENT TESTS ===
     
     async def test_create_project(self):
