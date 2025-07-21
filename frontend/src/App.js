@@ -1155,6 +1155,20 @@ function AppContent() {
             isVisible={showCosmicInterface}
           />
         )}
+        
+        {/* Cosmic Reality Engine - Advanced Visual System */}
+        {(showCosmicReality || cosmicMode) && (
+          <CosmicRealityEngine
+            onCosmicAction={handleCosmicAction}
+            isVisible={showCosmicReality || cosmicMode}
+            neuroSyncActive={bcActive}
+            quantumSessionActive={quantumSession?.active || false}
+            currentAvatar={currentAvatar}
+            vibeTokens={vibeTokens}
+            karmaLevel={karmaLevel}
+            realityCoherence={realityCoherence}
+          />
+        )}
       </div>
     </div>
   );
