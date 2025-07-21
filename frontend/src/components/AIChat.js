@@ -479,7 +479,10 @@ const AIChat = ({ currentFile }) => {
         
         {currentFile && (
           <p className="text-xs text-gray-400 mt-1">
-            Context: {currentFile.name} ({getLanguageFromFilename(currentFile.name)})
+            Context: {currentFile.name} ({getLanguageFromFilename(currentFile.name)}) • Framework: {detectFramework()}
+            {conversationHistory.length > 0 && (
+              <span> • Memory: {conversationHistory.length} turns</span>
+            )}
           </p>
         )}
       </div>
