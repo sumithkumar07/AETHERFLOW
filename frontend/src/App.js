@@ -29,6 +29,7 @@ function AppContent() {
   const [projects, setProjects] = useState([]);
   const [showChat, setShowChat] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showCollaboration, setShowCollaboration] = useState(true);
   const [showProjectManager, setShowProjectManager] = useState(true);
   const [layout, setLayout] = useState('code');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +38,7 @@ function AppContent() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(new Set());
   const [lastSaved, setLastSaved] = useState(null);
+  const [collaborationEnabled, setCollaborationEnabled] = useState(true);
   
   // Enhanced hooks
   const notifications = useNotifications();
