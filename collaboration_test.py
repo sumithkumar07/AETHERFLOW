@@ -127,12 +127,14 @@ async def test_collaboration():
         
         # Test edit operations
         edit_data = {
+            "file_id": file_id,
             "operations": [
                 {
                     "file_id": file_id,
                     "operation_type": "insert",
                     "position": 0,
-                    "content": "# Collaborative Edit\n"
+                    "content": "# Collaborative Edit\n",
+                    "user_id": "test_user"
                 }
             ],
             "base_version": 0
