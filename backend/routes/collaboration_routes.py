@@ -70,7 +70,7 @@ async def get_room(
         stats = manager.get_room_stats(room_id)
         
         return {
-            "room": room,
+            "room": Room(**room).dict(),
             "stats": stats
         }
     except HTTPException:
