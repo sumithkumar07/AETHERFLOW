@@ -1300,7 +1300,7 @@ function AppContent() {
 
       {/* Templates Gallery */}
       {showTemplatesGallery && (
-        <TemplatesGallery
+        <EnhancedTemplatesGallery
           onClose={() => setShowTemplatesGallery(false)}
           onCreateProject={(projectId) => {
             // Handle project creation from template
