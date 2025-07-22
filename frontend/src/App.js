@@ -71,6 +71,12 @@ function AppContent() {
   const [showCommunityDiscovery, setShowCommunityDiscovery] = useState(false);
   const [showAIChatHistory, setShowAIChatHistory] = useState(false);
   
+  // 2025 Cutting-edge Features
+  const [showAIPairProgramming, setShowAIPairProgramming] = useState(false);
+  const [showVoiceToCode, setShowVoiceToCode] = useState(false);
+  const [enhancedUXEnabled, setEnhancedUXEnabled] = useState(true);
+  const [appInitialized, setAppInitialized] = useState(false);
+  
   // Professional UI state
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
