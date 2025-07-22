@@ -34,7 +34,27 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      // Mock login for now - replace with actual API call
+      
+      // Check for demo credentials
+      if (email === 'demo@aetherflow.dev' && password === 'cosmicpower2025') {
+        const mockUser = {
+          id: '1',
+          email,
+          name: 'Demo User',
+          plan: 'Professional',
+          avatar: null,
+          joinDate: new Date().toISOString(),
+          credits: 1000
+        };
+        
+        setUser(mockUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('aetherflow_user', JSON.stringify(mockUser));
+        localStorage.setItem('aetherflow_auth', 'true');
+        return { success: true, user: mockUser };
+      }
+      
+      // Regular login logic (can be expanded later)
       const mockUser = {
         id: '1',
         email,
@@ -48,6 +68,7 @@ export const AuthProvider = ({ children }) => {
       setUser(mockUser);
       setIsAuthenticated(true);
       localStorage.setItem('aetherflow_user', JSON.stringify(mockUser));
+      localStorage.setItem('aetherflow_auth', 'true');
       return { success: true, user: mockUser };
     } catch (error) {
       console.error('Login error:', error);
