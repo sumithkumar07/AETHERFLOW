@@ -17,6 +17,8 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import IntegrationsPage from './pages/IntegrationsPage';
+import ApiStatusPage from './pages/ApiStatusPage';
 
 // Import the existing IDE App component
 import IDEApp from './App';
