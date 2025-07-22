@@ -190,7 +190,7 @@ MOCK_TEMPLATES = [
         "category": "mobile",
         "framework": "Flutter",
         "tags": ["flutter", "mobile", "firebase", "material", "dart"],
-        "preview_url": null,
+        "preview_url": None,
         "thumbnail": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop",
         "author": "Flutter Team",
         "version": "1.3.0",
