@@ -682,6 +682,15 @@ function AppContent() {
             e.preventDefault();
             setShowAIChatHistory(!showAIChatHistory);
             break;
+          case 'ai': // Alt+AI (may not work, but keeping for reference)
+          case 'i':
+            e.preventDefault();
+            setShowAIPairProgramming(!showAIPairProgramming);
+            break;
+          case 'v':
+            e.preventDefault();
+            setShowVoiceToCode(!showVoiceToCode);
+            break;
           default:
             break;
         }
