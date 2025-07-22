@@ -832,6 +832,57 @@ function AppContent() {
               <Settings size={16} />
             </button>
 
+            {/* New AETHERFLOW 2025 Feature Buttons */}
+            <div className="border-l border-gray-600 mx-2 h-6"></div>
+            
+            <button 
+              onClick={() => setShowExtensionsMarketplace(!showExtensionsMarketplace)}
+              className={`btn btn-ghost btn-sm ${showExtensionsMarketplace ? 'text-green-400' : ''}`}
+              title="Extensions Marketplace (Alt+E)"
+            >
+              <Package size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowTemplatesGallery(!showTemplatesGallery)}
+              className={`btn btn-ghost btn-sm ${showTemplatesGallery ? 'text-orange-400' : ''}`}
+              title="Templates Gallery (Alt+T)"
+            >
+              <Grid3X3 size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowAnalyticsDashboard(!showAnalyticsDashboard)}
+              className={`btn btn-ghost btn-sm ${showAnalyticsDashboard ? 'text-blue-400' : ''}`}
+              title="Analytics Dashboard (Alt+A)"
+            >
+              <BarChart3 size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowDeploymentDashboard(!showDeploymentDashboard)}
+              className={`btn btn-ghost btn-sm ${showDeploymentDashboard ? 'text-red-400' : ''}`}
+              title="Deployment Dashboard (Alt+D)"
+            >
+              <Rocket size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowCommunityDiscovery(!showCommunityDiscovery)}
+              className={`btn btn-ghost btn-sm ${showCommunityDiscovery ? 'text-yellow-400' : ''}`}
+              title="Community Discovery (Alt+C)"
+            >
+              <Users size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowAIChatHistory(!showAIChatHistory)}
+              className={`btn btn-ghost btn-sm ${showAIChatHistory ? 'text-purple-400' : ''}`}
+              title="AI Chat History (Alt+H)"
+            >
+              <Clock size={16} />
+            </button>
+
             {/* Layout toggle */}
             {showPreview && (
               <div className="flex bg-gray-700/50 rounded-lg p-1">
