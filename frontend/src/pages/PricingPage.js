@@ -525,6 +525,68 @@ const PricingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Video Modal */}
+      {isVideoPlaying && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-2xl p-6 max-w-4xl w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">AETHERFLOW Pricing Demo</h3>
+              <button
+                onClick={() => setIsVideoPlaying(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="aspect-video bg-slate-800 rounded-lg flex items-center justify-center mb-4">
+              <div className="text-center">
+                <Play className="w-16 h-16 text-purple-400 mb-4 mx-auto" />
+                <h4 className="text-white font-semibold mb-2">Coming Soon: Interactive Pricing Demo</h4>
+                <p className="text-gray-400 mb-4">
+                  Experience AETHERFLOW's features across all pricing tiers with our interactive demo
+                </p>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="text-left">
+                    <h5 className="text-purple-400 font-semibold mb-2">What you'll see:</h5>
+                    <ul className="text-gray-300 space-y-1">
+                      <li>• Free tier limitations vs Pro benefits</li>
+                      <li>• Cosmic Entity features in action</li>
+                      <li>• VIBE token economy explained</li>
+                      <li>• Real coding session examples</li>
+                    </ul>
+                  </div>
+                  <div className="text-left">
+                    <h5 className="text-blue-400 font-semibold mb-2">Demo highlights:</h5>
+                    <ul className="text-gray-300 space-y-1">
+                      <li>• AI pair programming comparison</li>
+                      <li>• Parallel universe access levels</li>
+                      <li>• Collaboration tools showcase</li>
+                      <li>• Performance metrics analysis</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => navigate('/signup')}
+                className="btn btn-primary"
+              >
+                Start Free Trial
+              </button>
+              <button
+                onClick={() => setIsVideoPlaying(false)}
+                className="btn btn-secondary"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
