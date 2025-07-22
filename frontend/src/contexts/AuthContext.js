@@ -17,12 +17,15 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for stored user data on app load
+    console.log('AuthProvider - Initializing auth state');
+    
     const storedUser = localStorage.getItem('aetherflow_user');
     const storedAuth = localStorage.getItem('aetherflow_auth');
     
     if (storedUser && storedAuth === 'true') {
       try {
         const userData = JSON.parse(storedUser);
+        console.log('AuthProvider - Restoring user:', userData.email);
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
@@ -30,7 +33,10 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('aetherflow_user');
         localStorage.removeItem('aetherflow_auth');
       }
+    } else {
+      console.log('AuthProvider - No valid stored auth found');
     }
+    
     setLoading(false);
   }, []);
 
