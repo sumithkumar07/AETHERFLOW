@@ -7,12 +7,10 @@ const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Debug log
-  console.log('PrivateRoute - isAuthenticated:', isAuthenticated, 'loading:', loading);
-  
   // Check localStorage directly as fallback
   const storedAuth = localStorage.getItem('aetherflow_auth');
   const storedUser = localStorage.getItem('aetherflow_user');
+  const hasValidAuth = storedAuth === 'true' && storedUser && storedUser !== 'null';
   
   if (loading) {
     return (
@@ -25,9 +23,8 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Check both context state and localStorage
-  if (!isAuthenticated && (!storedAuth || storedAuth !== 'true' || !storedUser)) {
-    console.log('PrivateRoute - Redirecting to signin');
+  // Allow access if either context says authenticated OR localStorage has valid auth
+  if (!isAuthenticated && !hasValidAuth) {
     // Redirect to sign-in page with return url
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
