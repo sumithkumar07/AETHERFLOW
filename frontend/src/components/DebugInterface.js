@@ -397,7 +397,7 @@ const DebugInterface = ({
               className="btn btn-ghost btn-sm"
               title="Step Out"
             >
-              <StepOut size={14} />
+              <ChevronRight size={14} />
             </button>
             
             <button
