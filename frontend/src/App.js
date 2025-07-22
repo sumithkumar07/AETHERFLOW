@@ -723,7 +723,7 @@ function AppContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-slate-900">
         <LoadingOverlay isVisible={isLoading} message="Loading projects..." />
-        <ProjectManager
+        <EnhancedProjectManager
           projects={projects}
           recentProjects={recentProjects}
           onCreateProject={createProject}
