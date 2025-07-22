@@ -177,7 +177,6 @@ body {
   50% { transform: scale(0.98); }
   100% { transform: scale(1); }
 }
-}
 
 @keyframes slideIn {
   from { transform: translateX(-100%); }
