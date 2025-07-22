@@ -4,7 +4,7 @@ import {
   Palette, Bug, ChevronDown, CheckCircle, AlertCircle, Clock, ExternalLink,
   User, Calendar, TrendingUp, Grid3X3, Shield, Activity, Brain, Workflow,
   Layers, Box, Cpu, Globe, Terminal, FileCode, Brush, Database, Lock,
-  Award, Crown, ThumbsUp, MessageSquare, Eye, X, ChevronRight, Play
+  Award, Crown, ThumbsUp, MessageSquare, Eye, X, ChevronRight, Play, GitBranch
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
