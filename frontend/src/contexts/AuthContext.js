@@ -111,6 +111,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('aetherflow_user');
+    localStorage.removeItem('aetherflow_auth');
   };
 
   const updateUser = (userData) => {
