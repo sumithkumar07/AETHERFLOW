@@ -1153,6 +1153,60 @@ function AppContent() {
         currentProject={currentProject}
         files={files}
       />
+
+      {/* Extensions Marketplace */}
+      {showExtensionsMarketplace && (
+        <ExtensionsMarketplace
+          onClose={() => setShowExtensionsMarketplace(false)}
+          professionalMode={professionalMode}
+        />
+      )}
+
+      {/* Templates Gallery */}
+      {showTemplatesGallery && (
+        <TemplatesGallery
+          onClose={() => setShowTemplatesGallery(false)}
+          onCreateProject={(projectId) => {
+            // Handle project creation from template
+            setShowTemplatesGallery(false);
+            loadProjects(); // Refresh projects
+          }}
+          professionalMode={professionalMode}
+        />
+      )}
+
+      {/* Analytics Dashboard */}
+      {showAnalyticsDashboard && (
+        <AnalyticsDashboard
+          onClose={() => setShowAnalyticsDashboard(false)}
+          professionalMode={professionalMode}
+        />
+      )}
+
+      {/* Deployment Dashboard */}
+      {showDeploymentDashboard && (
+        <DeploymentDashboard
+          onClose={() => setShowDeploymentDashboard(false)}
+          currentProject={currentProject}
+          professionalMode={professionalMode}
+        />
+      )}
+
+      {/* Community Discovery */}
+      {showCommunityDiscovery && (
+        <CommunityDiscovery
+          onClose={() => setShowCommunityDiscovery(false)}
+          professionalMode={professionalMode}
+        />
+      )}
+
+      {/* AI Chat History */}
+      {showAIChatHistory && (
+        <AIChatHistory
+          onClose={() => setShowAIChatHistory(false)}
+          professionalMode={professionalMode}
+        />
+      )}
     </div>
   );
 }
