@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Zap, Check, X, Star, Crown, Sparkles, ArrowRight, 
-  Help, Users, Shield, Gauge, Brain, Code, Globe, Rocket, 
+  HelpCircle, Users, Shield, Gauge, Brain, Code, Globe, Rocket, 
   ChevronDown, ChevronUp
 } from 'lucide-react';
 
