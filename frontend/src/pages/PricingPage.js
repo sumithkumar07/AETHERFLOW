@@ -11,7 +11,25 @@ import EnhancedLoadingComponents from '../components/EnhancedLoadingComponents';
 const PricingPage = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [openFaq, setOpenFaq] = useState(null);
+  const [loading, setLoading] = useState({});
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const navigate = useNavigate();
+
+  const handleActionWithLoading = async (action, planName) => {
+    const key = `${action}-${planName}`;
+    setLoading(prev => ({ ...prev, [key]: true }));
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      if (action === 'signup') {
+        navigate('/signup');
+      } else if (action === 'demo') {
+        setIsVideoPlaying(true);
+      }
+    } finally {
+      setLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
 
   const plans = [
     {
