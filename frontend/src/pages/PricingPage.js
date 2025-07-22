@@ -227,9 +227,28 @@ const PricingPage = () => {
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
             Choose Your Reality
           </h1>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-gray-300 mb-6">
             Select the perfect plan to transcend traditional coding and embrace cosmic development.
           </p>
+          
+          {/* Demo Video Button */}
+          <div className="mb-8">
+            <button
+              onClick={() => handleActionWithLoading('demo', 'pricing')}
+              disabled={loading['demo-pricing']}
+              className="btn btn-secondary mx-auto group"
+            >
+              {loading['demo-pricing'] ? (
+                <EnhancedLoadingComponents.Spinner size="sm" />
+              ) : (
+                <>
+                  <Play className="w-5 h-5 mr-2" />
+                  Watch Pricing Demo
+                  <Eye className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
+                </>
+              )}
+            </button>
+          </div>
 
           {/* Billing Toggle */}
           <div className="inline-flex bg-slate-800/70 rounded-xl p-1 border border-slate-600 mb-8">
