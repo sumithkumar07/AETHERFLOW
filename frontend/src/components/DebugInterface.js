@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { 
-  Bug, Play, Pause, Square, StepInto, StepOver, StepOut, RotateCcw,
+  Bug, Play, Pause, Square, RotateCcw,
   Circle, X, Plus, Minus, Eye, EyeOff, Code, Terminal, Clock,
   AlertTriangle, CheckCircle, Info, Activity, Cpu, MemoryStick
 } from 'lucide-react';
