@@ -1292,7 +1292,7 @@ function AppContent() {
 
       {/* Extensions Marketplace */}
       {showExtensionsMarketplace && (
-        <ExtensionsMarketplace
+        <EnhancedExtensionsMarketplace
           onClose={() => setShowExtensionsMarketplace(false)}
           professionalMode={professionalMode}
         />
