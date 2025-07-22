@@ -38,7 +38,8 @@ import {
   Wifi, WifiOff, Search, Download, Upload, Share2, RotateCcw, Maximize2,
   Minimize2, Sun, Moon, Bell, BellOff, Zap, Users, Sparkles, Crown,
   Layers, Grid3X3, Terminal, GitBranch, Star, Award, Target, Gauge,
-  ChevronRight, Menu, X, Plus, Home, Package, BarChart3, Rocket, Clock
+  ChevronRight, Menu, X, Plus, Home, Package, BarChart3, Rocket, Clock,
+  Brain, Mic, Volume2, VolumeX, Waves
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
