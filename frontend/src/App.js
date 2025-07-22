@@ -57,6 +57,14 @@ function AppContent() {
   const [showGitPanel, setShowGitPanel] = useState(false);
   const [terminalHeight, setTerminalHeight] = useState(300);
   
+  // New AETHERFLOW 2025 Features
+  const [showExtensionsMarketplace, setShowExtensionsMarketplace] = useState(false);
+  const [showTemplatesGallery, setShowTemplatesGallery] = useState(false);
+  const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false);
+  const [showDeploymentDashboard, setShowDeploymentDashboard] = useState(false);
+  const [showCommunityDiscovery, setShowCommunityDiscovery] = useState(false);
+  const [showAIChatHistory, setShowAIChatHistory] = useState(false);
+  
   // Professional UI state
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
