@@ -1013,6 +1013,13 @@ app.include_router(vibranium_router)
 app.include_router(nexus_router)
 app.include_router(immortality_router)
 
+# Include additional routers
+app.include_router(marketplace_router)
+app.include_router(templates_router)
+app.include_router(analytics_router)
+app.include_router(deployment_router)
+app.include_router(community_router)
+
 # Add a legacy API route for backward compatibility
 @app.get("/api/")
 async def legacy_root():
