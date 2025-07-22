@@ -241,6 +241,147 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Feature Comparison Section */}
+      <section className="py-20 px-4 bg-slate-900/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Why Choose AETHERFLOW?
+            </h2>
+            <p className="text-xl text-gray-300">
+              Compare AETHERFLOW with traditional IDEs and see the cosmic difference.
+            </p>
+          </div>
+
+          <div className="bg-slate-800/70 border border-slate-600 rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-600">
+                    <th className="text-left py-6 px-6 font-semibold text-lg">Features</th>
+                    <th className="text-center py-6 px-6">
+                      <div className="flex flex-col items-center">
+                        <Zap className="w-8 h-8 text-blue-400 mb-2" />
+                        <span className="font-semibold text-lg">AETHERFLOW</span>
+                      </div>
+                    </th>
+                    <th className="text-center py-6 px-6 text-gray-400">VS Code Online</th>
+                    <th className="text-center py-6 px-6 text-gray-400">GitHub Codespaces</th>
+                    <th className="text-center py-6 px-6 text-gray-400">Replit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-slate-700">
+                    <td className="py-4 px-6 font-medium">AI Pair Programming</td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6 text-gray-400">Limited</td>
+                    <td className="text-center py-4 px-6 text-gray-400">Basic</td>
+                    <td className="text-center py-4 px-6 text-gray-400">Basic</td>
+                  </tr>
+                  <tr className="border-b border-slate-700 bg-slate-800/30">
+                    <td className="py-4 px-6 font-medium">Real-time Collaboration</td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                  </tr>
+                  <tr className="border-b border-slate-700">
+                    <td className="py-4 px-6 font-medium">Quantum Vibe Engine</td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6 text-gray-400">✗</td>
+                    <td className="text-center py-4 px-6 text-gray-400">✗</td>
+                    <td className="text-center py-4 px-6 text-gray-400">✗</td>
+                  </tr>
+                  <tr className="border-b border-slate-700 bg-slate-800/30">
+                    <td className="py-4 px-6 font-medium">Multi-Universe Development</td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6 text-gray-400">✗</td>
+                    <td className="text-center py-4 px-6 text-gray-400">✗</td>
+                    <td className="text-center py-4 px-6 text-gray-400">✗</td>
+                  </tr>
+                  <tr className="border-b border-slate-700">
+                    <td className="py-4 px-6 font-medium">Custom Extensions</td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6 text-gray-400">Limited</td>
+                    <td className="text-center py-4 px-6 text-gray-400">Limited</td>
+                  </tr>
+                  <tr className="border-b border-slate-700 bg-slate-800/30">
+                    <td className="py-4 px-6 font-medium">Integrated Terminal</td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                    <td className="text-center py-4 px-6">
+                      <CheckCircle className="w-6 h-6 text-green-400 mx-auto" />
+                    </td>
+                  </tr>
+                  <tr className="border-b border-slate-700">
+                    <td className="py-4 px-6 font-medium">Performance (Speed)</td>
+                    <td className="text-center py-4 px-6">
+                      <div className="flex items-center justify-center">
+                        <Gauge className="w-5 h-5 text-blue-400 mr-1" />
+                        <span className="text-blue-400 font-semibold">Cosmic</span>
+                      </div>
+                    </td>
+                    <td className="text-center py-4 px-6 text-gray-400">Good</td>
+                    <td className="text-center py-4 px-6 text-gray-400">Good</td>
+                    <td className="text-center py-4 px-6 text-gray-400">Average</td>
+                  </tr>
+                  <tr className="bg-slate-800/30">
+                    <td className="py-4 px-6 font-medium">Pricing (Professional)</td>
+                    <td className="text-center py-4 px-6">
+                      <span className="text-green-400 font-semibold">$29/mo</span>
+                    </td>
+                    <td className="text-center py-4 px-6 text-gray-400">Free*</td>
+                    <td className="text-center py-4 px-6 text-gray-400">$4/mo**</td>
+                    <td className="text-center py-4 px-6 text-gray-400">$20/mo</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="px-6 py-4 bg-slate-800/50 border-t border-slate-600">
+              <p className="text-sm text-gray-400 text-center">
+                * Limited features • ** Additional compute costs apply • Pricing as of 2025
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link 
+              to="/signup"
+              className="btn btn-primary text-lg px-8 py-3 inline-flex items-center"
+            >
+              Start Your Cosmic Journey
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
