@@ -98,6 +98,7 @@ export const AuthProvider = ({ children }) => {
       setUser(mockUser);
       setIsAuthenticated(true);
       localStorage.setItem('aetherflow_user', JSON.stringify(mockUser));
+      localStorage.setItem('aetherflow_auth', 'true');
       return { success: true, user: mockUser };
     } catch (error) {
       console.error('Signup error:', error);
