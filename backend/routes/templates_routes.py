@@ -179,8 +179,8 @@ MOCK_TEMPLATES = [
             "tailwindcss": "^3.3.0"
         },
         "file_structure": {
-            "src/routes/": {"page layouts", "components": "svelte components"},
-            "static/": {"assets": "images and files"}
+            "src/routes/": "page layouts and components",
+            "static/": "assets - images and files"
         }
     },
     {
