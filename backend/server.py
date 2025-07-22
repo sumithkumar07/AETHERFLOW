@@ -1024,6 +1024,10 @@ app.include_router(analytics_router)
 app.include_router(deployment_router)
 app.include_router(community_router)
 
+# Include 2025 cutting-edge feature routers
+app.include_router(ai_pair_router)
+app.include_router(voice_router)
+
 # Add a legacy API route for backward compatibility
 @app.get("/api/")
 async def legacy_root():
