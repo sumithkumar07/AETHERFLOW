@@ -388,7 +388,7 @@ const DebugInterface = ({
               className="btn btn-ghost btn-sm"
               title="Step Into"
             >
-              <StepInto size={14} />
+              <ChevronDown size={14} />
             </button>
             
             <button
