@@ -15,6 +15,12 @@ import SettingsPage from './components/SettingsPage';
 import GlobalSearchInterface from './components/GlobalSearchInterface';
 import DebugInterface from './components/DebugInterface';
 import PackageManager from './components/PackageManager';
+import ExtensionsMarketplace from './components/ExtensionsMarketplace';
+import TemplatesGallery from './components/TemplatesGallery';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import DeploymentDashboard from './components/DeploymentDashboard';
+import CommunityDiscovery from './components/CommunityDiscovery';
+import AIChatHistory from './components/AIChatHistory';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationProvider, { useNotifications } from './components/NotificationSystem';
 import LoadingSpinner, { LoadingOverlay } from './components/LoadingSpinner';
@@ -26,7 +32,7 @@ import {
   Wifi, WifiOff, Search, Download, Upload, Share2, RotateCcw, Maximize2,
   Minimize2, Sun, Moon, Bell, BellOff, Zap, Users, Sparkles, Crown,
   Layers, Grid3X3, Terminal, GitBranch, Star, Award, Target, Gauge,
-  ChevronRight, Menu, X, Plus, Home
+  ChevronRight, Menu, X, Plus, Home, Package, BarChart3, Rocket, Clock
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
