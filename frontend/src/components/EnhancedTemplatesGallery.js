@@ -4,7 +4,7 @@ import {
   ChevronRight, ExternalLink, Play, GitBranch, Zap, Globe, 
   Smartphone, Server, Database, Palette, ShoppingCart, FileText, 
   Grid3X3, TrendingUp, Award, Bookmark, Share2, Copy, Settings,
-  Layers, Box, Cpu, Brain, Workflow, Target, Rocket, Crown
+  Layers, Box, Cpu, Brain, Workflow, Target, Rocket, Crown, X, CheckCircle2
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
