@@ -11,7 +11,7 @@ import websockets
 from datetime import datetime
 
 # Get backend URL from frontend .env file
-BACKEND_URL = "https://05bd9bcc-105e-4586-8325-9ef58deb9a88.preview.emergentagent.com"
+BACKEND_URL = "https://48e16a4d-aed1-4385-a07e-90787fc9ae0e.preview.emergentagent.com"
 API_V1_BASE_URL = f"{BACKEND_URL}/api/v1"
 WS_BASE_URL = BACKEND_URL.replace("https://", "wss://")
 
