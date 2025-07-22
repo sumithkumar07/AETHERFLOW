@@ -379,7 +379,7 @@ const DebugInterface = ({
               className="btn btn-ghost btn-sm"
               title="Step Over"
             >
-              <StepOver size={14} />
+              <ArrowRight size={14} />
             </button>
             
             <button
