@@ -895,6 +895,25 @@ function AppContent() {
               <Clock size={16} />
             </button>
 
+            {/* 2025 Cutting-edge Feature Buttons */}
+            <div className="border-l border-gray-600 mx-2 h-6"></div>
+            
+            <button 
+              onClick={() => setShowAIPairProgramming(!showAIPairProgramming)}
+              className={`btn btn-ghost btn-sm ${showAIPairProgramming ? 'text-green-400' : ''}`}
+              title="AI Pair Programming (Alt+AI)"
+            >
+              <Brain size={16} />
+            </button>
+            
+            <button 
+              onClick={() => setShowVoiceToCode(!showVoiceToCode)}
+              className={`btn btn-ghost btn-sm ${showVoiceToCode ? 'text-blue-400' : ''}`}
+              title="Voice-to-Code (Alt+V)"
+            >
+              <Mic size={16} />
+            </button>
+
             {/* Layout toggle */}
             {showPreview && (
               <div className="flex bg-gray-700/50 rounded-lg p-1">
