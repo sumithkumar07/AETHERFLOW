@@ -513,6 +513,50 @@ function AppContent() {
     }
   }, [currentFile, autoSaveEnabled, saveFile]);
 
+  // Handlers for 2025 cutting-edge features
+  const handleCodeGenerated = useCallback((code, position = null) => {
+    if (!currentFile || !code) return;
+    
+    let newContent = currentFile.content;
+    
+    if (position && position.line !== undefined) {
+      // Insert code at specific position
+      const lines = newContent.split('\n');
+      lines.splice(position.line, 0, code);
+      newContent = lines.join('\n');
+    } else {
+      // Append code at the end
+      newContent += '\n\n' + code;
+    }
+    
+    handleContentChange(newContent);
+    notifications.success('AI-generated code inserted successfully!');
+  }, [currentFile, handleContentChange, notifications]);
+
+  const handleVoiceCommand = useCallback((action, parameters = {}) => {
+    console.log('🎤 Voice command:', action, parameters);
+    
+    switch (action) {
+      case 'search':
+        setSearchQuery(parameters.query || '');
+        setShowSearch(true);
+        break;
+      case 'open_settings':
+        setShowToolsPanel(true);
+        break;
+      case 'open_file_explorer':
+        setSidebarCollapsed(false);
+        break;
+      case 'file_operation':
+        if (parameters.operation === 'save' && currentFile) {
+          saveFile(currentFile.content);
+        }
+        break;
+      default:
+        console.log('Unknown voice command:', action);
+    }
+  }, [currentFile, saveFile]);
+
   // Handle commands from palette and other sources
   const handleCommand = useCallback((command) => {
     console.log('🎯 Executing command:', command);
