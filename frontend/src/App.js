@@ -637,7 +637,7 @@ function AppContent() {
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [currentFile, showChat, showPreview, sidebarCollapsed, showToolsPanel, focusMode, showTerminal, showGitPanel, showCommandPalette, saveFile]);
+  }, [currentFile, showChat, showPreview, sidebarCollapsed, showToolsPanel, focusMode, showTerminal, showGitPanel, showCommandPalette, saveFile, showExtensionsMarketplace, showTemplatesGallery, showAnalyticsDashboard, showDeploymentDashboard, showCommunityDiscovery, showAIChatHistory]);
 
   // Load projects on startup
   useEffect(() => {
