@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Zap, Check, X, Star, Crown, Sparkles, ArrowRight, 
   HelpCircle, Users, Shield, Gauge, Brain, Code, Globe, Rocket, 
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Play, Eye
 } from 'lucide-react';
+import MicroInteractions from '../components/MicroInteractions';
+import EnhancedLoadingComponents from '../components/EnhancedLoadingComponents';
 
 const PricingPage = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
