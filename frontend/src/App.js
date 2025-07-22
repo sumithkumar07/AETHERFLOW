@@ -601,6 +601,30 @@ function AppContent() {
             e.preventDefault();
             setFocusMode(!focusMode);
             break;
+          case 'e':
+            e.preventDefault();
+            setShowExtensionsMarketplace(!showExtensionsMarketplace);
+            break;
+          case 't':
+            e.preventDefault();
+            setShowTemplatesGallery(!showTemplatesGallery);
+            break;
+          case 'a':
+            e.preventDefault();
+            setShowAnalyticsDashboard(!showAnalyticsDashboard);
+            break;
+          case 'd':
+            e.preventDefault();
+            setShowDeploymentDashboard(!showDeploymentDashboard);
+            break;
+          case 'c':
+            e.preventDefault();
+            setShowCommunityDiscovery(!showCommunityDiscovery);
+            break;
+          case 'h':
+            e.preventDefault();
+            setShowAIChatHistory(!showAIChatHistory);
+            break;
           default:
             break;
         }
