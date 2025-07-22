@@ -1334,6 +1334,55 @@ function AppContent() {
           professionalMode={professionalMode}
         />
       )}
+
+      {/* 2025 Cutting-edge Feature Panels */}
+      {showAIPairProgramming && (
+        <div className="fixed inset-y-0 right-0 w-96 bg-gray-900/95 backdrop-blur-lg border-l border-gray-700 z-40 shadow-2xl">
+          <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <h2 className="text-lg font-semibold text-white">AI Pair Programming</h2>
+            <button
+              onClick={() => setShowAIPairProgramming(false)}
+              className="btn btn-ghost btn-sm"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <AIPairProgramming
+            currentFile={currentFile}
+            onCodeSuggestion={(suggestion) => console.log('AI Suggestion:', suggestion)}
+            onInsertCode={handleCodeGenerated}
+            professionalMode={professionalMode}
+          />
+        </div>
+      )}
+
+      {showVoiceToCode && (
+        <div className="fixed inset-y-0 left-0 w-96 bg-gray-900/95 backdrop-blur-lg border-r border-gray-700 z-40 shadow-2xl">
+          <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <h2 className="text-lg font-semibold text-white">Voice-to-Code</h2>
+            <button
+              onClick={() => setShowVoiceToCode(false)}
+              className="btn btn-ghost btn-sm"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <VoiceToCode
+            currentFile={currentFile}
+            onCodeGenerated={handleCodeGenerated}
+            onCommandExecuted={handleVoiceCommand}
+            professionalMode={professionalMode}
+          />
+        </div>
+      )}
+
+      {/* Enhanced Loading Screen for Initial Load */}
+      {!appInitialized && isLoading && (
+        <IDELoadingScreen 
+          progress={75} 
+          stage="Initializing AETHERFLOW 2025 features" 
+        />
+      )}
     </div>
   );
 }
