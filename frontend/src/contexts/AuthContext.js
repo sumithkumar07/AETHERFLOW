@@ -18,7 +18,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check for stored user data on app load
     const storedUser = localStorage.getItem('aetherflow_user');
-    if (storedUser) {
+    const storedAuth = localStorage.getItem('aetherflow_auth');
+    
+    if (storedUser && storedAuth === 'true') {
       try {
         const userData = JSON.parse(storedUser);
         setUser(userData);
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         localStorage.removeItem('aetherflow_user');
+        localStorage.removeItem('aetherflow_auth');
       }
     }
     setLoading(false);
