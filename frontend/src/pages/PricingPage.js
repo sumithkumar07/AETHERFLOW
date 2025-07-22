@@ -411,7 +411,7 @@ const PricingPage = () => {
           <div className="text-center mt-12">
             <p className="text-gray-400 mb-4">Still have questions?</p>
             <Link to="/contact" className="btn btn-secondary">
-              <Help className="w-4 h-4 mr-2" />
+              <HelpCircle className="w-4 h-4 mr-2" />
               Contact Support
             </Link>
           </div>
