@@ -703,7 +703,7 @@ function AppContent() {
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [currentFile, showChat, showPreview, sidebarCollapsed, showToolsPanel, focusMode, showTerminal, showGitPanel, showCommandPalette, saveFile, showExtensionsMarketplace, showTemplatesGallery, showAnalyticsDashboard, showDeploymentDashboard, showCommunityDiscovery, showAIChatHistory]);
+  }, [currentFile, showChat, showPreview, sidebarCollapsed, showToolsPanel, focusMode, showTerminal, showGitPanel, showCommandPalette, saveFile, showExtensionsMarketplace, showTemplatesGallery, showAnalyticsDashboard, showDeploymentDashboard, showCommunityDiscovery, showAIChatHistory, showAIPairProgramming, showVoiceToCode]);
 
   // Load projects on startup
   useEffect(() => {
