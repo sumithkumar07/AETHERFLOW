@@ -27,6 +27,12 @@ import LoadingSpinner, { LoadingOverlay } from './components/LoadingSpinner';
 import useOfflineDetection from './hooks/useOfflineDetection';
 import useLocalStorage, { useUserPreferences, useProjectCache } from './hooks/useLocalStorage';
 import cosmicEngine from './services/cosmicVibeEngine';
+
+// Import 2025 cutting-edge components
+import { IDELoadingScreen, CardSkeleton } from './components/EnhancedLoadingComponents';
+import { InteractiveButton, InteractiveCard } from './components/MicroInteractions';
+import AIPairProgramming from './components/AIPairProgramming';
+import VoiceToCode from './components/VoiceToCode';
 import { 
   Folder, MessageSquare, Settings, Play, Save, Eye, Code, Monitor, Bot,
   Wifi, WifiOff, Search, Download, Upload, Share2, RotateCcw, Maximize2,
