@@ -138,7 +138,7 @@ MOCK_TEMPLATES = [
         "category": "backend",
         "framework": "FastAPI",
         "tags": ["python", "fastapi", "sqlalchemy", "api", "postgresql"],
-        "preview_url": null,
+        "preview_url": None,
         "thumbnail": "https://images.unsplash.com/photo-1526379879527-8559ecfcaec0?w=400&h=250&fit=crop",
         "author": "Python Guild",
         "version": "1.5.3",
