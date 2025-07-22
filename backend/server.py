@@ -39,6 +39,13 @@ from routes.vibranium_routes import router as vibranium_router
 from routes.nexus_routes import router as nexus_router
 from routes.immortality_routes import router as immortality_router
 
+# Import additional routes
+from routes.marketplace_routes import router as marketplace_router
+from routes.templates_routes import router as templates_router
+from routes.analytics_routes import router as analytics_router
+from routes.deployment_routes import router as deployment_router
+from routes.community_routes import router as community_router
+
 # Import cosmic service
 from services.cosmic_service import init_cosmic_service
 
