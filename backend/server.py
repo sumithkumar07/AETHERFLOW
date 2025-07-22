@@ -46,6 +46,10 @@ from routes.analytics_routes import router as analytics_router
 from routes.deployment_routes import router as deployment_router
 from routes.community_routes import router as community_router
 
+# Import 2025 cutting-edge features
+from routes.ai_pair_programming_routes import router as ai_pair_router
+from routes.voice_routes import router as voice_router
+
 # Import cosmic service
 from services.cosmic_service import init_cosmic_service
 
