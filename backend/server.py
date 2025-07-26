@@ -947,8 +947,8 @@ async def startup_event():
     await db_manager.connect()
     
     # Initialize collaboration manager
-    init_collaboration_manager(db_manager.db)
-    logger.info("Collaboration manager initialized")
+    # init_collaboration_manager(db_manager.db)
+    # logger.info("Collaboration manager initialized")
     
     # Initialize cosmic service
     init_cosmic_service(db_manager)
