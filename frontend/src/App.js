@@ -212,7 +212,7 @@ function AppContent() {
         break;
         
       default:
-        console.log('Unknown professional action:', action);
+        logger.warn('App', 'Unknown professional action', action);
     }
   }, [notifications]);
 
