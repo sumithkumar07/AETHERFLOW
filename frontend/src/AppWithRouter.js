@@ -6,14 +6,21 @@ import ErrorBoundary from './components/ErrorBoundary';
 import NotificationProvider from './components/NotificationSystem';
 import PrivateRoute from './components/PrivateRoute';
 
-// Import pages
+// Import consolidated pages
 import EnhancedLandingPage from './pages/EnhancedLandingPage';
+import UnifiedAppPage from './pages/UnifiedAppPage';
+import PlatformPage from './pages/PlatformPage';
+import AccountPage from './pages/AccountPage';
+import AuthPage from './pages/AuthPage';
+import LegalPage from './pages/LegalPage';
+import DocsPage from './pages/DocsPage';
+
+// Legacy imports for embedded components (kept for backward compatibility)
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import AboutPage from './pages/AboutPage';
 import PricingPage from './pages/PricingPage';
 import ContactPage from './pages/ContactPage';
-import DocsPage from './pages/DocsPage';
 import EnhancedDashboardPage from './pages/EnhancedDashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import TermsPage from './pages/TermsPage';
