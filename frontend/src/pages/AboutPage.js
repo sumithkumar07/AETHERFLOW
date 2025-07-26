@@ -6,7 +6,8 @@ import {
   Linkedin, Twitter, Mail, Github
 } from 'lucide-react';
 
-const AboutPage = () => {
+const AboutPage = ({ embedded = false }) => {
+  const theme = 'dark'; // You can get this from useTheme() if needed
   const team = [
     {
       name: "Dr. Aria Cosmos",
