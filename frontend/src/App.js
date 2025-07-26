@@ -163,7 +163,7 @@ function AppContent() {
 
   // Professional Action Handler (transformed from cosmic handler)
   const handleProfessionalAction = useCallback((action) => {
-    console.log('🚀 Professional Action:', action);
+    logger.user('App', 'Professional action executed', action);
     
     switch (action.type) {
       case 'assistant_activated':
