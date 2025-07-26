@@ -80,32 +80,10 @@ const AboutPage = ({ embedded = false }) => {
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-slate-900/90 backdrop-blur-lg border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-2">
-              <Zap className="w-8 h-8 text-blue-400" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                AETHERFLOW
-              </span>
-            </Link>
-
-            <div className="flex items-center space-x-4">
-              <Link to="/pricing" className="nav-link">Pricing</Link>
-              <Link to="/docs" className="nav-link">Docs</Link>
-              <Link to="/contact" className="nav-link">Contact</Link>
-              <Link to="/signin" className="btn btn-ghost">Sign In</Link>
-              <Link to="/signup" className="btn btn-primary">Get Started</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+  const content = (
+    <>
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className={`${embedded ? 'pt-8' : 'pt-32'} pb-20 px-4`}>
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
             About AETHERFLOW
