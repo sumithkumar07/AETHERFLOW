@@ -8,7 +8,7 @@ import websockets
 import json
 import uuid
 
-BACKEND_URL = "https://cbf02644-400e-4735-b99f-0285b67660f6.preview.emergentagent.com"
+BACKEND_URL = "https://e521396d-be5e-4b8c-bb03-30b7592a1cf2.preview.emergentagent.com"
 WS_BASE_URL = BACKEND_URL.replace("https://", "wss://")
 
 async def test_websocket_simple():
