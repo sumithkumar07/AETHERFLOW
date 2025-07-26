@@ -45,67 +45,68 @@ function AppWithRouter() {
           <NotificationProvider>
             <Router>
               <Routes>
-                {/* Public routes */}
+                {/* 🚀 CONSOLIDATED HYBRID PLATFORM ROUTES */}
+                
+                {/* Landing Page */}
                 <Route path="/" element={<EnhancedLandingPage />} />
-                <Route path="/signin" element={<SignInPage />} />
-                <Route path="/signup" element={<SignUpPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/docs" element={<DocsPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/api-status" element={<ApiStatusPage />} />
-                <Route path="/enterprise" element={<EnterprisePage />} />
-
-                {/* Private routes */}
+                
+                {/* Unified App Workspace - Combines Dashboard + IDE + Projects + Analytics */}
                 <Route 
-                  path="/dashboard" 
+                  path="/app" 
                   element={
                     <PrivateRoute>
-                      <EnhancedDashboardPage />
+                      <UnifiedAppPage />
                     </PrivateRoute>
                   } 
                 />
                 <Route 
-                  path="/profile" 
+                  path="/app/:view" 
                   element={
                     <PrivateRoute>
-                      <ProfilePage />
-                    </PrivateRoute>
-                  } 
-                />
-                <Route 
-                  path="/team" 
-                  element={
-                    <PrivateRoute>
-                      <TeamPage />
-                    </PrivateRoute>
-                  } 
-                />
-                <Route 
-                  path="/billing" 
-                  element={
-                    <PrivateRoute>
-                      <BillingPage />
-                    </PrivateRoute>
-                  } 
-                />
-                <Route 
-                  path="/ide" 
-                  element={
-                    <PrivateRoute>
-                      <IDEApp />
+                      <UnifiedAppPage />
                     </PrivateRoute>
                   } 
                 />
                 
-                {/* Redirect old app route to dashboard for authenticated users */}
+                {/* Platform Information - About + Pricing + Enterprise + API Status */}
+                <Route path="/platform" element={<PlatformPage />} />
+                
+                {/* Account Management - Profile + Billing + Team + Integrations */}
                 <Route 
-                  path="/app" 
-                  element={<Navigate to="/dashboard" replace />} 
+                  path="/account" 
+                  element={
+                    <PrivateRoute>
+                      <AccountPage />
+                    </PrivateRoute>
+                  } 
                 />
+                
+                {/* Authentication - Sign In + Sign Up */}
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/auth/:mode" element={<AuthPage />} />
+                
+                {/* Legal - Terms + Privacy */}
+                <Route path="/legal" element={<LegalPage />} />
+                
+                {/* Documentation & Support - Docs + Contact */}
+                <Route path="/docs" element={<DocsPage />} />
+                
+                {/* 🔄 BACKWARD COMPATIBILITY ROUTES (Redirects) */}
+                <Route path="/signin" element={<Navigate to="/auth" replace />} />
+                <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+                <Route path="/ide" element={<Navigate to="/app#ide" replace />} />
+                <Route path="/profile" element={<Navigate to="/account#profile" replace />} />
+                <Route path="/billing" element={<Navigate to="/account#billing" replace />} />
+                <Route path="/team" element={<Navigate to="/account#team" replace />} />
+                <Route path="/integrations" element={<Navigate to="/account#integrations" replace />} />
+                <Route path="/about" element={<Navigate to="/platform#about" replace />} />
+                <Route path="/pricing" element={<Navigate to="/platform#pricing" replace />} />
+                <Route path="/enterprise" element={<Navigate to="/platform#enterprise" replace />} />
+                <Route path="/api-status" element={<Navigate to="/platform#status" replace />} />
+                <Route path="/terms" element={<Navigate to="/legal#terms" replace />} />
+                <Route path="/privacy" element={<Navigate to="/legal#privacy" replace />} />
+                <Route path="/contact" element={<Navigate to="/docs#contact" replace />} />
 
                 {/* Fallback route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
