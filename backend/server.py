@@ -954,6 +954,38 @@ async def startup_event():
     init_cosmic_service(db_manager)
     logger.info("Cosmic service initialized - Reality engine online!")
     
+    # Initialize enhanced services
+    from .services.enhanced_ai_service import init_enhanced_ai_service
+    from .services.collaboration_service_enhanced import init_enhanced_collaboration_service
+    from .services.auth_service import init_auth_service
+    from .services.file_management_service import init_file_management_service
+    from .services.search_service import init_search_service
+    from .services.extension_service import init_extension_service
+    
+    # Initialize authentication service
+    init_auth_service(db_manager)
+    logger.info("🔐 Authentication service initialized - User management ready!")
+    
+    # Initialize enhanced AI service
+    init_enhanced_ai_service(db_manager)
+    logger.info("🤖 Enhanced AI service initialized - Real AI capabilities ready!")
+    
+    # Initialize enhanced collaboration service
+    init_enhanced_collaboration_service(db_manager)
+    logger.info("🚀 Enhanced collaboration service initialized - Real-time editing ready!")
+    
+    # Initialize file management service
+    init_file_management_service(db_manager)
+    logger.info("📁 File management service initialized - Advanced file handling ready!")
+    
+    # Initialize search service
+    init_search_service(db_manager)
+    logger.info("🔍 Search service initialized - Intelligent discovery ready!")
+    
+    # Initialize extension service
+    init_extension_service(db_manager)
+    logger.info("🧩 Extension service initialized - Marketplace with 127+ integrations ready!")
+
     # Initialize neuro sync service
     init_neuro_sync_service(db_manager)
     logger.info("Neuro-Sync service initialized - BCI capabilities ready!")
