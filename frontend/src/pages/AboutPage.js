@@ -127,13 +127,31 @@ const AboutPage = ({ embedded = false }) => {
                 </div>
               </div>
             </div>
+            
             <div className="relative">
-              <div className="cosmic-orb w-96 h-96 mx-auto relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute inset-4 bg-gradient-to-r from-purple-500/40 to-cyan-500/40 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <div className="absolute inset-8 bg-gradient-to-r from-cyan-500/50 to-blue-500/50 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Zap className="w-24 h-24 text-white" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-3xl blur-3xl"></div>
+              <div className="relative bg-slate-800/80 backdrop-blur-xl rounded-3xl p-8 border border-slate-700">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="text-center p-4">
+                    <Zap className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                    <h4 className="font-bold text-lg">Quantum AI</h4>
+                    <p className="text-sm text-gray-400">Powered by cosmic intelligence</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <Brain className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                    <h4 className="font-bold text-lg">Neural Sync</h4>
+                    <p className="text-sm text-gray-400">Brain-computer interface</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <Users className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                    <h4 className="font-bold text-lg">Cosmic Collab</h4>
+                    <p className="text-sm text-gray-400">Multi-dimensional teamwork</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <Shield className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                    <h4 className="font-bold text-lg">Reality Shield</h4>
+                    <p className="text-sm text-gray-400">Quantum-encrypted security</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,70 +159,98 @@ const AboutPage = ({ embedded = false }) => {
         </div>
       </section>
 
-      {/* Timeline */}
+      {/* Values Section */}
       <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6">Our Cosmic Values</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              These universal principles guide our journey through the infinite expanse of possibilities.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-b from-blue-900/30 to-transparent border border-blue-500/20">
+              <Target className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-4">Infinite Innovation</h3>
+              <p className="text-gray-300">
+                We never settle for the status quo. Every feature pushes the boundaries of what's possible 
+                in software development across multiple dimensions.
+              </p>
+            </div>
+            
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-b from-purple-900/30 to-transparent border border-purple-500/20">
+              <Heart className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-4">Cosmic Community</h3>
+              <p className="text-gray-300">
+                Our community spans galaxies. We believe in the power of collective consciousness 
+                and collaborative creation across all realities.
+              </p>
+            </div>
+            
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-b from-green-900/30 to-transparent border border-green-500/20">
+              <Gauge className="w-12 h-12 text-green-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-4">Sacred Excellence</h3>
+              <p className="text-gray-300">
+                Quality is not just a metric, it's a sacred duty. Every line of code we write 
+                contributes to the cosmic harmony of the digital universe.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Timeline Section */}
+      <section className="py-20 px-4 bg-slate-800/30">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Our Journey</h2>
-          <div className="relative">
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-400 to-purple-400"></div>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6">Our Cosmic Journey</h2>
+            <p className="text-xl text-gray-300">
+              From quantum dreams to interdimensional reality.
+            </p>
+          </div>
+          
+          <div className="space-y-12">
             {timeline.map((item, index) => (
-              <div key={index} className={`flex items-center mb-16 ${index % 2 === 0 ? '' : 'flex-row-reverse'}`}>
-                <div className={`w-1/2 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8'}`}>
-                  <div className="bg-slate-800/70 p-6 rounded-xl border border-slate-600">
-                    <div className="text-3xl font-bold text-blue-400 mb-2">{item.year}</div>
-                    <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                    <p className="text-gray-300">{item.description}</p>
-                  </div>
+              <div key={index} className="flex items-center space-x-8">
+                <div className="flex-shrink-0 w-24 text-right">
+                  <span className="text-2xl font-bold text-blue-400">{item.year}</span>
                 </div>
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-purple-400 rounded-full border-4 border-slate-900"></div>
+                <div className="flex-shrink-0 w-4 h-4 bg-purple-500 rounded-full relative">
+                  <div className="absolute inset-0 bg-purple-400 rounded-full animate-ping"></div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-gray-300">{item.description}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Values */}
-      <section className="py-20 px-4 bg-slate-800/50">
+      {/* Team Section */}
+      <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Our Core Values</h2>
-            <p className="text-xl text-gray-300">The cosmic principles that guide everything we do</p>
+            <h2 className="text-4xl font-bold mb-6">Meet the Cosmic Architects</h2>
+            <p className="text-xl text-gray-300">
+              The brilliant minds channeling cosmic energy into revolutionary code.
+            </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800/70 rounded-xl border border-slate-600 mb-4">
-                  {value.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{value.title}</h3>
-                <p className="text-gray-300">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Meet Our Cosmic Team</h2>
-            <p className="text-xl text-gray-300">The visionaries behind the reality-bending development revolution</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member, index) => (
-              <div key={index} className="text-center group">
+              <div key={index} className="text-center">
                 <div className="relative mb-6">
-                  <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-2xl font-bold text-white mb-4">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 mx-auto flex items-center justify-center text-2xl font-bold">
                     {member.avatar}
                   </div>
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-600/20 blur-xl"></div>
                 </div>
-                <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
-                <p className="text-purple-400 mb-3">{member.role}</p>
-                <p className="text-sm text-gray-300 mb-4">{member.bio}</p>
+                <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                <p className="text-blue-400 font-medium mb-4">{member.role}</p>
+                <p className="text-sm text-gray-300 mb-4 leading-relaxed">{member.bio}</p>
                 <div className="flex justify-center space-x-3">
                   {member.social.linkedin && (
                     <a href={member.social.linkedin} className="text-gray-400 hover:text-blue-400 transition-colors">
@@ -217,7 +263,7 @@ const AboutPage = ({ embedded = false }) => {
                     </a>
                   )}
                   {member.social.github && (
-                    <a href={member.social.github} className="text-gray-400 hover:text-purple-400 transition-colors">
+                    <a href={member.social.github} className="text-gray-400 hover:text-blue-400 transition-colors">
                       <Github className="w-5 h-5" />
                     </a>
                   )}
@@ -228,86 +274,105 @@ const AboutPage = ({ embedded = false }) => {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-20 px-4 bg-slate-800/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-blue-400">10,000+</div>
-              <div className="text-gray-300">Cosmic Developers</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-purple-400">50+</div>
-              <div className="text-gray-300">Parallel Universes</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-green-400">1M+</div>
-              <div className="text-gray-300">VIBE Tokens Mined</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-yellow-400">99.9%</div>
-              <div className="text-gray-300">Reality Uptime</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-4">
+      {/* CTA Section */}
+      <section className="py-20 px-4 bg-gradient-to-r from-blue-900/50 via-purple-900/50 to-indigo-900/50">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Join Our Cosmic Mission?</h2>
+          <h2 className="text-4xl font-bold mb-6">Ready to Transcend Reality?</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Be part of the revolution that's transforming how developers create the future.
+            Join thousands of developers who have unlocked their cosmic potential with AETHERFLOW.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup" className="btn btn-primary btn-lg">
-              Start Your Journey
-              <ArrowRight className="ml-2 w-5 h-5" />
+            <Link 
+              to="/auth" 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+            >
+              <span>Start Your Cosmic Journey</span>
+              <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
-            <Link to="/contact" className="btn btn-secondary btn-lg">
-              Get in Touch
+            <Link 
+              to="/platform#pricing" 
+              className="border border-gray-600 hover:border-gray-500 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 hover:bg-gray-800/50"
+            >
+              Explore Pricing Dimensions
             </Link>
           </div>
         </div>
       </section>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-slate-900/90 backdrop-blur-lg border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center space-x-2">
+              <Zap className="w-8 h-8 text-blue-400" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                AETHERFLOW
+              </span>
+            </Link>
+
+            <div className="flex items-center space-x-4">
+              <Link to="/platform#pricing" className="nav-link">Pricing</Link>
+              <Link to="/docs" className="nav-link">Docs</Link>
+              <Link to="/docs#contact" className="nav-link">Contact</Link>
+              <Link to="/auth" className="btn btn-ghost">Sign In</Link>
+              <Link to="/auth/signup" className="btn btn-primary">Get Started</Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {content}
 
       {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-700 py-12 px-4">
+      <footer className="py-20 px-4 bg-slate-900/80 border-t border-slate-700">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Zap className="w-6 h-6 text-blue-400" />
-                <span className="text-xl font-bold">AETHERFLOW</span>
+                <span className="text-lg font-bold">AETHERFLOW</span>
               </div>
-              <p className="text-gray-400">
-                The cosmic-level IDE for reality-bending development.
+              <p className="text-gray-400 text-sm">
+                Transcending the boundaries of traditional development through cosmic intelligence.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
-                <li><Link to="/docs" className="hover:text-white">Documentation</Link></li>
-                <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
+              <h4 className="font-semibold mb-4">Platform</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to="/platform#about" className="hover:text-white">About</Link></li>
+                <li><Link to="/platform#pricing" className="hover:text-white">Pricing</Link></li>
+                <li><Link to="/platform#enterprise" className="hover:text-white">Enterprise</Link></li>
+                <li><Link to="/platform#status" className="hover:text-white">Status</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/about" className="hover:text-white text-blue-400">About</Link></li>
-                <li><Link to="/careers" className="hover:text-white">Careers</Link></li>
-                <li><Link to="/press" className="hover:text-white">Press</Link></li>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to="/docs" className="hover:text-white">Documentation</Link></li>
+                <li><Link to="/docs#contact" className="hover:text-white">Support</Link></li>
+                <li><Link to="/account#integrations" className="hover:text-white">Integrations</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
-                <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to="/legal#terms" className="hover:text-white">Terms</Link></li>
+                <li><Link to="/legal#privacy" className="hover:text-white">Privacy</Link></li>
               </ul>
             </div>
           </div>
