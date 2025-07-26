@@ -90,9 +90,37 @@ const SignUpPage = () => {
     }
   };
 
-  const handleSocialSignup = (provider) => {
-    console.log(`Social signup with ${provider}`);
-    // TODO: Implement social signup
+  const handleSocialSignup = async (provider) => {
+    try {
+      logger.user('SignUpPage', `Social signup initiated with ${provider}`);
+      setIsLoading(true);
+      
+      let result;
+      switch (provider) {
+        case 'google':
+          result = await socialAuthHelpers.signInWithGoogle();
+          break;
+        case 'github':
+          result = await socialAuthHelpers.signInWithGitHub();
+          break;
+        case 'microsoft':
+          result = await socialAuthHelpers.signInWithMicrosoft();
+          break;
+        default:
+          throw new Error('Unsupported provider');
+      }
+      
+      // Handle successful authentication
+      if (result.user) {
+        logger.user('SignUpPage', 'Social signup successful', { provider, email: result.user.email });
+        navigate('/app');
+      }
+    } catch (error) {
+      logger.error('SignUpPage', 'Social signup failed', { provider, error: error.message });
+      setError(error.message || 'Social signup failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getPasswordStrengthText = () => {
