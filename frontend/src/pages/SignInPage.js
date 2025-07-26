@@ -57,9 +57,37 @@ const SignInPage = () => {
     }));
   };
 
-  const handleSocialLogin = (provider) => {
-    console.log(`Social login with ${provider}`);
-    // TODO: Implement social login
+  const handleSocialLogin = async (provider) => {
+    try {
+      logger.user('SignInPage', `Social login initiated with ${provider}`);
+      setLoading(true);
+      
+      let result;
+      switch (provider) {
+        case 'google':
+          result = await socialAuthHelpers.signInWithGoogle();
+          break;
+        case 'github':
+          result = await socialAuthHelpers.signInWithGitHub();
+          break;
+        case 'microsoft':
+          result = await socialAuthHelpers.signInWithMicrosoft();
+          break;
+        default:
+          throw new Error('Unsupported provider');
+      }
+      
+      // Handle successful authentication
+      if (result.user) {
+        logger.user('SignInPage', 'Social login successful', { provider, email: result.user.email });
+        navigate('/app');
+      }
+    } catch (error) {
+      logger.error('SignInPage', 'Social login failed', { provider, error: error.message });
+      setError(error.message || 'Social login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
