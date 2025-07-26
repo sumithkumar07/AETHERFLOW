@@ -457,13 +457,23 @@ async def get_debug_sessions(request: Request, user_id: str):
             {"user_id": user_id}
         ).sort("started_at", -1).limit(20).to_list(20)
 
+        # Fix ObjectId serialization issue by converting to strings
+        serialized_sessions = []
+        for session in sessions:
+            if '_id' in session:
+                session['_id'] = str(session['_id'])
+            serialized_sessions.append(session)
+
         return {
             "user_id": user_id,
-            "session_count": len(sessions),
-            "sessions": sessions
+            "session_count": len(serialized_sessions),
+            "sessions": serialized_sessions
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Debug sessions error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Debug sessions error: {str(e)}")
 
 # === VIBE TOKEN ECONOMY ENDPOINTS ===
