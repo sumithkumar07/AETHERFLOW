@@ -258,7 +258,7 @@ const AuthPage = () => {
                 <Github className="w-5 h-5" />
               </button>
               <button className={`flex items-center justify-center px-4 py-3 border ${theme === 'dark' ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-300 hover:bg-gray-50'} rounded-lg transition-colors`}>
-                <Google className="w-5 h-5" />
+                <Globe className="w-5 h-5" />
               </button>
             </div>
           </div>
