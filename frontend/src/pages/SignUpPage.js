@@ -95,7 +95,7 @@ const SignUpPage = () => {
   const handleSocialSignup = async (provider) => {
     try {
       logger.user('SignUpPage', `Social signup initiated with ${provider}`);
-      setIsLoading(true);
+      setLoading(true);
       
       let result;
       switch (provider) {
@@ -121,7 +121,7 @@ const SignUpPage = () => {
       logger.error('SignUpPage', 'Social signup failed', { provider, error: error.message });
       setError(error.message || 'Social signup failed');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
