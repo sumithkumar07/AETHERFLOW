@@ -6,6 +6,7 @@ PWA capabilities, offline support, and mobile-specific optimizations
 import asyncio
 import json
 import logging
+import re
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import uuid
