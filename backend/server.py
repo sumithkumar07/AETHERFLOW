@@ -998,7 +998,7 @@ async def shutdown_event():
 app.include_router(api_router)
 
 # Include collaboration router
-app.include_router(collaboration_router)
+# app.include_router(collaboration_router)
 
 # Include cosmic router
 app.include_router(cosmic_router)
