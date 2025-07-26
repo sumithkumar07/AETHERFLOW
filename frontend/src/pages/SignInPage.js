@@ -5,6 +5,8 @@ import {
   Zap, Eye, EyeOff, Mail, Lock, ArrowRight, 
   AlertCircle, CheckCircle, Github, Chrome, Sparkles 
 } from 'lucide-react';
+import logger from '../utils/logger';
+import { socialAuthHelpers } from '../utils/socialAuth';
 
 const SignInPage = () => {
   const [formData, setFormData] = useState({
