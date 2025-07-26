@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHERFLOW - Offline</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .offline-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .offline-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .offline-subtitle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        .offline-message {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.4);
+        }
+
+        .retry-button:active {
+            transform: translateY(0);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: left;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+
+        .feature-description {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .cosmic-animation {
+            animation: cosmic-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes cosmic-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .connection-status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            border-radius: 0.5rem;
+            color: #fca5a5;
+        }
+
+        .connection-status.online {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        @media (max-width: 768px) {
+            .offline-title {
+                font-size: 2rem;
+            }
+            
+            .offline-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon cosmic-animation">🌌</div>
+        <h1 class="offline-title">AETHERFLOW</h1>
+        <p class="offline-subtitle">Cosmic Development Platform</p>
+        
+        <div class="offline-message">
+            <p>You're currently offline, but the cosmic energy persists! Some features may be limited until your connection to the digital realm is restored.</p>
+        </div>
+        
+        <button class="retry-button" onclick="retryConnection()">
+            Reconnect to the Cosmos
+        </button>
+        
+        <div class="connection-status" id="connectionStatus">
+            🔌 Connection Status: Offline
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3 class="feature-title">Code Editor</h3>
+                <p class="feature-description">Continue coding with cached projects and files</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI Assistant</h3>
+                <p class="feature-description">Limited offline AI capabilities available</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">VIBE Tokens</h3>
+                <p class="feature-description">Local token balance maintained</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🌟</div>
+                <h3 class="feature-title">Cosmic Features</h3>
+                <p class="feature-description">Core cosmic features work offline</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const isOnline = navigator.onLine;
+            
+            if (isOnline) {
+                statusElement.textContent = '🌐 Connection Status: Online';
+                statusElement.className = 'connection-status online';
+            } else {
+                statusElement.textContent = '🔌 Connection Status: Offline';
+                statusElement.className = 'connection-status';
+            }
+        }
+
+        // Retry connection
+        function retryConnection() {
+            if (navigator.onLine) {
+                // Try to reload the page
+                window.location.reload();
+            } else {
+                // Show connection check
+                updateConnectionStatus();
+                
+                // Vibrate if supported
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+            }
+        }
+
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Initial status check
+        updateConnectionStatus();
+
+        // Auto-retry when online
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+
+        // Register service worker if available
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(() => {
+                console.log('Service Worker registered from offline page');
+            });
+        }
+
+        // Add cosmic animation effects
+        setInterval(() => {
+            const icons = document.querySelectorAll('.feature-icon');
+            icons.forEach(icon => {
+                icon.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+            });
+        }, 3000);
+    </script>
+</body>
+</html>
