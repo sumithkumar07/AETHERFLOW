@@ -19,8 +19,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Import collaboration routes
-from routes.collaboration_routes import router as collaboration_router, init_collaboration_manager
+# Import auth routes
+from routes.auth_routes import router as auth_router
 
 # Import cosmic routes
 from routes.cosmic_routes import router as cosmic_router
