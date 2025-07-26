@@ -124,12 +124,21 @@ async def get_evolution_history(request: Request, user_id: str):
             {"user_id": user_id}
         ).sort("created_at", -1).limit(50).to_list(50)
 
+        # Fix ObjectId serialization issue by converting to strings
+        serialized_evolutions = []
+        for evolution in evolutions:
+            if '_id' in evolution:
+                evolution['_id'] = str(evolution['_id'])
+            serialized_evolutions.append(evolution)
+
         return {
             "user_id": user_id,
-            "evolution_count": len(evolutions),
-            "evolutions": evolutions
+            "evolution_count": len(serialized_evolutions),
+            "evolutions": serialized_evolutions
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Evolution history error: {str(e)}")
 
