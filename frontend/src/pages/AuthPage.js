@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import {
   User, Mail, Lock, Eye, EyeOff, ArrowRight, 
-  Sparkles, Shield, CheckCircle, Github, Google
+  Sparkles, Shield, CheckCircle, Github, Globe
 } from 'lucide-react';
 
 const AuthPage = () => {
