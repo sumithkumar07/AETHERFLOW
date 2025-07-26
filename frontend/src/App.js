@@ -115,6 +115,9 @@ function AppContent() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        logger.info('App', 'AETHERFLOW VibeCoder initializing...');
+        performanceMonitor.startPerformanceTimer('app-initialization');
+        
         setIsLoading(true);
         
         // Initialize enhanced engine (keeping backend functionality)
@@ -128,9 +131,15 @@ function AppContent() {
           setUserLevel(mapKarmaToLevel(karma?.level || 'Novice'));
         }
         
+        // Initialize PWA
+        pwaManager.setupNetworkMonitoring();
+        
         setIsLoading(false);
+        
+        performanceMonitor.endPerformanceTimer('app-initialization');
+        logger.info('App', 'App initialization completed successfully');
       } catch (error) {
-        console.error('App initialization failed:', error);
+        logger.error('App', 'App initialization failed', error);
         setIsLoading(false);
       }
     };
