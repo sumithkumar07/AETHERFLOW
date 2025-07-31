@@ -6,7 +6,7 @@ from models.agent import Agent, AgentCreate, AgentUpdate, AgentTeam, TaskExecuti
 from models.user import User
 from services.agent_orchestrator import AgentOrchestrator
 from routes.auth import get_current_user
-from services.database import get_database
+from models.database import get_database
 
 router = APIRouter()
 
