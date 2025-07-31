@@ -6,11 +6,11 @@ import { useThemeStore } from './store/themeStore'
 
 // Initialize theme
 const initializeTheme = () => {
-  // Initialize theme store
+  // Initialize theme store immediately
   useThemeStore.getState().initializeTheme()
 }
 
-// Initialize Puter.js AI if available
+// Initialize Puter.js AI if available (non-blocking)
 const initializePuterAI = async () => {
   try {
     // Check if Puter.js is available
@@ -19,30 +19,28 @@ const initializePuterAI = async () => {
       const script = document.createElement('script')
       script.src = 'https://js.puter.com/v2/'
       script.async = true
+      script.onerror = () => {
+        console.warn('⚠️ Puter.js AI could not be loaded, using fallback responses')
+      }
+      script.onload = () => {
+        console.log('✅ Puter.js AI initialized successfully')
+      }
       document.head.appendChild(script)
-      
-      await new Promise((resolve) => {
-        script.onload = resolve
-      })
-      
-      console.log('✅ Puter.js AI initialized successfully')
     }
   } catch (error) {
     console.warn('⚠️ Puter.js AI not available, using fallback responses', error)
   }
 }
 
-// Initialize everything
-const initialize = async () => {
-  initializeTheme()
-  await initializePuterAI()
-}
+// Initialize theme immediately
+initializeTheme()
 
-// Initialize and render the app
-initialize().then(() => {
-  ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>,
-  )
-})
+// Render the React app immediately (non-blocking)
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+
+// Initialize Puter.js in parallel (non-blocking)
+initializePuterAI()
