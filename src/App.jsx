@@ -12,6 +12,8 @@ import ProjectEditor from './pages/ProjectEditor'
 import Integrations from './pages/Integrations'
 import Subscription from './pages/Subscription'
 import Settings from './pages/Settings'
+import Agents from './pages/Agents'
+import Enterprise from './pages/Enterprise'
 import { useAuthStore } from './store/authStore'
 
 function App() {
