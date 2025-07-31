@@ -35,6 +35,8 @@ function App() {
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/:projectId" element={<ProjectEditor />} />
                 <Route path="/integrations" element={<Integrations />} />
+                <Route path="/agents" element={<Agents />} />
+                <Route path="/enterprise" element={<Enterprise />} />
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/settings" element={<Settings />} />
               </>
