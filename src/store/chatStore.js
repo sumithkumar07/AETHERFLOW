@@ -57,7 +57,7 @@ export const useChatStore = create((set, get) => ({
     }))
   },
   
-  sendMessage: async (content) => {
+  sendMessage: async (content, model = 'gpt-4.1-nano') => {
     const currentConversation = get().currentConversation
     if (!currentConversation) {
       get().createConversation()
@@ -73,73 +73,83 @@ export const useChatStore = create((set, get) => ({
     set({ isLoading: true })
     
     try {
-      // Mock AI response for demo - replace with Puter.js AI in production
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API delay
+      // Enhanced prompt for AI Code Studio
+      const enhancedPrompt = `You are an expert AI development assistant for AI Code Studio, a platform similar to Emergent.ai. You help developers build applications through conversation.
+
+User Request: ${content}
+
+Please provide a helpful response that includes:
+1. Clear explanation of what you can help with
+2. Code examples when relevant (use proper markdown formatting)
+3. Step-by-step guidance
+4. Best practices and recommendations
+5. Ask follow-up questions to better understand their needs
+
+Focus on practical, actionable advice for building modern web applications, APIs, and integrations.`
       
-      let response = "I'm a demo AI assistant! I can help you build applications with code. "
+      // Use Puter.js AI
+      const response = await window.puter.ai.chat(enhancedPrompt, { 
+        model: model,
+        temperature: 0.7,
+        max_tokens: 2000
+      })
       
-      if (content.toLowerCase().includes('react')) {
-        response = `I can help you build a React application! Here's a basic structure:
-
-\`\`\`jsx
-import React from 'react';
-
-function App() {
-  return (
-    <div className="App">
-      <h1>Welcome to your React App!</h1>
-      <p>Let's build something amazing together!</p>
-    </div>
-  );
-}
-
-export default App;
-\`\`\`
-
-What specific features would you like to add to your React app?`
-      } else if (content.toLowerCase().includes('api') || content.toLowerCase().includes('backend')) {
-        response = `I can help you create API endpoints! Here's a FastAPI example:
-
-\`\`\`python
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Hello World"}
-
-@app.get("/users/{user_id}")
-def read_user(user_id: int):
-    return {"user_id": user_id, "name": "Demo User"}
-\`\`\`
-
-Would you like me to add authentication, database integration, or other features?`
-      } else if (content.toLowerCase().includes('database')) {
-        response = `I can help you set up a database! Here are some options:
-
-1. **MongoDB** - NoSQL, great for flexible schemas
-2. **PostgreSQL** - Powerful relational database
-3. **SQLite** - Lightweight, perfect for development
-
-Which database would you prefer? I can show you how to integrate it with your application.`
+      let aiContent = ''
+      
+      // Handle different response formats based on model
+      if (response.message && response.message.content) {
+        if (Array.isArray(response.message.content)) {
+          aiContent = response.message.content[0].text || response.message.content[0]
+        } else {
+          aiContent = response.message.content
+        }
+      } else if (response.content) {
+        aiContent = response.content
+      } else if (typeof response === 'string') {
+        aiContent = response
       } else {
-        response += "I can help you with:\n\n• React/Vue/Angular frontends\n• Node.js/Python backends\n• Database integration\n• API development\n• Authentication systems\n• Deployment strategies\n\nWhat would you like to build today?"
+        aiContent = response.choices?.[0]?.message?.content || JSON.stringify(response)
       }
       
       // Add AI response
       get().addMessage({
         role: 'assistant',
-        content: response,
-        type: 'text'
+        content: aiContent,
+        type: 'text',
+        model: model
       })
       
     } catch (error) {
-      console.error('AI Error:', error)
+      console.error('Puter.js AI Error:', error)
+      
+      // Fallback response with helpful information
+      const fallbackResponse = `I'm your AI development assistant! I can help you with:
+
+🚀 **Application Development:**
+• React, Vue, Angular frontends
+• Node.js, Python, FastAPI backends
+• Database design and integration
+• Authentication systems
+
+💻 **Code Generation:**
+• Components and functions
+• API endpoints and routes
+• Database models and queries
+• Complete project structures
+
+🔧 **Integrations & Deployment:**
+• Third-party service integrations
+• Cloud deployment strategies
+• CI/CD pipeline setup
+• Performance optimization
+
+What would you like to build today? Be specific about your requirements and I'll provide detailed guidance!`
+
       get().addMessage({
         role: 'assistant',
-        content: 'Sorry, I encountered an error processing your request. Please try again.',
-        type: 'error'
+        content: fallbackResponse,
+        type: 'text',
+        error: true
       })
     } finally {
       set({ isLoading: false })
