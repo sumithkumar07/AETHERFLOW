@@ -1,7 +1,5 @@
 import { create } from 'zustand'
 
-import { create } from 'zustand'
-
 export const useThemeStore = create((set, get) => ({
   theme: typeof window !== 'undefined' && localStorage.getItem('theme') || 'light',
   
