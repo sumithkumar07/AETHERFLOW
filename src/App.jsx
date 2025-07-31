@@ -9,11 +9,7 @@ import Chat from './pages/Chat'
 import Templates from './pages/Templates'
 import Projects from './pages/Projects'
 import ProjectEditor from './pages/ProjectEditor'
-import Integrations from './pages/Integrations'
-import Subscription from './pages/Subscription'
-import Settings from './pages/Settings'
-import Agents from './pages/Agents'
-import Enterprise from './pages/Enterprise'
+import Profile from './pages/Profile'
 import { useAuthStore } from './store/authStore'
 
 function App() {
@@ -21,7 +17,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
         <Navigation />
         <main>
           <Routes>
@@ -34,18 +30,24 @@ function App() {
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/:projectId" element={<ProjectEditor />} />
-                <Route path="/integrations" element={<Integrations />} />
-                <Route path="/agents" element={<Agents />} />
-                <Route path="/enterprise" element={<Enterprise />} />
-                <Route path="/subscription" element={<Subscription />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<Profile />} />
               </>
             ) : (
               <Route path="*" element={<Login />} />
             )}
           </Routes>
         </main>
-        <Toaster position="top-right" />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            },
+          }}
+        />
       </div>
     </Router>
   )
