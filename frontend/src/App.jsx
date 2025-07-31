@@ -4,11 +4,9 @@ import { Toaster } from 'react-hot-toast'
 import { useAuthStore } from './store/authStore'
 
 // Import pages
+import HomePage from './pages/HomePage'
+import LoginPage from './pages/LoginPage'
 import Dashboard from './pages/Dashboard'
-
-// Import components (we'll create these if needed)
-const HomePage = () => <div className="p-8">Home Page - Coming Soon</div>
-const LoginPage = () => <div className="p-8">Login Page - Coming Soon</div>
 const SignupPage = () => <div className="p-8">Signup Page - Coming Soon</div>
 const TemplatesPage = () => <div className="p-8">Templates Page - Coming Soon</div>
 const ChatHubPage = () => <div className="p-8">Chat Hub - Coming Soon</div>
