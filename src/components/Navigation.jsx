@@ -28,6 +28,8 @@ const Navigation = () => {
     { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, requireAuth: true },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, requireAuth: false },
     { name: 'Projects', href: '/projects', icon: FolderIcon, requireAuth: true },
+    { name: 'Agents', href: '/agents', icon: UserGroupIcon, requireAuth: true },
+    { name: 'Enterprise', href: '/enterprise', icon: ShieldCheckIcon, requireAuth: true },
     { name: 'Integrations', href: '/integrations', icon: CubeTransparentIcon, requireAuth: true },
     { name: 'Pricing', href: '/subscription', icon: CreditCardIcon, requireAuth: false },
   ]
