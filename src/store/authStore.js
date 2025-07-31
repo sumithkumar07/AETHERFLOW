@@ -1,169 +1,215 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 
-// Demo credentials for instant access
-const DEMO_CREDENTIALS = {
-  email: 'demo@aicodestudio.com',
-  password: 'demo123'
-}
+// Configure axios defaults
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001'
+axios.defaults.baseURL = API_BASE_URL
+
+// Request interceptor to add auth token
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth-token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// Response interceptor for error handling
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('auth-token')
+      localStorage.removeItem('auth-storage')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
 
 export const useAuthStore = create(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
       user: null,
-      loading: false,
-      
-      login: async (credentials) => {
-        set({ loading: true })
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null,
+
+      // Login function
+      login: async (email, password) => {
+        set({ isLoading: true, error: null })
+        
         try {
-          // Check demo credentials first
-          if (credentials.email === DEMO_CREDENTIALS.email && 
-              credentials.password === DEMO_CREDENTIALS.password) {
-            const demoUser = {
-              id: 'demo-user-1',
-              name: 'AI Tempo Demo User',
-              email: credentials.email,
-              avatar: null,
-              isDemo: true
-            }
-            
-            set({ 
-              isAuthenticated: true, 
-              user: demoUser,
-              loading: false 
-            })
-            
-            // Store session in localStorage for persistence
-            localStorage.setItem('aicodestudio_session', JSON.stringify({
-              user: demoUser,
-              isAuthenticated: true,
-              timestamp: Date.now()
-            }))
-            
-            return { success: true }
-          }
-          
-          // Regular authentication for any other valid email/password
-          if (credentials.email && credentials.password && credentials.password.length >= 6) {
-            const user = {
-              id: `user-${Date.now()}`,
-              name: credentials.email.split('@')[0] || 'User',
-              email: credentials.email,
-              avatar: null,
-              isDemo: false
-            }
-            
-            set({ 
-              isAuthenticated: true, 
-              user: user,
-              loading: false 
-            })
-            
-            // Store session in localStorage for persistence
-            localStorage.setItem('aicodestudio_session', JSON.stringify({
-              user: user,
-              isAuthenticated: true,
-              timestamp: Date.now()
-            }))
-            
-            return { success: true }
-          } else {
-            set({ loading: false })
-            return { success: false, error: 'Invalid credentials' }
-          }
-        } catch (error) {
-          set({ loading: false })
-          return { success: false, error: error.message }
-        }
-      },
-      
-      signup: async (userData) => {
-        set({ loading: true })
-        try {
-          if (userData.email && userData.password && userData.name) {
-            const user = {
-              id: `user-${Date.now()}`,
-              name: userData.name,
-              email: userData.email,
-              avatar: null,
-              isDemo: false
-            }
-            
-            set({ 
-              isAuthenticated: true, 
-              user: user,
-              loading: false 
-            })
-            
-            // Store session in localStorage for persistence
-            localStorage.setItem('aicodestudio_session', JSON.stringify({
-              user: user,
-              isAuthenticated: true,
-              timestamp: Date.now()
-            }))
-            
-            return { success: true }
-          } else {
-            set({ loading: false })
-            return { success: false, error: 'Invalid data' }
-          }
-        } catch (error) {
-          set({ loading: false })
-          return { success: false, error: error.message }
-        }
-      },
-      
-      logout: () => {
-        try {
-          // Clear session from localStorage
-          localStorage.removeItem('aicodestudio_session')
-          
-          set({ 
-            isAuthenticated: false, 
-            user: null 
+          const response = await axios.post('/api/auth/login', {
+            email,
+            password
           })
+          
+          const { access_token, user } = response.data
+          
+          // Store token
+          localStorage.setItem('auth-token', access_token)
+          
+          set({
+            user,
+            token: access_token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null
+          })
+          
+          toast.success(`Welcome back, ${user.name}!`)
+          return true
         } catch (error) {
-          console.error('Logout error:', error)
+          const errorMessage = error.response?.data?.detail || 'Login failed'
+          set({
+            error: errorMessage,
+            isLoading: false,
+            isAuthenticated: false,
+            user: null,
+            token: null
+          })
+          toast.error(errorMessage)
+          throw error
         }
       },
-      
-      checkAuth: () => {
+
+      // Register function
+      register: async (name, email, password) => {
+        set({ isLoading: true, error: null })
+        
         try {
-          const session = localStorage.getItem('aicodestudio_session')
-          if (session) {
-            const parsedSession = JSON.parse(session)
-            // Check if session is not older than 30 days
-            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
-            if (parsedSession.timestamp > thirtyDaysAgo) {
-              set({ 
-                isAuthenticated: true, 
-                user: parsedSession.user 
-              })
-              return true
-            } else {
-              // Session expired, clear it
-              localStorage.removeItem('aicodestudio_session')
-            }
-          }
-          return false
+          const response = await axios.post('/api/auth/register', {
+            name,
+            email,
+            password
+          })
+          
+          const { access_token, user } = response.data
+          
+          // Store token
+          localStorage.setItem('auth-token', access_token)
+          
+          set({
+            user,
+            token: access_token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null
+          })
+          
+          toast.success(`Welcome to AI Tempo, ${user.name}!`)
+          return true
         } catch (error) {
-          console.error('Auth check error:', error)
+          const errorMessage = error.response?.data?.detail || 'Registration failed'
+          set({
+            error: errorMessage,
+            isLoading: false,
+            isAuthenticated: false,
+            user: null,
+            token: null
+          })
+          toast.error(errorMessage)
+          throw error
+        }
+      },
+
+      // Quick demo login
+      demoLogin: async () => {
+        return get().login('demo@aicodestudio.com', 'demo123')
+      },
+
+      // Logout function
+      logout: () => {
+        localStorage.removeItem('auth-token')
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          error: null
+        })
+        toast.success('Logged out successfully')
+      },
+
+      // Check authentication status
+      checkAuth: async () => {
+        const token = localStorage.getItem('auth-token')
+        
+        if (!token) {
+          set({ isAuthenticated: false, user: null, token: null })
+          return false
+        }
+
+        try {
+          const response = await axios.get('/api/auth/me')
+          const user = response.data
+          
+          set({
+            user,
+            token,
+            isAuthenticated: true,
+            error: null
+          })
+          
+          return true
+        } catch (error) {
+          // Token is invalid
+          localStorage.removeItem('auth-token')
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            error: null
+          })
           return false
         }
       },
 
-      // Demo login helper
-      loginDemo: async () => {
-        return get().login(DEMO_CREDENTIALS)
-      }
+      // Update profile
+      updateProfile: async (profileData) => {
+        set({ isLoading: true, error: null })
+        
+        try {
+          const response = await axios.put('/api/auth/profile', profileData)
+          const updatedUser = response.data.user
+          
+          set({
+            user: updatedUser,
+            isLoading: false,
+            error: null
+          })
+          
+          return updatedUser
+        } catch (error) {
+          const errorMessage = error.response?.data?.detail || 'Profile update failed'
+          set({
+            error: errorMessage,
+            isLoading: false
+          })
+          throw error
+        }
+      },
+
+      // Clear error
+      clearError: () => set({ error: null })
     }),
     {
-      name: 'auth-storage', // localStorage key
+      name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ 
-        isAuthenticated: state.isAuthenticated, 
-        user: state.user 
-      })
+        user: state.user, 
+        isAuthenticated: state.isAuthenticated 
+      }),
+      version: 1,
     }
   )
 )
