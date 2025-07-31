@@ -156,20 +156,25 @@ const Login = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="bg-gray-50 rounded-lg p-4 text-center"
+          className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 rounded-xl p-4 text-center"
         >
-          <p className="text-sm text-gray-600 mb-2">Quick Demo Access</p>
-          <button
-            onClick={() => {
-              setFormData({
-                email: 'demo@aicodestudio.com',
-                password: 'demo123'
-              })
-            }}
-            className="text-sm text-primary-600 hover:text-primary-500 font-medium"
-          >
-            Use Demo Credentials
-          </button>
+          <p className="text-sm text-gray-700 mb-3 font-medium">🚀 Quick Demo Access</p>
+          <div className="space-y-2">
+            <button
+              onClick={() => {
+                setFormData({
+                  email: 'demo@aicodestudio.com',
+                  password: 'demo123'
+                })
+              }}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium bg-white/70 hover:bg-white/90 px-3 py-1 rounded-lg transition-all duration-200 border border-blue-200/50"
+            >
+              Use Demo Credentials
+            </button>
+            <div className="text-xs text-gray-500">
+              Email: demo@aicodestudio.com | Password: demo123
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </div>
