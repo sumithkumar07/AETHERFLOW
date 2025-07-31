@@ -7,6 +7,8 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Chat from './pages/Chat'
 import Templates from './pages/Templates'
+import Projects from './pages/Projects'
+import ProjectEditor from './pages/ProjectEditor'
 import Integrations from './pages/Integrations'
 import Subscription from './pages/Subscription'
 import Settings from './pages/Settings'
@@ -24,10 +26,12 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/templates" element={<Templates />} />
             {isAuthenticated ? (
               <>
                 <Route path="/chat" element={<Chat />} />
-                <Route path="/templates" element={<Templates />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:projectId" element={<ProjectEditor />} />
                 <Route path="/integrations" element={<Integrations />} />
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/settings" element={<Settings />} />
