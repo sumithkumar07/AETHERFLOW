@@ -10,7 +10,7 @@ from services.enterprise_integrator import EnterpriseIntegrator
 from services.business_automation import BusinessAutomationEngine
 from services.compliance_engine import ComplianceEngine
 from routes.auth import get_current_user
-from services.database import get_database
+from models.database import get_database
 
 router = APIRouter()
 
