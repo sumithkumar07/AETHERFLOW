@@ -5,10 +5,11 @@ import Navigation from './components/Navigation'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
-import Chat from './pages/Chat'
+import ChatHub from './pages/ChatHub'
+import IndividualProject from './pages/IndividualProject'
 import Templates from './pages/Templates'
-import Projects from './pages/Projects'
-import ProjectEditor from './pages/ProjectEditor'
+import Integrations from './pages/Integrations'
+import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import { useAuthStore } from './store/authStore'
 
@@ -32,9 +33,10 @@ function App() {
             <Route path="/templates" element={<Templates />} />
             {isAuthenticated ? (
               <>
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:projectId" element={<ProjectEditor />} />
+                <Route path="/chat" element={<ChatHub />} />
+                <Route path="/chat/:projectId" element={<IndividualProject />} />
+                <Route path="/integrations" element={<Integrations />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/profile" element={<Profile />} />
               </>
             ) : (
