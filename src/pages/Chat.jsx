@@ -7,11 +7,13 @@ import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   CodeBracketIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  CogIcon
 } from '@heroicons/react/24/outline'
 import { useChatStore } from '../store/chatStore'
 import ChatSidebar from '../components/ChatSidebar'
 import ChatMessage from '../components/ChatMessage'
+import ModelSelector from '../components/ModelSelector'
 import toast from 'react-hot-toast'
 
 const Chat = () => {
