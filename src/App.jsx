@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Navigation from './components/Navigation'
@@ -13,7 +13,12 @@ import Profile from './pages/Profile'
 import { useAuthStore } from './store/authStore'
 
 function App() {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, checkAuth } = useAuthStore()
+
+  useEffect(() => {
+    // Check for existing authentication on app startup
+    checkAuth()
+  }, [checkAuth])
 
   return (
     <Router>
