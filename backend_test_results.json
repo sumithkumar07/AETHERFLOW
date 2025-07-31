@@ -1,0 +1,117 @@
+{
+  "summary": {
+    "total": 15,
+    "passed": 9,
+    "failed": 1,
+    "skipped": 5,
+    "duration": 0.6506743431091309,
+    "timestamp": "2025-07-31T16:33:59.030538"
+  },
+  "results": [
+    {
+      "test": "Root Health Check",
+      "status": "PASS",
+      "details": "API running: AI Code Studio API",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.384537"
+    },
+    {
+      "test": "Detailed Health Check",
+      "status": "PASS",
+      "details": "Services: {'database': 'connected', 'ai': 'available', 'websocket': 'active'}",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.427055"
+    },
+    {
+      "test": "User Registration",
+      "status": "PASS",
+      "details": "User created: testuser@example.com",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.729096"
+    },
+    {
+      "test": "Demo User Login",
+      "status": "FAIL",
+      "details": "Login failed",
+      "response_code": null,
+      "timestamp": "2025-07-31T16:33:58.773144"
+    },
+    {
+      "test": "AI Chat Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-07-31T16:33:58.773213"
+    },
+    {
+      "test": "Project Management Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-07-31T16:33:58.773226"
+    },
+    {
+      "test": "Get Templates",
+      "status": "PASS",
+      "details": "Found 4 templates",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.816103"
+    },
+    {
+      "test": "Get Featured Templates",
+      "status": "PASS",
+      "details": "Found 3 featured templates",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.859126"
+    },
+    {
+      "test": "Get Specific Template",
+      "status": "PASS",
+      "details": "Template: React Starter Kit",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.902106"
+    },
+    {
+      "test": "Enterprise Features Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-07-31T16:33:58.902167"
+    },
+    {
+      "test": "Agents System Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-07-31T16:33:58.902178"
+    },
+    {
+      "test": "Get Available Integrations",
+      "status": "PASS",
+      "details": "Found 8 integrations",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.945086"
+    },
+    {
+      "test": "Get Integration Categories",
+      "status": "PASS",
+      "details": "Found 8 categories",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:58.987121"
+    },
+    {
+      "test": "Get Popular Integrations",
+      "status": "PASS",
+      "details": "Found 5 popular integrations",
+      "response_code": 200,
+      "timestamp": "2025-07-31T16:33:59.030101"
+    },
+    {
+      "test": "WebSocket Connection",
+      "status": "SKIP",
+      "details": "websocket-client not installed",
+      "response_code": null,
+      "timestamp": "2025-07-31T16:33:59.030341"
+    }
+  ]
+}
