@@ -61,7 +61,7 @@ const Chat = () => {
     }
 
     try {
-      await sendMessage(message)
+      await sendMessage(message, selectedModel)
     } catch (error) {
       toast.error('Failed to send message')
     }
