@@ -29,6 +29,7 @@ const Chat = () => {
 
   const [input, setInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedModel, setSelectedModel] = useState('gpt-4.1-nano')
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
 
