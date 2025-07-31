@@ -214,6 +214,14 @@ const Chat = () => {
         {/* Input Area */}
         <div className="bg-white border-t border-gray-200 p-4">
           <div className="max-w-4xl mx-auto">
+            {/* Model Selector */}
+            <div className="flex justify-center mb-4">
+              <ModelSelector 
+                selectedModel={selectedModel}
+                onModelChange={setSelectedModel}
+              />
+            </div>
+            
             <form onSubmit={handleSubmit} className="relative">
               <div className="flex items-end space-x-3">
                 <div className="flex-1 relative">
@@ -236,8 +244,8 @@ const Chat = () => {
                   </button>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Press Enter to send, Shift+Enter for new line
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Press Enter to send • Shift+Enter for new line • Powered by Puter.js
               </p>
             </form>
           </div>
