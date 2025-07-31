@@ -10,23 +10,63 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
+  
+  * {
+    @apply transition-colors duration-200;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-medium py-2.5 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98];
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-900 font-medium py-2 px-4 rounded-lg border border-gray-300 transition-colors duration-200;
+    @apply bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-900 font-medium py-2.5 px-6 rounded-lg border border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent hover:bg-gray-100 active:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all duration-200;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300;
+  }
+  
+  .card-hover {
+    @apply transform hover:scale-[1.02] hover:shadow-lg transition-all duration-300;
   }
   
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-400;
+  }
+  
+  .loading-skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-600;
+  }
+  
+  .toast-success {
+    @apply bg-green-500 text-white;
+  }
+  
+  .toast-error {
+    @apply bg-red-500 text-white;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  .bounce-in {
+    animation: bounceIn 0.5s ease-out;
   }
 }
 
@@ -48,9 +88,17 @@
   background: #94a3b8;
 }
 
-/* Gradient backgrounds */
+/* Enhanced gradients */
 .gradient-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-2 {
+  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+}
+
+.gradient-bg-3 {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
 }
 
 .gradient-text {
@@ -58,4 +106,137 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.gradient-text-2 {
+  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Grid pattern background */
+.bg-grid-pattern {
+  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+  70% {
+    opacity: 0.9;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Enhanced focus states */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
+
+/* Glass morphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Status indicators */
+.status-dot {
+  @apply w-2 h-2 rounded-full inline-block;
+}
+
+.status-online {
+  @apply bg-green-500;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.status-offline {
+  @apply bg-gray-400;
+}
+
+.status-error {
+  @apply bg-red-500;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+/* Typography enhancements */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .mobile-full {
+    @apply w-full;
+  }
+  
+  .mobile-hidden {
+    @apply hidden;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
