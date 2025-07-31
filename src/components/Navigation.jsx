@@ -12,7 +12,9 @@ import {
   CreditCardIcon,
   CogIcon,
   ArrowRightOnRectangleIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  UserGroupIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 
