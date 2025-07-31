@@ -10,7 +10,7 @@ from typing import List, Optional
 import json
 
 # Import our modules
-from models.database import init_db
+from models.database import init_db, get_database
 from models.user import User, UserCreate, UserLogin
 from models.project import Project, ProjectCreate
 from models.conversation import Conversation, Message
