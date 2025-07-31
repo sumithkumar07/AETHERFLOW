@@ -55,6 +55,7 @@ app.add_middleware(
 # Initialize services
 manager = ConnectionManager()
 ai_service = AIService()
+enhanced_ai_service = EnhancedAIService()
 
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
@@ -62,6 +63,8 @@ app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
 app.include_router(projects_router, prefix="/api/projects", tags=["Projects"])
 app.include_router(templates_router, prefix="/api/templates", tags=["Templates"])
 app.include_router(integrations_router, prefix="/api/integrations", tags=["Integrations"])
+app.include_router(agents_router, prefix="/api/agents", tags=["Multi-Agent System"])
+app.include_router(enterprise_router, prefix="/api/enterprise", tags=["Enterprise Features"])
 
 @app.on_event("startup")
 async def startup_event():
