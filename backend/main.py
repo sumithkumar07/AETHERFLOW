@@ -73,9 +73,35 @@ async def startup_event():
         await init_db()
         logger.info("Database initialized successfully")
         
-        # Initialize AI service
+        # Initialize AI services
         await ai_service.initialize()
-        logger.info("AI service initialized successfully")
+        await enhanced_ai_service.initialize()
+        logger.info("AI services initialized successfully")
+        
+        # Initialize enterprise services
+        db_client = await get_database()
+        
+        # Initialize agent orchestrator
+        orchestrator = AgentOrchestrator(db_client)
+        await orchestrator.initialize()
+        logger.info("Agent orchestrator initialized successfully")
+        
+        # Initialize enterprise integrator
+        integrator = EnterpriseIntegrator(db_client)
+        await integrator.initialize()
+        logger.info("Enterprise integrator initialized successfully")
+        
+        # Initialize business automation engine
+        automation_engine = BusinessAutomationEngine(db_client)
+        await automation_engine.initialize()
+        logger.info("Business automation engine initialized successfully")
+        
+        # Initialize compliance engine
+        compliance_engine = ComplianceEngine(db_client)
+        await compliance_engine.initialize()
+        logger.info("Compliance engine initialized successfully")
+        
+        logger.info("🚀 Enterprise AI Code Studio fully initialized!")
         
     except Exception as e:
         logger.error(f"Startup error: {e}")
