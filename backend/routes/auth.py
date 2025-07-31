@@ -48,7 +48,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise credentials_exception
     
     db = await get_database()
-    user = await db.users.find_one({"_id": user_id})
+    # Convert string ID to ObjectId for database query
+    from bson import ObjectId
+    try:
+        object_id = ObjectId(user_id)
+        user = await db.users.find_one({"_id": object_id})
+    except Exception:
+        # If ObjectId conversion fails, try with string ID
+        user = await db.users.find_one({"_id": user_id})
+    
     if user is None:
         raise credentials_exception
     return User(**user)
