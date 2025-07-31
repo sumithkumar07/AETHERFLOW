@@ -2,6 +2,13 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import { useThemeStore } from './store/themeStore'
+
+// Initialize theme
+const initializeTheme = () => {
+  // Initialize theme store
+  useThemeStore.getState().initializeTheme()
+}
 
 // Initialize Puter.js AI if available
 const initializePuterAI = async () => {
@@ -25,8 +32,14 @@ const initializePuterAI = async () => {
   }
 }
 
-// Initialize AI before rendering the app
-initializePuterAI().then(() => {
+// Initialize everything
+const initialize = async () => {
+  initializeTheme()
+  await initializePuterAI()
+}
+
+// Initialize and render the app
+initialize().then(() => {
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <App />
