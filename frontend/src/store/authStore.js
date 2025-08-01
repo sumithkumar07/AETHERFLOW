@@ -29,7 +29,7 @@ const useAuthStore = create(
           set({ isLoading: true, error: null })
           
           const response = await axios.post('/auth/login', credentials)
-          const { user, access_token, refresh_token } = response.data
+          const { user, access_token, token_type } = response.data
           
           // Set authorization header for future requests
           axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
@@ -37,7 +37,7 @@ const useAuthStore = create(
           set({
             user,
             token: access_token,
-            refreshToken: refresh_token,
+            refreshToken: null, // Backend doesn't provide refresh token yet
             isAuthenticated: true,
             isLoading: false,
             error: null,
