@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import logging
 
-from models.user import get_current_user
+from routes.auth import get_current_user
 from services.collaboration_engine import LiveCollaborationEngine, Operation, OperationType
 
 router = APIRouter()
