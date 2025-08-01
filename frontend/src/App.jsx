@@ -70,8 +70,29 @@ function App() {
         // Initialize auth store (handles rehydration and validation)
         initialize()
         
+        // Fallback timeout to prevent infinite loading
+        setTimeout(() => {
+          const currentState = useAuthStore.getState()
+          if (!currentState.isInitialized) {
+            console.warn('Auth initialization timed out, forcing completion')
+            useAuthStore.setState({ 
+              isInitialized: true, 
+              isInitializing: false, 
+              isLoading: false,
+              isAuthenticated: false 
+            })
+          }
+        }, 10000) // 10 second timeout
+        
       } catch (error) {
         console.error('App initialization error:', error)
+        // Force completion on error
+        useAuthStore.setState({ 
+          isInitialized: true, 
+          isInitializing: false, 
+          isLoading: false,
+          isAuthenticated: false 
+        })
       }
     }
     
