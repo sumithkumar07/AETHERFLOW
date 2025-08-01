@@ -103,12 +103,56 @@ async def startup_event():
         await init_db()
         logger.info("Database initialized successfully")
         
-        # Initialize AI services
+        # Initialize core AI services
         await ai_service.initialize()
         await enhanced_ai_service.initialize()
-        logger.info("AI services initialized successfully")
+        logger.info("Core AI services initialized successfully")
         
-        logger.info("🚀 AI Code Studio fully initialized!")
+        # Initialize advanced services
+        logger.info("Initializing advanced services...")
+        
+        # Initialize AI Router
+        await intelligent_ai_router.initialize()
+        set_ai_router(intelligent_ai_router)
+        logger.info("✅ Intelligent AI Router initialized")
+        
+        # Initialize Plugin Manager
+        await plugin_manager.initialize()
+        set_plugin_manager(plugin_manager)
+        logger.info("✅ Plugin Manager initialized")
+        
+        # Initialize Analytics & Recommendations
+        await advanced_analytics.initialize()
+        smart_recommendation_engine.analytics = advanced_analytics  # Set reference
+        set_analytics_services(advanced_analytics, smart_recommendation_engine)
+        logger.info("✅ Advanced Analytics initialized")
+        
+        # Initialize Security Services
+        await zero_trust_gateway.initialize()
+        await compliance_engine.initialize()
+        set_security_services(zero_trust_gateway, compliance_engine)
+        logger.info("✅ Zero Trust Security initialized")
+        
+        # Initialize Performance Optimizer
+        await performance_optimizer.initialize()
+        logger.info("✅ Performance Optimizer initialized")
+        
+        # Initialize Adaptive UI Service
+        await adaptive_ui_service.initialize()
+        logger.info("✅ Adaptive UI Service initialized")
+        
+        # Initialize Development Assistant
+        await development_assistant.initialize()
+        set_development_assistant(development_assistant)
+        logger.info("✅ Development Assistant initialized")
+        
+        # Initialize Collaboration Engine
+        await collaboration_engine.initialize()
+        set_collaboration_engine(collaboration_engine)
+        logger.info("✅ Live Collaboration Engine initialized")
+        
+        logger.info("🚀 AI Tempo Platform - ADVANCED EDITION fully initialized!")
+        logger.info("🎯 All Phase 3-10 enhancements are now ACTIVE!")
         
     except Exception as e:
         logger.error(f"Startup error: {e}")
