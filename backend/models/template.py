@@ -6,25 +6,22 @@ from enum import Enum
 class TemplateCategory(str, Enum):
     WEB_APP = "web_app"
     API = "api"
-    MOBILE = "mobile"
-    AI_ML = "ai_ml"
     ECOMMERCE = "ecommerce"
-    BLOG = "blog"
     DASHBOARD = "dashboard"
-    GAME = "game"
+    MOBILE = "mobile"
+    LANDING = "landing"
 
-class TemplateFile(BaseModel):
+class FileTemplate(BaseModel):
     path: str
     content: str
     language: str = "text"
-    description: Optional[str] = None
 
 class TemplateCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: str
     category: TemplateCategory
     tags: List[str] = Field(default_factory=list)
-    files: List[TemplateFile]
+    files: List[FileTemplate] = Field(default_factory=list)
     requirements: Optional[str] = None
     setup_instructions: Optional[str] = None
 
@@ -34,15 +31,13 @@ class Template(BaseModel):
     description: str
     category: TemplateCategory
     tags: List[str] = Field(default_factory=list)
-    files: List[TemplateFile]
+    files: List[FileTemplate] = Field(default_factory=list)
     requirements: Optional[str] = None
     setup_instructions: Optional[str] = None
     featured: bool = False
     downloads: int = 0
     rating: float = 0.0
-    preview_url: Optional[str] = None
-    screenshot_urls: List[str] = Field(default_factory=list)
-    created_by: str = "system"
+    created_by: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
