@@ -215,8 +215,8 @@ class BackendTester:
         project_data = {
             "name": "Test Project",
             "description": "A test project for API validation",
-            "type": "web_app",
-            "requirements": "React, Node.js"
+            "type": "react_app",
+            "requirements": "React, Node.js, TypeScript"
         }
         
         response = self.make_request("POST", "/api/projects/", project_data)
