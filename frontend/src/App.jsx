@@ -7,21 +7,21 @@ import LoadingStates from './components/LoadingStates'
 import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
 
-// Lazy load pages for better performance
-const Home = React.lazy(() => import('./pages/Home'))
-const Login = React.lazy(() => import('./pages/Login'))
-const Signup = React.lazy(() => import('./pages/Signup'))
-const ChatHub = React.lazy(() => import('./pages/ChatHub'))
-const IndividualProject = React.lazy(() => import('./pages/IndividualProject'))
-const Templates = React.lazy(() => import('./pages/Templates'))
-const Integrations = React.lazy(() => import('./pages/Integrations'))
-const Settings = React.lazy(() => import('./pages/Settings'))
-const Profile = React.lazy(() => import('./pages/Profile'))
-const Projects = React.lazy(() => import('./pages/Projects'))
-const Deploy = React.lazy(() => import('./pages/Deploy'))
-const Agents = React.lazy(() => import('./pages/Agents'))
-const Enterprise = React.lazy(() => import('./pages/Enterprise'))
-const Subscription = React.lazy(() => import('./pages/Subscription'))
+// Import pages directly instead of lazy loading for debugging
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import ChatHub from './pages/ChatHub'
+import IndividualProject from './pages/IndividualProject'
+import Templates from './pages/Templates'
+import Integrations from './pages/Integrations'
+import Settings from './pages/Settings'
+import Profile from './pages/Profile'
+import Projects from './pages/Projects'
+import Deploy from './pages/Deploy'
+import Agents from './pages/Agents'
+import Enterprise from './pages/Enterprise'
+import Subscription from './pages/Subscription'
 
 // Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
