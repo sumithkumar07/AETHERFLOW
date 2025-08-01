@@ -60,10 +60,15 @@ function App() {
   const { isAuthenticated, isLoading, token, checkAuth } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
   const [isInitialized, setIsInitialized] = useState(false)
+  const initializationAttempted = useRef(false)
 
   useEffect(() => {
     // Initialize theme and authentication on app startup
     const initializeApp = async () => {
+      // Prevent multiple initialization attempts
+      if (initializationAttempted.current) return
+      initializationAttempted.current = true
+      
       try {
         // Initialize theme first (synchronous)
         initializeTheme()
@@ -83,7 +88,7 @@ function App() {
     }
     
     initializeApp()
-  }, [checkAuth, initializeTheme, token])
+  }, [checkAuth, initializeTheme]) // Removed token from dependencies
 
   // Apply theme class to document
   useEffect(() => {
