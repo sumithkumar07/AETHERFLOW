@@ -230,6 +230,22 @@ function AppContent() {
               } 
             />
             <Route 
+              path="/analytics" 
+              element={
+                <ProtectedRoute>
+                  <AdvancedAnalytics />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/performance" 
+              element={
+                <ProtectedRoute>
+                  <PerformanceMonitor />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/subscription" 
               element={
                 <ProtectedRoute>
