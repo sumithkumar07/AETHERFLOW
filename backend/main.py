@@ -113,51 +113,75 @@ async def startup_event():
         await enhanced_ai_service.initialize()
         logger.info("Core AI services initialized successfully")
         
-        # Initialize advanced services
+        # Initialize advanced services (graceful degradation)
         logger.info("Initializing advanced services...")
         
-        # Initialize AI Router
-        await intelligent_ai_router.initialize()
-        set_ai_router(intelligent_ai_router)
-        logger.info("✅ Intelligent AI Router initialized")
+        try:
+            # Initialize AI Router
+            await intelligent_ai_router.initialize()
+            set_ai_router(intelligent_ai_router)
+            logger.info("✅ Intelligent AI Router initialized")
+        except Exception as e:
+            logger.warning(f"AI Router initialization failed: {e}")
         
-        # Initialize Plugin Manager
-        await plugin_manager.initialize()
-        set_plugin_manager(plugin_manager)
-        logger.info("✅ Plugin Manager initialized")
+        try:
+            # Initialize Plugin Manager
+            await plugin_manager.initialize()
+            set_plugin_manager(plugin_manager)
+            logger.info("✅ Plugin Manager initialized")
+        except Exception as e:
+            logger.warning(f"Plugin Manager initialization failed: {e}")
         
-        # Initialize Analytics & Recommendations
-        await advanced_analytics.initialize()
-        smart_recommendation_engine.analytics = advanced_analytics  # Set reference
-        set_analytics_services(advanced_analytics, smart_recommendation_engine)
-        logger.info("✅ Advanced Analytics initialized")
+        try:
+            # Initialize Analytics & Recommendations
+            await advanced_analytics.initialize()
+            smart_recommendation_engine.analytics = advanced_analytics  # Set reference
+            set_analytics_services(advanced_analytics, smart_recommendation_engine)
+            logger.info("✅ Advanced Analytics initialized")
+        except Exception as e:
+            logger.warning(f"Advanced Analytics initialization failed: {e}")
         
-        # Initialize Security Services
-        await zero_trust_gateway.initialize()
-        await compliance_engine.initialize()
-        set_security_services(zero_trust_gateway, compliance_engine)
-        logger.info("✅ Zero Trust Security initialized")
+        try:
+            # Initialize Security Services
+            await zero_trust_gateway.initialize()
+            await compliance_engine.initialize()
+            set_security_services(zero_trust_gateway, compliance_engine)
+            logger.info("✅ Zero Trust Security initialized")
+        except Exception as e:
+            logger.warning(f"Security Services initialization failed: {e}")
         
-        # Initialize Performance Optimizer
-        await performance_optimizer.initialize()
-        logger.info("✅ Performance Optimizer initialized")
+        try:
+            # Initialize Performance Optimizer
+            await performance_optimizer.initialize()
+            logger.info("✅ Performance Optimizer initialized")
+        except Exception as e:
+            logger.warning(f"Performance Optimizer initialization failed: {e}")
         
-        # Initialize Adaptive UI Service
-        await adaptive_ui_service.initialize()
-        logger.info("✅ Adaptive UI Service initialized")
+        try:
+            # Initialize Adaptive UI Service
+            await adaptive_ui_service.initialize()
+            logger.info("✅ Adaptive UI Service initialized")
+        except Exception as e:
+            logger.warning(f"Adaptive UI Service initialization failed: {e}")
         
-        # Initialize Development Assistant
-        await development_assistant.initialize()
-        set_development_assistant(development_assistant)
-        logger.info("✅ Development Assistant initialized")
+        try:
+            # Initialize Development Assistant
+            await development_assistant.initialize()
+            set_development_assistant(development_assistant)
+            logger.info("✅ Development Assistant initialized")
+        except Exception as e:
+            logger.warning(f"Development Assistant initialization failed: {e}")
         
-        # Initialize Collaboration Engine
-        await collaboration_engine.initialize()
-        set_collaboration_engine(collaboration_engine)
-        logger.info("✅ Live Collaboration Engine initialized")
+        try:
+            # Initialize Collaboration Engine
+            await collaboration_engine.initialize()
+            set_collaboration_engine(collaboration_engine)
+            logger.info("✅ Live Collaboration Engine initialized")
+        except Exception as e:
+            logger.warning(f"Collaboration Engine initialization failed: {e}")
         
-        logger.info("🚀 AI Tempo Platform - ADVANCED EDITION fully initialized!")
-        logger.info("🎯 All Phase 3-10 enhancements are now ACTIVE!")
+        logger.info("🚀 AI Tempo Platform - ADVANCED EDITION initialized with graceful degradation!")
+        logger.info("🎯 Core services active, advanced features loading...")
         
     except Exception as e:
         logger.error(f"Startup error: {e}")
