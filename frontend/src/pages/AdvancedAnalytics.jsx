@@ -24,7 +24,7 @@ const AdvancedAnalytics = () => {
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/dashboard?range=${timeRange}`)
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/dashboard/analytics/dashboard?range=${timeRange}`)
       const data = await response.json()
       setAnalyticsData(data)
     } catch (error) {
