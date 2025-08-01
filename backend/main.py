@@ -24,6 +24,14 @@ from routes.enterprise import router as enterprise_router
 from services.ai_service import AIService
 from services.enhanced_ai_service import EnhancedAIService
 from services.websocket_manager import ConnectionManager
+from services.intelligent_ai_router import IntelligentAIRouter
+from services.plugin_manager import PluginManager
+from services.advanced_analytics import AdvancedAnalytics, SmartRecommendationEngine
+from services.zero_trust_security import ZeroTrustGateway, ComplianceEngine
+from services.performance_optimizer import PerformanceOptimizer
+from services.adaptive_ui_service import AdaptiveUIService
+from services.development_assistant import DevelopmentAssistant
+from services.collaboration_engine import LiveCollaborationEngine
 
 # Load environment variables
 load_dotenv()
