@@ -146,11 +146,12 @@ const useAuthStore = create(
           return false
         }
         
-        // If we have a token, validate it silently (without overriding existing auth state)
+        // If we have a token, validate it silently
         const isValid = await get().checkAuthSilent()
         
-        set((state) => {
-          state.isInitialized = true
+        set({
+          ...get(),
+          isInitialized: true
         })
         
         return isValid
