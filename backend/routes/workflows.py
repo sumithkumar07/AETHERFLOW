@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 from services.workflow_automation import WorkflowEngine, TriggerType, ActionType
-from models.user import get_current_user
+from routes.auth import get_current_user
 
 logger = logging.getLogger(__name__)
 security = HTTPBearer()
