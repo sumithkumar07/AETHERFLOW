@@ -45,6 +45,8 @@ const Navigation = () => {
     { name: 'Projects', href: '/projects', icon: FolderIcon, category: 'main' },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, category: 'main' },
     { name: 'Advanced Features', href: '/advanced', icon: CpuChipIcon, category: 'advanced', badge: 'NEW' },
+    { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, category: 'advanced', badge: 'HOT' },
+    { name: 'Performance', href: '/performance', icon: BoltIcon, category: 'advanced', badge: 'LIVE' },
     { name: 'Agents', href: '/agents', icon: UsersIcon, category: 'advanced' },
     { name: 'Deploy', href: '/deploy', icon: RocketLaunchIcon, category: 'advanced' },
     { name: 'Integrations', href: '/integrations', icon: LinkIcon, category: 'advanced' },
