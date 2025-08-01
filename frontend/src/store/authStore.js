@@ -147,8 +147,8 @@ const useAuthStore = create(
           return false
         }
         
-        // If we have a token, validate it
-        return await get().checkAuth()
+        // If we have a token, validate it silently (without setting loading state)
+        return await get().checkAuthSilent()
       },
 
       // Simplified auth check - no complex initialization
@@ -191,6 +191,69 @@ const useAuthStore = create(
             const refreshSuccess = await get().refreshAccessToken()
             if (refreshSuccess) {
               return true
+            }
+          }
+          
+          // Clear invalid auth state
+          delete axios.defaults.headers.common['Authorization']
+          set({
+            user: null,
+            token: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null
+          })
+          
+          return false
+        }
+      },
+
+      // Silent auth check for initialization (doesn't set loading state)
+      checkAuthSilent: async () => {
+        const { token } = get()
+        
+        // If no token exists, not authenticated
+        if (!token) {
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null
+          })
+          return false
+        }
+        
+        try {
+          // Don't set loading state during silent check
+          set({ error: null })
+          
+          // Try to validate token with backend
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          const response = await axios.get('/auth/me')
+          const user = response.data
+          
+          set({
+            user,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null
+          })
+          
+          return true
+          
+        } catch (error) {
+          console.error('Silent auth check failed:', error)
+          
+          // Try to refresh token if available
+          if (get().refreshToken) {
+            try {
+              const refreshSuccess = await get().refreshAccessToken()
+              if (refreshSuccess) {
+                return true
+              }
+            } catch (refreshError) {
+              console.error('Token refresh failed during silent check:', refreshError)
             }
           }
           
