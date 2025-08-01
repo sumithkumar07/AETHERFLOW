@@ -405,6 +405,21 @@ class BugDetector:
         self.bug_patterns = await self._load_bug_patterns()
         logger.info("Bug detector initialized")
     
+    async def _load_bug_patterns(self):
+        """Load bug detection patterns"""
+        # Common bug patterns for different languages
+        return {
+            "python": [
+                {"pattern": "except:", "severity": "medium", "description": "Bare except clause"},
+                {"pattern": "== None", "severity": "low", "description": "Use 'is None' instead"},
+                {"pattern": "eval(", "severity": "high", "description": "Potential code injection"}
+            ],
+            "javascript": [
+                {"pattern": "==", "severity": "medium", "description": "Use strict equality (===)"},
+                {"pattern": "innerHTML", "severity": "high", "description": "Potential XSS vulnerability"}
+            ]
+        }
+    
     async def detect_bugs(self, code: str, language: str) -> List[Dict[str, Any]]:
         """Detect potential bugs in code"""
         try:
