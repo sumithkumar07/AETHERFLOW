@@ -38,7 +38,9 @@ from services.performance_optimizer import PerformanceOptimizer
 from services.adaptive_ui_service import AdaptiveUIService
 from services.development_assistant import DevelopmentAssistant
 from routes.voice import router as voice_router, set_voice_interface
+from routes.workflows import router as workflows_router, set_workflow_engine
 from services.voice_interface import VoiceInterface
+from services.workflow_automation import WorkflowEngine
 from services.collaboration_engine import LiveCollaborationEngine
 
 # Load environment variables
