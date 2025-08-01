@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense } from 'react'
+import React, { useEffect, Suspense, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,12 +18,12 @@ const Integrations = React.lazy(() => import('./pages/Integrations'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
 
-// Enhanced Protected Route component with proper loading states
+// Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, isInitialized, isInitializing } = useAuthStore()
+  const { isAuthenticated, isLoading } = useAuthStore()
   
-  // Show loading while auth is being checked, store is not initialized, or initialization is in progress
-  if (isLoading || !isInitialized || isInitializing) {
+  // Show loading only during actual auth operations
+  if (isLoading) {
     return <LoadingStates.FullScreen message="Checking authentication..." />
   }
   
@@ -35,13 +35,13 @@ const ProtectedRoute = ({ children }) => {
   return children
 }
 
-// Enhanced Public Route component 
+// Simplified Public Route component 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, isInitialized, isInitializing } = useAuthStore()
+  const { isLoading } = useAuthStore()
   
-  // Show loading while auth is being checked, store is not initialized, or initialization is in progress
-  if (isLoading || !isInitialized || isInitializing) {
-    return <LoadingStates.FullScreen message="Loading application..." />
+  // Show loading only during actual auth operations
+  if (isLoading) {
+    return <LoadingStates.FullScreen message="Loading..." />
   }
   
   return children
@@ -57,8 +57,9 @@ const SuspenseWrapper = ({ children }) => (
 )
 
 function App() {
-  const { isAuthenticated, isLoading, isInitialized, isInitializing, initialize } = useAuthStore()
+  const { isAuthenticated, isLoading, token, checkAuth } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
     // Initialize theme and authentication on app startup
@@ -67,37 +68,22 @@ function App() {
         // Initialize theme first (synchronous)
         initializeTheme()
         
-        // Initialize auth store (handles rehydration and validation)
-        initialize()
+        // Check auth only if we have a token, otherwise we're not authenticated
+        if (token) {
+          await checkAuth()
+        }
         
-        // Fallback timeout to prevent infinite loading
-        setTimeout(() => {
-          const currentState = useAuthStore.getState()
-          if (!currentState.isInitialized) {
-            console.warn('Auth initialization timed out, forcing completion')
-            useAuthStore.setState({ 
-              isInitialized: true, 
-              isInitializing: false, 
-              isLoading: false,
-              isAuthenticated: false 
-            })
-          }
-        }, 10000) // 10 second timeout
+        // Mark as initialized
+        setIsInitialized(true)
         
       } catch (error) {
         console.error('App initialization error:', error)
-        // Force completion on error
-        useAuthStore.setState({ 
-          isInitialized: true, 
-          isInitializing: false, 
-          isLoading: false,
-          isAuthenticated: false 
-        })
+        setIsInitialized(true) // Initialize anyway to prevent infinite loading
       }
     }
     
     initializeApp()
-  }, [initialize, initializeTheme])
+  }, [checkAuth, initializeTheme, token])
 
   // Apply theme class to document
   useEffect(() => {
@@ -108,8 +94,8 @@ function App() {
     }
   }, [theme])
 
-  // Show loading screen during initial app load and auth check
-  if (isLoading || !isInitialized || isInitializing) {
+  // Show loading screen during initial app load
+  if (!isInitialized) {
     return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
   }
 
@@ -272,7 +258,7 @@ function App() {
             Auth: {isAuthenticated ? '✅' : '❌'} | 
             Loading: {isLoading ? '⏳' : '✅'} | 
             Init: {isInitialized ? '✅' : '⏳'} |
-            Initializing: {isInitializing ? '⏳' : '✅'}
+            Token: {token ? '✅' : '❌'}
           </div>
         )}
       </div>

@@ -10,7 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'
 axios.defaults.baseURL = `${BACKEND_URL}/api`
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-// Enhanced auth store with proper initialization timing
+// Simplified and robust auth store
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -19,50 +19,10 @@ const useAuthStore = create(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
-      isLoading: true, // Start with true to prevent premature redirects
-      isInitialized: false, // Track if store has been hydrated
-      isInitializing: false, // Track if initialization is in progress
+      isLoading: false, // Start false - will be set to true only during actual operations
       error: null,
       loginAttempts: 0,
       lastLoginAttempt: null,
-
-      // Initialize store - prevents router redirects during hydration
-      initialize: () => {
-        const state = get()
-        
-        // Prevent multiple simultaneous initializations
-        if (state.isInitialized || state.isInitializing) {
-          return
-        }
-        
-        // Mark as initializing and initialized immediately to prevent race conditions
-        set({ 
-          isInitializing: true,
-          isInitialized: true
-        })
-        
-        // If we have a token, validate it
-        if (state.token) {
-          // Set up axios header
-          axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
-          
-          // Validate token on next tick to allow UI to render
-          setTimeout(async () => {
-            try {
-              await get().checkAuth()
-            } finally {
-              set({ isInitializing: false })
-            }
-          }, 100)
-        } else {
-          // No token, complete initialization immediately
-          set({ 
-            isLoading: false, 
-            isInitializing: false,
-            isAuthenticated: false 
-          })
-        }
-      },
 
       // Actions
       login: async (credentials) => {
@@ -81,7 +41,6 @@ const useAuthStore = create(
             refreshToken: refresh_token,
             isAuthenticated: true,
             isLoading: false,
-            isInitialized: true,
             error: null,
             loginAttempts: 0,
             lastLoginAttempt: null
@@ -97,7 +56,6 @@ const useAuthStore = create(
           set({
             error: errorMessage,
             isLoading: false,
-            isInitialized: true,
             loginAttempts: newAttempts,
             lastLoginAttempt: Date.now()
           })
@@ -123,7 +81,6 @@ const useAuthStore = create(
             refreshToken: refresh_token,
             isAuthenticated: true,
             isLoading: false,
-            isInitialized: true,
             error: null
           })
           
@@ -135,8 +92,7 @@ const useAuthStore = create(
           
           set({
             error: errorMessage,
-            isLoading: false,
-            isInitialized: true
+            isLoading: false
           })
           
           toast.error(errorMessage)
@@ -164,7 +120,6 @@ const useAuthStore = create(
             refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
-            isInitialized: true,
             error: null,
             loginAttempts: 0,
             lastLoginAttempt: null
@@ -174,17 +129,16 @@ const useAuthStore = create(
         }
       },
 
-      // Check authentication status with proper loading states
+      // Simplified auth check - no complex initialization
       checkAuth: async () => {
-        const { token, isInitialized } = get()
+        const { token } = get()
         
-        // If no token exists, set auth as checked but not authenticated
+        // If no token exists, not authenticated
         if (!token) {
           set({
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            isInitialized: true,
             error: null
           })
           return false
@@ -202,7 +156,6 @@ const useAuthStore = create(
             user,
             isAuthenticated: true,
             isLoading: false,
-            isInitialized: true,
             error: null
           })
           
@@ -227,7 +180,6 @@ const useAuthStore = create(
             refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
-            isInitialized: true,
             error: null
           })
           
@@ -425,28 +377,18 @@ const useAuthStore = create(
         loginAttempts: state.loginAttempts,
         lastLoginAttempt: state.lastLoginAttempt
       }),
-      version: 2,
+      version: 3,
       migrate: (persistedState, version) => {
         // Handle migration from older versions
-        if (version < 2) {
+        if (version < 3) {
           return {
             ...persistedState,
-            isInitialized: false,
             refreshToken: persistedState.refreshToken || null,
             loginAttempts: persistedState.loginAttempts || 0,
             lastLoginAttempt: persistedState.lastLoginAttempt || null
           }
         }
         return persistedState
-      },
-      onRehydrateStorage: () => (state) => {
-        // Initialize after rehydration only if state exists and not already initialized
-        if (state && !state.isInitialized && !state.isInitializing) {
-          // Small delay to ensure DOM is ready
-          setTimeout(() => {
-            state.initialize()
-          }, 50)
-        }
       }
     }
   )
