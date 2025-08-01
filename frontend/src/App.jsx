@@ -13,7 +13,8 @@ const Login = React.lazy(() => import('./pages/Login'))
 const Signup = React.lazy(() => import('./pages/Signup'))
 const ChatHub = React.lazy(() => import('./pages/ChatHub'))
 const IndividualProject = React.lazy(() => import('./pages/IndividualProject'))
-const Templates = React.lazy(() => import('./pages/Templates'))
+// Import Templates directly to test loading issue
+import Templates from './pages/Templates'
 const Integrations = React.lazy(() => import('./pages/Integrations'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
