@@ -16,7 +16,8 @@ import {
   FolderIcon,
   RocketLaunchIcon,
   UsersIcon,
-  BuildingOfficeIcon
+  BuildingOfficeIcon,
+  CpuChipIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
