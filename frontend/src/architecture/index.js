@@ -21,7 +21,7 @@ export { ServiceFactory } from './services/ServiceFactory'
 // Integration Utilities
 export { useEnhancedAuthStore } from './integration/EnhancedAuthStore'
 export { StoreEnhancer } from './integration/StoreEnhancer'
-export { ArchitectureProvider, useArchitecture } from './integration/ArchitectureProvider'
+export { ArchitectureProvider, useArchitecture } from './integration/ArchitectureProvider.jsx'
 
 // Convenience hooks and utilities
 export const useServices = () => {
