@@ -113,6 +113,15 @@ app.include_router(voice_router, prefix="/api/voice", tags=["Voice Interface"])
 app.include_router(workflows_router, prefix="/api/workflows", tags=["Workflow Automation"])
 app.include_router(smart_features_router, tags=["Smart Features"])
 
+# Include routers - New Enhancement Features
+from routes.search import router as search_router
+from routes.version_control import router as version_control_router
+from routes.gamification import router as gamification_router
+
+app.include_router(search_router, prefix="/api", tags=["Global Search"])
+app.include_router(version_control_router, prefix="/api/version-control", tags=["Version Control"])
+app.include_router(gamification_router, prefix="/api/gamification", tags=["Gamification"])
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and services on startup"""
