@@ -18,7 +18,7 @@ import {
   ClockIcon,
   ChartBarIcon,
   LinkIcon,
-  PlusIcon
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { useProjectStore } from '../store/projectStore'
 import { useChatStore } from '../store/chatStore'
