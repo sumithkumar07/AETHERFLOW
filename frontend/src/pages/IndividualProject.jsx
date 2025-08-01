@@ -22,7 +22,8 @@ import {
   ClockIcon,
   ChartBarIcon,
   LinkIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline'
 import { useProjectStore } from '../store/projectStore'
 import { useChatStore } from '../store/chatStore'
