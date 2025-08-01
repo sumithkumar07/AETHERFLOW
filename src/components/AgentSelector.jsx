@@ -1,186 +1,163 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  UserGroupIcon,
   ChevronDownIcon,
-  CheckIcon,
-  SparklesIcon,
-  CogIcon,
+  CodeBracketIcon,
+  PaintBrushIcon,
   BeakerIcon,
-  RocketLaunchIcon,
-  ShieldCheckIcon,
-  ChartBarIcon,
-  CommandLineIcon
+  LinkIcon,
+  UserGroupIcon,
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline'
+import { useChatStore } from '../store/chatStore'
 
-const AgentSelector = ({ selectedAgents, onAgentsChange }) => {
+const AgentSelector = () => {
+  const { selectedAgent, setSelectedAgent } = useChatStore()
   const [isOpen, setIsOpen] = useState(false)
 
   const agents = [
-    { 
-      id: 'developer', 
-      name: 'Developer', 
-      icon: CommandLineIcon, 
-      color: 'from-green-500 to-emerald-600',
-      description: 'Code generation, debugging, and development' 
-    },
-    { 
-      id: 'designer', 
-      name: 'Designer', 
-      icon: SparklesIcon, 
-      color: 'from-pink-500 to-rose-600',
-      description: 'UI/UX design and styling' 
-    },
-    { 
-      id: 'integrator', 
-      name: 'Integrator', 
-      icon: CogIcon, 
+    {
+      id: 'developer',
+      name: 'Developer Agent',
+      description: 'Code generation, debugging, and architecture',
+      icon: CodeBracketIcon,
       color: 'from-blue-500 to-cyan-600',
-      description: 'API integrations and connections' 
+      specialties: ['React', 'Python', 'FastAPI', 'Database Design']
     },
-    { 
-      id: 'tester', 
-      name: 'Tester', 
-      icon: BeakerIcon, 
-      color: 'from-yellow-500 to-orange-600',
-      description: 'Testing and quality assurance' 
+    {
+      id: 'designer',
+      name: 'Designer Agent',
+      description: 'UI/UX design, styling, and user experience',
+      icon: PaintBrushIcon,
+      color: 'from-purple-500 to-pink-600',
+      specialties: ['Tailwind CSS', 'Figma', 'Design Systems', 'Accessibility']
     },
-    { 
-      id: 'deployer', 
-      name: 'Deployer', 
-      icon: RocketLaunchIcon, 
-      color: 'from-purple-500 to-violet-600',
-      description: 'Deployment and infrastructure' 
+    {
+      id: 'tester',
+      name: 'Tester Agent',
+      description: 'Testing strategies, QA, and bug detection',
+      icon: BeakerIcon,
+      color: 'from-green-500 to-emerald-600',
+      specialties: ['Unit Testing', 'E2E Testing', 'Performance', 'Security']
     },
-    { 
-      id: 'security', 
-      name: 'Security', 
-      icon: ShieldCheckIcon, 
-      color: 'from-red-500 to-pink-600',
-      description: 'Security analysis and compliance' 
+    {
+      id: 'integrator',
+      name: 'Integrator Agent',
+      description: 'API integrations and third-party services',
+      icon: LinkIcon,
+      color: 'from-orange-500 to-red-600',
+      specialties: ['REST APIs', 'GraphQL', 'Webhooks', 'Authentication']
     },
-    { 
-      id: 'analyst', 
-      name: 'Analyst', 
-      icon: ChartBarIcon, 
-      color: 'from-indigo-500 to-blue-600',
-      description: 'Requirements analysis and planning' 
+    {
+      id: 'orchestrator',
+      name: 'Team Orchestrator',
+      description: 'Project management and team coordination',
+      icon: UserGroupIcon,
+      color: 'from-indigo-500 to-purple-600',
+      specialties: ['Planning', 'Coordination', 'Reviews', 'Architecture']
+    },
+    {
+      id: 'devops',
+      name: 'DevOps Agent',
+      description: 'Deployment, monitoring, and infrastructure',
+      icon: WrenchScrewdriverIcon,
+      color: 'from-gray-500 to-slate-600',
+      specialties: ['Docker', 'CI/CD', 'Monitoring', 'Cloud Services']
     }
   ]
 
-  const toggleAgent = (agentId) => {
-    const newSelectedAgents = selectedAgents.includes(agentId)
-      ? selectedAgents.filter(id => id !== agentId)
-      : [...selectedAgents, agentId]
-    
-    onAgentsChange(newSelectedAgents)
-  }
-
-  const getSelectedAgentNames = () => {
-    return agents
-      .filter(agent => selectedAgents.includes(agent.id))
-      .map(agent => agent.name)
-      .join(', ')
-  }
+  const currentAgent = agents.find(a => a.id === selectedAgent) || agents[0]
+  const CurrentIcon = currentAgent.icon
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
+        className="flex items-center space-x-3 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
-        <UserGroupIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          {selectedAgents.length > 0 
-            ? `${selectedAgents.length} Agent${selectedAgents.length > 1 ? 's' : ''}`
-            : 'Select Agents'
-          }
-        </span>
-        <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${currentAgent.color} p-1 flex items-center justify-center`}>
+          <CurrentIcon className="w-4 h-4 text-white" />
+        </div>
+        <div className="text-left">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
+            {currentAgent.name}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Active
+          </div>
+        </div>
+        <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 mt-2 w-80 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 z-50 max-h-96 overflow-y-auto"
+            className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50"
           >
-            <div className="p-4">
-              <div className="mb-3">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  AI Agents
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Select specialized agents to help with your task
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                {agents.map((agent) => {
-                  const Icon = agent.icon
-                  const isSelected = selectedAgents.includes(agent.id)
-                  
-                  return (
-                    <motion.button
-                      key={agent.id}
-                      onClick={() => toggleAgent(agent.id)}
-                      className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${
-                        isSelected
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent'
-                      }`}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className={`p-2 rounded-lg bg-gradient-to-r ${agent.color} shadow-md`}>
-                        <Icon className="w-4 h-4 text-white" />
+            <div className="p-2">
+              {agents.map((agent) => {
+                const Icon = agent.icon
+                return (
+                  <button
+                    key={agent.id}
+                    onClick={() => {
+                      setSelectedAgent(agent.id)
+                      setIsOpen(false)
+                    }}
+                    className={`w-full flex items-start space-x-3 p-3 rounded-lg transition-colors text-left ${
+                      selectedAgent === agent.id
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${agent.color} p-1.5 flex items-center justify-center flex-shrink-0`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium truncate">{agent.name}</span>
+                        {selectedAgent === agent.id && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        )}
                       </div>
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                            {agent.name}
-                          </h4>
-                          {isSelected && (
-                            <CheckIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {agent.description}
-                        </p>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-2">
+                        {agent.description}
                       </div>
-                    </motion.button>
-                  )
-                })}
+                      <div className="flex flex-wrap gap-1">
+                        {agent.specialties.slice(0, 3).map((specialty, index) => (
+                          <span
+                            key={index}
+                            className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
+                        {agent.specialties.length > 3 && (
+                          <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                            +{agent.specialties.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            
+            <div className="border-t border-gray-200 dark:border-gray-700 p-3">
+              <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                Switch agents anytime for specialized assistance
               </div>
-
-              {selectedAgents.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Selected: {getSelectedAgentNames()}
-                    </span>
-                    <button
-                      onClick={() => onAgentsChange([])}
-                      className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                </motion.div>
-              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Overlay to close dropdown */}
+      {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40"
