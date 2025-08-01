@@ -105,8 +105,9 @@ class BackendTester:
         print("🔐 Testing Authentication System...")
         
         # Test user registration
+        import random
         test_user = {
-            "email": "testuser@example.com",
+            "email": f"testuser{random.randint(1000,9999)}@example.com",
             "name": "Test User",
             "password": "testpassword123"
         }
