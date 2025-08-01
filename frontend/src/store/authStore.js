@@ -216,7 +216,7 @@ const useAuthStore = create(
 
       // Silent auth check for initialization (doesn't set loading state)
       checkAuthSilent: async () => {
-        const { token } = get()
+        const { token, isAuthenticated, user } = get()
         
         // If no token exists, not authenticated
         if (!token) {
@@ -229,6 +229,11 @@ const useAuthStore = create(
           return false
         }
         
+        // If already authenticated with user data, skip validation for now
+        if (isAuthenticated && user) {
+          return true
+        }
+        
         try {
           // Don't set loading state during silent check
           set({ error: null })
@@ -236,10 +241,10 @@ const useAuthStore = create(
           // Try to validate token with backend
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
           const response = await axios.get('/auth/me')
-          const user = response.data
+          const userData = response.data
           
           set({
-            user,
+            user: userData,
             isAuthenticated: true,
             isLoading: false,
             error: null
@@ -250,28 +255,32 @@ const useAuthStore = create(
         } catch (error) {
           console.error('Silent auth check failed:', error)
           
-          // Try to refresh token if available
-          if (get().refreshToken) {
-            try {
-              const refreshSuccess = await get().refreshAccessToken()
-              if (refreshSuccess) {
-                return true
+          // Only clear auth state if it's a clear authentication failure
+          // Don't clear state for network errors or temporary issues
+          if (error.response?.status === 401 && !get().isAuthenticated) {
+            // Try to refresh token if available
+            if (get().refreshToken) {
+              try {
+                const refreshSuccess = await get().refreshAccessToken()
+                if (refreshSuccess) {
+                  return true
+                }
+              } catch (refreshError) {
+                console.error('Token refresh failed during silent check:', refreshError)
               }
-            } catch (refreshError) {
-              console.error('Token refresh failed during silent check:', refreshError)
             }
+            
+            // Clear invalid auth state only if we weren't already authenticated
+            delete axios.defaults.headers.common['Authorization']
+            set({
+              user: null,
+              token: null,
+              refreshToken: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null
+            })
           }
-          
-          // Clear invalid auth state
-          delete axios.defaults.headers.common['Authorization']
-          set({
-            user: null,
-            token: null,
-            refreshToken: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null
-          })
           
           return false
         }
