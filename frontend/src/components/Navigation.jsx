@@ -96,6 +96,9 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
+            {/* Smart Search */}
+            {isAuthenticated && <GlobalSmartSearch />}
+            
             {currentNavigation.map((item) => {
               const Icon = item.icon
               const isActive = isCurrentPage(item.href)
