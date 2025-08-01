@@ -1,11 +1,11 @@
 {
   "summary": {
     "total": 23,
-    "passed": 14,
-    "failed": 9,
+    "passed": 15,
+    "failed": 8,
     "skipped": 0,
-    "duration": 1.347301721572876,
-    "timestamp": "2025-08-01T08:05:01.392056"
+    "duration": 1.3754053115844727,
+    "timestamp": "2025-08-01T08:06:37.555514"
   },
   "results": [
     {
@@ -13,161 +13,161 @@
       "status": "PASS",
       "details": "API running: AI Code Studio API",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.048841"
+      "timestamp": "2025-08-01T08:06:36.184510"
     },
     {
       "test": "Detailed Health Check",
       "status": "PASS",
       "details": "Services: {'database': 'connected', 'ai': 'available', 'websocket': 'active'}",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.091058"
+      "timestamp": "2025-08-01T08:06:36.227046"
     },
     {
       "test": "User Registration",
       "status": "PASS",
-      "details": "User created: testuser3360@example.com",
+      "details": "User created: testuser5160@example.com",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.365023"
+      "timestamp": "2025-08-01T08:06:36.524069"
     },
     {
       "test": "Demo User Login",
       "status": "PASS",
       "details": "Token received for demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.637066"
+      "timestamp": "2025-08-01T08:06:36.799046"
     },
     {
       "test": "Get User Profile",
       "status": "PASS",
       "details": "Profile retrieved: demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.682008"
+      "timestamp": "2025-08-01T08:06:36.844041"
     },
     {
       "test": "AI Chat Message",
       "status": "PASS",
       "details": "AI responded with model: gpt-4.1-nano",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.727016"
+      "timestamp": "2025-08-01T08:06:36.889050"
     },
     {
       "test": "Get Conversations",
       "status": "PASS",
       "details": "Found 0 conversations",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.772993"
+      "timestamp": "2025-08-01T08:06:36.936000"
     },
     {
       "test": "Create Project",
-      "status": "FAIL",
-      "details": "Project creation failed",
-      "response_code": null,
-      "timestamp": "2025-08-01T08:05:00.818984"
+      "status": "PASS",
+      "details": "Project created: Test Project",
+      "response_code": 200,
+      "timestamp": "2025-08-01T08:06:36.983038"
     },
     {
       "test": "Get Projects",
       "status": "PASS",
-      "details": "Found 0 projects",
+      "details": "Found 2 projects",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.866005"
+      "timestamp": "2025-08-01T08:06:37.030054"
     },
     {
       "test": "Get Templates",
       "status": "PASS",
       "details": "Found 4 templates",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.909043"
+      "timestamp": "2025-08-01T08:06:37.073062"
     },
     {
       "test": "Get Featured Templates",
       "status": "PASS",
       "details": "Found 3 featured templates",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.952049"
+      "timestamp": "2025-08-01T08:06:37.115029"
     },
     {
       "test": "Get Specific Template",
       "status": "PASS",
       "details": "Template: React Starter Kit",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:00.994015"
+      "timestamp": "2025-08-01T08:06:37.157113"
     },
     {
       "test": "Enterprise Integrations",
       "status": "FAIL",
       "details": "Enterprise integrations endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.035969"
+      "timestamp": "2025-08-01T08:06:37.199027"
     },
     {
       "test": "Compliance Dashboard",
       "status": "FAIL",
       "details": "Compliance dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.078050"
+      "timestamp": "2025-08-01T08:06:37.241047"
     },
     {
       "test": "Automation Dashboard",
       "status": "FAIL",
       "details": "Automation dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.119982"
+      "timestamp": "2025-08-01T08:06:37.283037"
     },
     {
       "test": "Get Agents",
       "status": "PASS",
       "details": "Found 2 agents",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:01.164992"
+      "timestamp": "2025-08-01T08:06:37.327979"
     },
     {
       "test": "Orchestration Status",
       "status": "FAIL",
       "details": "Orchestration status failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.207011"
+      "timestamp": "2025-08-01T08:06:37.370031"
     },
     {
       "test": "Get Agent Teams",
       "status": "FAIL",
       "details": "Agent teams endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.250009"
+      "timestamp": "2025-08-01T08:06:37.412019"
     },
     {
       "test": "Get Available Integrations",
       "status": "PASS",
       "details": "Found 2 integrations",
       "response_code": 200,
-      "timestamp": "2025-08-01T08:05:01.294999"
+      "timestamp": "2025-08-01T08:06:37.457036"
     },
     {
       "test": "Get Integration Categories",
       "status": "FAIL",
       "details": "Categories endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.336989"
+      "timestamp": "2025-08-01T08:06:37.499023"
     },
     {
       "test": "Get Popular Integrations",
       "status": "FAIL",
       "details": "Popular integrations endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.378991"
+      "timestamp": "2025-08-01T08:06:37.541033"
     },
     {
       "test": "WebSocket Connection",
       "status": "PASS",
       "details": "WebSocket connection established",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.391266"
+      "timestamp": "2025-08-01T08:06:37.554706"
     },
     {
       "test": "WebSocket Connection",
       "status": "FAIL",
       "details": "WebSocket error: 'NoneType' object has no attribute 'sock'",
       "response_code": null,
-      "timestamp": "2025-08-01T08:05:01.391663"
+      "timestamp": "2025-08-01T08:06:37.555119"
     }
   ]
 }
