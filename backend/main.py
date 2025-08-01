@@ -102,6 +102,7 @@ app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics &
 app.include_router(security_router, prefix="/api/security", tags=["Zero Trust Security"])
 app.include_router(development_router, prefix="/api/development", tags=["Development Assistant"])
 app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Live Collaboration"])
+app.include_router(voice_router, prefix="/api/voice", tags=["Voice Interface"])
 
 @app.on_event("startup")
 async def startup_event():
