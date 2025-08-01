@@ -92,16 +92,20 @@ function App() {
         <main className="relative">
           <SuspenseWrapper>
             <Routes>
-              {/* All routes are now public for exploration */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/templates" element={<Templates />} />
-              <Route path="/chat" element={<ChatHub />} />
-              <Route path="/chat/:projectId" element={<IndividualProject />} />
-              <Route path="/integrations" element={<Integrations />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<Profile />} />
+              {/* Public routes */}
+              <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+              <Route path="/templates" element={<PublicRoute><Templates /></PublicRoute>} />
+              
+              {/* Protected routes */}
+              <Route path="/chat" element={<ProtectedRoute><ChatHub /></ProtectedRoute>} />
+              <Route path="/chat/:projectId" element={<ProtectedRoute><IndividualProject /></ProtectedRoute>} />
+              <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              
+              {/* Catch all redirect */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </SuspenseWrapper>
@@ -172,7 +176,7 @@ function App() {
         {/* Development overlay for debugging */}
         {process.env.NODE_ENV === 'development' && (
           <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono opacity-50 pointer-events-none">
-            Auth: BYPASSED | Theme: {theme} | Mode: EXPLORATION
+            Auth: {useAuthStore.getState().isAuthenticated ? 'ON' : 'OFF'} | Theme: {theme} | Mode: PRODUCTION
           </div>
         )}
       </div>
