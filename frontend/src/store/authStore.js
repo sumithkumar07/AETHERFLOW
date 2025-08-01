@@ -21,6 +21,7 @@ const useAuthStore = create(
       isAuthenticated: false,
       isLoading: true, // Start with true to prevent premature redirects
       isInitialized: false, // Track if store has been hydrated
+      isInitializing: false, // Track if initialization is in progress
       error: null,
       loginAttempts: 0,
       lastLoginAttempt: null,
@@ -29,22 +30,35 @@ const useAuthStore = create(
       initialize: () => {
         const state = get()
         
+        // Prevent multiple simultaneous initializations
+        if (state.isInitialized || state.isInitializing) {
+          return
+        }
+        
+        // Mark as initializing and initialized immediately to prevent race conditions
+        set({ 
+          isInitializing: true,
+          isInitialized: true
+        })
+        
         // If we have a token, validate it
-        if (state.token && !state.isInitialized) {
-          set({ isLoading: true })
-          
+        if (state.token) {
           // Set up axios header
           axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
           
           // Validate token on next tick to allow UI to render
-          setTimeout(() => {
-            get().checkAuth()
+          setTimeout(async () => {
+            try {
+              await get().checkAuth()
+            } finally {
+              set({ isInitializing: false })
+            }
           }, 100)
         } else {
-          // No token, mark as initialized and not loading
+          // No token, complete initialization immediately
           set({ 
             isLoading: false, 
-            isInitialized: true,
+            isInitializing: false,
             isAuthenticated: false 
           })
         }
