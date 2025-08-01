@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import logging
 
-from models.user import get_current_user
+from routes.auth import get_current_user
 from services.zero_trust_security import ZeroTrustGateway, ComplianceEngine, AccessRequest, SecurityContext
 
 router = APIRouter()
