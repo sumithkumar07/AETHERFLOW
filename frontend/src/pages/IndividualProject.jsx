@@ -523,6 +523,10 @@ const IndividualProject = () => {
         </div>
       </div>
       
+      {/* Smart Enhancements */}
+      {/* Real-Time Collaboration Indicators */}
+      <CollaborationIndicators projectId={project.id} />
+      
       {/* AI Code Assistant - Floating */}
       <AICodeAssistant 
         projectId={project.id} 
