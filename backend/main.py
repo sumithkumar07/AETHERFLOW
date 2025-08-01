@@ -61,6 +61,18 @@ manager = ConnectionManager()
 ai_service = AIService()
 enhanced_ai_service = EnhancedAIService()
 
+# Initialize advanced services
+intelligent_ai_router = IntelligentAIRouter()
+plugin_manager = PluginManager(get_database)
+advanced_analytics = AdvancedAnalytics(get_database)
+smart_recommendation_engine = SmartRecommendationEngine(advanced_analytics)
+zero_trust_gateway = ZeroTrustGateway(get_database)
+compliance_engine = ComplianceEngine(get_database)
+performance_optimizer = PerformanceOptimizer(get_database)
+adaptive_ui_service = AdaptiveUIService(get_database)
+development_assistant = DevelopmentAssistant(get_database)
+collaboration_engine = LiveCollaborationEngine(get_database)
+
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
