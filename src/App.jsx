@@ -61,17 +61,14 @@ function App() {
   const { theme, initializeTheme } = useThemeStore()
 
   useEffect(() => {
-    // Initialize theme and authentication on app startup
+    // Initialize theme and authentication on app startup - only run once
     const initializeApp = async () => {
       try {
         // Initialize theme first (synchronous)
         initializeTheme()
         
         // Initialize auth store (handles rehydration and validation)
-        // Small delay to ensure DOM is ready
-        setTimeout(() => {
-          initialize()
-        }, 10)
+        initialize()
         
       } catch (error) {
         console.error('App initialization error:', error)
@@ -79,7 +76,7 @@ function App() {
     }
     
     initializeApp()
-  }, [initialize, initializeTheme])
+  }, []) // Empty dependency array - run only once on mount
 
   // Apply theme class to document
   useEffect(() => {
