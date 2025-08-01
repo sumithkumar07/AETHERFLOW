@@ -21,6 +21,12 @@ from routes.templates import router as templates_router
 from routes.integrations import router as integrations_router
 from routes.agents import router as agents_router
 from routes.enterprise import router as enterprise_router
+from routes.advanced_ai import router as advanced_ai_router, set_ai_router
+from routes.plugins import router as plugins_router, set_plugin_manager
+from routes.analytics import router as analytics_router, set_analytics_services
+from routes.security import router as security_router, set_security_services
+from routes.development import router as development_router, set_development_assistant
+from routes.collaboration import router as collaboration_router, set_collaboration_engine
 from services.ai_service import AIService
 from services.enhanced_ai_service import EnhancedAIService
 from services.websocket_manager import ConnectionManager
