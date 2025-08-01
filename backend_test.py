@@ -170,21 +170,18 @@ class BackendTester:
         # Test AI chat endpoint
         chat_request = {
             "message": "Build a simple todo app with React",
-            "context": {"test": True}
+            "model": "gpt-4.1-nano"
         }
         
         response = self.make_request("POST", "/api/ai/chat", chat_request)
         if response and response.status_code == 200:
             data = response.json()
-            if "response" in data and "conversation_id" in data:
+            if "response" in data and "model" in data:
                 self.log_test("AI Chat Message", "PASS", 
-                            f"AI responded, conversation: {data.get('conversation_id')}", response.status_code)
-                
-                # Store conversation ID for further tests
-                self.conversation_id = data.get('conversation_id')
+                            f"AI responded with model: {data.get('model')}", response.status_code)
             else:
                 self.log_test("AI Chat Message", "FAIL", 
-                            "Missing response or conversation ID", response.status_code)
+                            "Missing response or model info", response.status_code)
         else:
             self.log_test("AI Chat Message", "FAIL", 
                         "AI chat endpoint failed", response.status_code if response else None)
