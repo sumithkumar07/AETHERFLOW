@@ -91,8 +91,12 @@ function App() {
   }, [theme])
 
   // Show loading screen during initial app load and auth check
-  if (isLoading || !isInitialized) {
+  if (!isInitialized) {
     return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
+  }
+
+  if (isLoading) {
+    return <LoadingStates.FullScreen message="Checking authentication..." />
   }
 
   return (
