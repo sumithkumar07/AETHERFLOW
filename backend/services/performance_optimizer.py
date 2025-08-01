@@ -763,6 +763,89 @@ class PerformanceOptimizer:
                 
             except Exception as e:
                 logger.error(f"Error in optimization loop: {e}")
+    
+    async def _collect_performance_metrics(self) -> Dict[str, Any]:
+        """Collect current performance metrics"""
+        try:
+            import psutil
+            
+            # System metrics
+            cpu_usage = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            
+            return {
+                "timestamp": datetime.now(),
+                "cpu_usage": cpu_usage,
+                "memory_usage": memory.percent,
+                "disk_usage": (disk.used / disk.total) * 100,
+                "memory_available": memory.available,
+                "disk_free": disk.free
+            }
+            
+        except Exception as e:
+            logger.error(f"Error collecting performance metrics: {e}")
+            return {}
+    
+    async def _identify_optimization_opportunities(self, metrics: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Identify optimization opportunities"""
+        opportunities = []
+        
+        try:
+            # High CPU usage
+            if metrics.get("cpu_usage", 0) > 80:
+                opportunities.append({
+                    "type": "scale_up",
+                    "reason": "High CPU usage detected",
+                    "safety_level": "medium",
+                    "recommendation": "Scale up compute resources"
+                })
+            
+            # High memory usage
+            if metrics.get("memory_usage", 0) > 85:
+                opportunities.append({
+                    "type": "memory_optimization",
+                    "reason": "High memory usage detected",
+                    "safety_level": "safe",
+                    "recommendation": "Clear caches and optimize memory usage"
+                })
+            
+            # Low disk space
+            if metrics.get("disk_usage", 0) > 85:
+                opportunities.append({
+                    "type": "disk_cleanup",
+                    "reason": "Low disk space detected",
+                    "safety_level": "safe",
+                    "recommendation": "Clean up temporary files and logs"
+                })
+            
+            return opportunities
+            
+        except Exception as e:
+            logger.error(f"Error identifying optimization opportunities: {e}")
+            return []
+    
+    async def _execute_optimization(self, opportunity: Dict[str, Any]):
+        """Execute an optimization"""
+        try:
+            optimization_type = opportunity.get("type")
+            
+            if optimization_type == "memory_optimization":
+                # Simple memory optimization
+                import gc
+                gc.collect()
+                logger.info("Executed memory optimization")
+            
+            elif optimization_type == "disk_cleanup":
+                # Simple log rotation
+                logger.info("Disk cleanup optimization identified")
+                # In production, this would clean up logs and temp files
+            
+            else:
+                logger.info(f"Optimization type {optimization_type} requires manual intervention")
+                
+        except Exception as e:
+            logger.error(f"Error executing optimization: {e}")
 
 # Helper classes for performance optimization
 class GeoDatabase:
