@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tempo - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 36px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .features li {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .features li::before {
+            content: "✓";
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 8px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .offline-actions {
+            margin-top: 20px;
+        }
+        
+        .tip {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: left;
+        }
+        
+        .tip-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tip-title::before {
+            content: "💡";
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            🚀
+        </div>
+        
+        <h1>AI Tempo</h1>
+        <p>You're currently offline, but don't worry! AI Tempo has some great offline features to keep you productive.</p>
+        
+        <ul class="features">
+            <li>Browse your cached projects and code</li>
+            <li>Work on local files and drafts</li>
+            <li>View saved templates and documentation</li>
+            <li>Plan your next development session</li>
+        </ul>
+        
+        <div class="offline-actions">
+            <button class="btn-primary" onclick="location.reload()">
+                Try Again
+            </button>
+            <button class="btn-secondary" onclick="goToHomepage()">
+                Go to Homepage
+            </button>
+        </div>
+        
+        <div class="tip">
+            <div class="tip-title">Pro Tip</div>
+            <p>Changes you make offline will be automatically synced when you reconnect to the internet. Keep building!</p>
+        </div>
+        
+        <div class="status">
+            <div class="status-dot"></div>
+            <span>Offline Mode • Changes will sync when online</span>
+        </div>
+    </div>
+
+    <script>
+        function goToHomepage() {
+            // Try to navigate to cached homepage
+            try {
+                window.location.href = '/';
+            } catch (error) {
+                console.log('Navigation failed, will retry when online');
+            }
+        }
+        
+        // Check for online status
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                // Redirect to main app when back online
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            }
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Check periodically if we're back online
+        setInterval(updateOnlineStatus, 5000);
+        
+        // Show install prompt for PWA if available
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button
+            const installBtn = document.createElement('button');
+            installBtn.className = 'btn-secondary';
+            installBtn.textContent = 'Install App';
+            installBtn.onclick = () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+                installBtn.style.display = 'none';
+            };
+            
+            document.querySelector('.offline-actions').appendChild(installBtn);
+        });
+        
+        // Handle shared content from web share target
+        if ('serviceWorker' in navigator) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('shared') === 'true') {
+                // Handle shared content
+                const sharedContent = localStorage.getItem('shared-content');
+                if (sharedContent) {
+                    console.log('Shared content available:', JSON.parse(sharedContent));
+                    // Process shared content when back online
+                }
+            }
+        }
+    </script>
+</body>
+</html>
