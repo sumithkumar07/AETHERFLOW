@@ -81,17 +81,21 @@ const AdvancedFeatures = () => {
   }, [])
 
   const loadFeatureData = async () => {
-    // Load feature configurations and status
-    setFeatures({
-      aiRouter: { enabled: true, configured: true },
-      plugins: { enabled: true, installed: installedPlugins.length },
-      analytics: { enabled: true, tracking: true },
-      security: { enabled: true, threats: 0 },
-      performance: { enabled: true, optimization: 'auto' },
-      ux: { enabled: true, personalization: true },
-      development: { enabled: true, assistant: true },
-      collaboration: { enabled: true, realtime: true }
-    })
+    try {
+      // Load feature configurations and status
+      setFeatures({
+        aiRouter: { enabled: true, configured: true },
+        plugins: { enabled: true, installed: installedPlugins.length },
+        analytics: { enabled: true, tracking: true },
+        security: { enabled: true, threats: 0 },
+        performance: { enabled: true, optimization: 'auto' },
+        ux: { enabled: true, personalization: true },
+        development: { enabled: true, assistant: true },
+        collaboration: { enabled: true, realtime: true }
+      })
+    } catch (error) {
+      console.error('Error loading feature data:', error)
+    }
   }
 
   const handleModelSelect = (modelId) => {
