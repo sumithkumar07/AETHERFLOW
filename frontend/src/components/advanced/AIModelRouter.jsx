@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChartBarIcon, CpuChipIcon, SparklesIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { aiRouterAPI } from '../../services/advancedAPI'
+import toast from 'react-hot-toast'
 
 const AIModelRouter = ({ onModelSelect, currentModel = 'gpt-4o-mini' }) => {
   const [models, setModels] = useState([])
