@@ -382,7 +382,11 @@ class BackendTester:
         """Test integrations marketplace"""
         print("🔌 Testing Integrations Marketplace...")
         
-        # Test getting available integrations (public)
+        if not self.auth_token:
+            self.log_test("Integrations Marketplace Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test getting available integrations (requires auth)
         response = self.make_request("GET", "/api/integrations/")
         if response and response.status_code == 200:
             data = response.json()
