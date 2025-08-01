@@ -103,4 +103,4 @@ async def get_popular_integrations(current_user: User = Depends(get_current_user
         }
     ]
     
-    return {"popular_integrations": popular}
+    return {"integrations": popular}
