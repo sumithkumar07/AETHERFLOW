@@ -8,7 +8,7 @@ import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
 
 // NEW: Import Enterprise Architecture Provider
-import { ArchitectureProvider } from './architecture'
+// import { ArchitectureProvider } from './architecture'
 
 // Import pages directly instead of lazy loading for debugging
 import Home from './pages/Home'
