@@ -51,7 +51,7 @@ const AdvancedAnalytics = () => {
           <p className="text-3xl font-bold text-gray-900 dark:text-white">{value}</p>
           {change && (
             <p className={`text-sm ${change > 0 ? 'text-green-600' : 'text-red-600'} flex items-center mt-1`}>
-              <TrendingUpIcon className="w-4 h-4 mr-1" />
+              <ChartBarIcon className="w-4 h-4 mr-1" />
               {change > 0 ? '+' : ''}{change}% vs last period
             </p>
           )}
