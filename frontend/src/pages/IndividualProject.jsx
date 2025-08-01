@@ -610,10 +610,57 @@ const IndividualProject = () => {
       {/* Real-Time Collaboration Indicators */}
       <CollaborationIndicators projectId={project.id} />
       
-      {/* AI Code Assistant - Floating */}
+      {/* AI Code Assistant */}
       <AICodeAssistant 
-        projectId={project.id} 
-        projectName={project.name} 
+        isVisible={isAIAssistantOpen}
+        onClose={() => setIsAIAssistantOpen(false)}
+        codeContext={currentCode}
+        cursorPosition={0}
+        fileType="javascript"
+      />
+      
+      {/* Real-Time Collaboration Panel */}
+      <RealTimeCollaboration
+        projectId={project.id}
+        isVisible={isCollaborationOpen}
+        onClose={() => setIsCollaborationOpen(false)}
+        onCollaboratorAction={(action) => {
+          console.log('Collaborator action:', action)
+          // Handle real-time collaboration actions
+          if (action.type === 'code_change') {
+            setCurrentCode(action.changes.code || currentCode)
+          }
+        }}
+      />
+      
+      {/* Smart Error Prevention */}
+      <SmartErrorPrevention
+        codeContent={currentCode}
+        fileType="javascript"
+        isActive={isErrorPreventionActive}
+        onErrorsDetected={(errorData) => {
+          setDetectedErrors(errorData.errors || [])
+          if (errorData.errors?.length > 0) {
+            toast.error(`${errorData.errors.length} issue(s) detected in your code`)
+          }
+        }}
+        position={{ top: 20, right: 20 }}
+      />
+      
+      {/* Contextual Learning Assistant */}
+      <ContextualLearningAssistant
+        isVisible={isLearningAssistantOpen}
+        onClose={() => setIsLearningAssistantOpen(false)}
+        currentCode={currentCode}
+        userActivity={userActivity}
+      />
+      
+      {/* Voice Code Review */}
+      <VoiceCodeReview
+        isVisible={isVoiceReviewOpen}
+        onClose={() => setIsVoiceReviewOpen(false)}
+        codeContent={currentCode}
+        reviewType="general"
       />
     </div>
   )
