@@ -6,7 +6,6 @@ import {
   UserGroupIcon,
   ClockIcon,
   LightBulbIcon,
-  TrendingUpIcon,
   EyeIcon,
   BoltIcon
 } from '@heroicons/react/24/outline'
