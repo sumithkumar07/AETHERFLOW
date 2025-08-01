@@ -386,6 +386,29 @@ function AppContent() {
           </Routes>
         </main>
         
+        {/* Global Components */}
+        <GlobalSearch 
+          isOpen={isSearchOpen} 
+          onClose={() => setIsSearchOpen(false)} 
+        />
+        
+        <SmartOnboarding
+          isVisible={isOnboardingOpen}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+        
+        <GamificationSystem
+          isVisible={isGamificationOpen}
+          onClose={() => setIsGamificationOpen(false)}
+        />
+        
+        <InteractiveTour
+          isActive={isTourActive}
+          onComplete={handleTourComplete}
+          onSkip={handleTourSkip}
+        />
+        
         {/* Enhanced toast notifications with better styling */}
         <Toaster 
           position="top-right"
