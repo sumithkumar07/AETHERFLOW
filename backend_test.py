@@ -343,12 +343,12 @@ class BackendTester:
             return
         
         # Test getting agents
-        response = self.make_request("GET", "/api/agents/agents")
+        response = self.make_request("GET", "/api/agents/")
         if response and response.status_code == 200:
             data = response.json()
-            if isinstance(data, list):
+            if "agents" in data and isinstance(data["agents"], list):
                 self.log_test("Get Agents", "PASS", 
-                            f"Found {len(data)} agents", response.status_code)
+                            f"Found {len(data['agents'])} agents", response.status_code)
             else:
                 self.log_test("Get Agents", "FAIL", 
                             "Invalid agents response format", response.status_code)
