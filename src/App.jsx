@@ -57,26 +57,16 @@ const SuspenseWrapper = ({ children }) => (
 )
 
 function App() {
-  const { isAuthenticated, isLoading, isInitialized, initialize } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
 
   useEffect(() => {
-    // Initialize theme and authentication on app startup - only run once
-    const initializeApp = async () => {
-      try {
-        // Initialize theme first (synchronous)
-        initializeTheme()
-        
-        // Initialize auth store (handles rehydration and validation)
-        initialize()
-        
-      } catch (error) {
-        console.error('App initialization error:', error)
-      }
+    // Initialize theme only
+    try {
+      initializeTheme()
+    } catch (error) {
+      console.error('Theme initialization error:', error)
     }
-    
-    initializeApp()
-  }, []) // Empty dependency array - run only once on mount
+  }, [])
 
   // Apply theme class to document
   useEffect(() => {
@@ -87,20 +77,7 @@ function App() {
     }
   }, [theme])
 
-  // Show loading screen during initial app load and auth check - SIMPLIFIED FOR DEBUG
-  console.log('App render state:', { isAuthenticated, isLoading, isInitialized })
-  
-  // Temporary: Force isInitialized to true and isLoading to false for debugging
-  const debugInitialized = true
-  const debugLoading = false
-  
-  if (!debugInitialized) {
-    return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
-  }
-
-  if (debugLoading) {
-    return <LoadingStates.FullScreen message="Checking authentication..." />
-  }
+  console.log('App rendering normally - bypassing auth for exploration')
 
   return (
     <Router>
@@ -110,85 +87,17 @@ function App() {
         <main className="relative">
           <SuspenseWrapper>
             <Routes>
-              {/* Public Routes */}
-              <Route 
-                path="/" 
-                element={
-                  <PublicRoute>
-                    <Home />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/signup" 
-                element={
-                  <PublicRoute>
-                    <Signup />
-                  </PublicRoute>
-                } 
-              />
+              {/* All routes are now public for exploration */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/templates" element={<Templates />} />
-              
-              {/* Protected Routes */}
-              <Route 
-                path="/chat" 
-                element={
-                  <ProtectedRoute>
-                    <ChatHub />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/chat/:projectId" 
-                element={
-                  <ProtectedRoute>
-                    <IndividualProject />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/integrations" 
-                element={
-                  <ProtectedRoute>
-                    <Integrations />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Catch-all redirect - only after auth is determined */}
-              <Route 
-                path="*" 
-                element={
-                  <Navigate 
-                    to={isAuthenticated ? "/chat" : "/"} 
-                    replace 
-                  />
-                } 
-              />
+              <Route path="/chat" element={<ChatHub />} />
+              <Route path="/chat/:projectId" element={<IndividualProject />} />
+              <Route path="/integrations" element={<Integrations />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </SuspenseWrapper>
         </main>
@@ -258,9 +167,7 @@ function App() {
         {/* Development overlay for debugging */}
         {process.env.NODE_ENV === 'development' && (
           <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono opacity-50 pointer-events-none">
-            Auth: {isAuthenticated ? '✅' : '❌'} | 
-            Loading: {isLoading ? '⏳' : '✅'} | 
-            Init: {isInitialized ? '✅' : '⏳'}
+            Auth: BYPASSED | Theme: {theme} | Mode: EXPLORATION
           </div>
         )}
       </div>
