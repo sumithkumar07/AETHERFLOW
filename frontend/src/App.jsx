@@ -168,10 +168,58 @@ function App() {
                 } 
               />
               <Route 
+                path="/projects" 
+                element={
+                  <ProtectedRoute>
+                    <Projects />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/projects/:projectId" 
+                element={
+                  <ProtectedRoute>
+                    <IndividualProject />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
                 path="/chat/:projectId" 
                 element={
                   <ProtectedRoute>
                     <IndividualProject />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/agents" 
+                element={
+                  <ProtectedRoute>
+                    <Agents />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/deploy" 
+                element={
+                  <ProtectedRoute>
+                    <Deploy />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/enterprise" 
+                element={
+                  <ProtectedRoute>
+                    <Enterprise />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/subscription" 
+                element={
+                  <ProtectedRoute>
+                    <Subscription />
                   </ProtectedRoute>
                 } 
               />
