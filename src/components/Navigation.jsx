@@ -12,7 +12,9 @@ import {
   Bars3Icon,
   XMarkIcon,
   MoonIcon,
-  SunIcon
+  SunIcon,
+  BeakerIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
@@ -105,16 +107,19 @@ const Navigation = () => {
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
               className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
               {theme === 'dark' ? (
                 <SunIcon className="w-5 h-5" />
               ) : (
                 <MoonIcon className="w-5 h-5" />
               )}
-            </button>
+            </motion.button>
 
             {/* Authentication */}
             {isAuthenticated ? (
@@ -131,13 +136,15 @@ const Navigation = () => {
                   </span>
                 </Link>
                 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleLogout}
                   className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
                   title="Logout"
                 >
                   <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                </button>
+                </motion.button>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
@@ -147,12 +154,18 @@ const Navigation = () => {
                 >
                   Sign In
                 </Link>
-                <Link
-                  to="/signup"
-                  className="btn-primary text-sm px-4 py-2"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  Get Started
-                </Link>
+                  <Link
+                    to="/signup"
+                    className="btn-primary text-sm px-4 py-2 flex items-center space-x-2"
+                  >
+                    <RocketLaunchIcon className="w-4 h-4" />
+                    <span>Get Started</span>
+                  </Link>
+                </motion.div>
               </div>
             )}
 
