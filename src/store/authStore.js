@@ -425,10 +425,17 @@ const useAuthStore = create(
         }
         return persistedState
       },
-      onRehydrateStorage: () => (state) => {
-        // Initialize after rehydration
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Failed to rehydrate auth store:', error)
+          return
+        }
+        
+        // Initialize after rehydration with slight delay to ensure DOM is ready
         if (state) {
-          state.initialize()
+          setTimeout(() => {
+            state.initialize()
+          }, 0)
         }
       }
     }
