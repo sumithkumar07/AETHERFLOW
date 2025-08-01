@@ -15,6 +15,9 @@ import {
 // Import advanced components
 import AIModelRouter from '../components/advanced/AIModelRouter'
 import PluginMarketplace from '../components/advanced/PluginMarketplace'
+import AnalyticsDashboard from '../components/advanced/AnalyticsDashboard'
+import SecurityDashboard from '../components/advanced/SecurityDashboard'
+import CollaborationInterface from '../components/advanced/CollaborationInterface'
 
 const AdvancedFeatures = () => {
   const [activeTab, setActiveTab] = useState('ai-router')
