@@ -421,62 +421,8 @@ const useAuthStore = create((set, get) => ({
         
         return Math.max(0, Math.ceil(timeLeft / 1000))
       }
-    }),
-    {
-      name: 'ai-tempo-auth',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated,
-        loginAttempts: state.loginAttempts,
-        lastLoginAttempt: state.lastLoginAttempt
-      }),
-      version: 2,
-      migrate: (persistedState, version) => {
-        // Handle migration from older versions
-        if (version < 2) {
-          return {
-            ...persistedState,
-            isInitialized: false,
-            refreshToken: persistedState.refreshToken || null,
-            loginAttempts: persistedState.loginAttempts || 0,
-            lastLoginAttempt: persistedState.lastLoginAttempt || null
-          }
-        }
-        return persistedState
-      },
-      onRehydrateStorage: () => (state, error) => {
-        if (error) {
-          console.error('Failed to rehydrate auth store:', error)
-          // Set safe defaults on rehydration error
-          if (state) {
-            state.isLoading = false
-            state.isInitialized = true
-            state.isAuthenticated = false
-          }
-          return
-        }
-        
-        // Mark as rehydrated immediately
-        if (state) {
-          state.isInitialized = true
-          state.isLoading = false
-          
-          // If we have a token, verify it
-          if (state.token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
-            // Defer auth check to prevent blocking UI
-            setTimeout(() => {
-              state.checkAuth()
-            }, 100)
-          }
-        }
-      }
-    }
-  )
-)
+    })
+))
 
 // Axios interceptors for automatic token refresh
 let isRefreshing = false
