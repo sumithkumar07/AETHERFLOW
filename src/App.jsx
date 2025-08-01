@@ -77,7 +77,12 @@ function App() {
     }
   }, [theme])
 
-  console.log('App rendering normally - bypassing auth for exploration')
+  // Initialize auth store on app mount
+  const { initialize } = useAuthStore()
+  
+  useEffect(() => {
+    initialize()
+  }, [initialize])
 
   return (
     <Router>
