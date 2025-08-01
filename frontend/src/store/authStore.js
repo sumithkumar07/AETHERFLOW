@@ -17,6 +17,7 @@ const useAuthStore = create(
       token: null,
       isAuthenticated: false,
       isLoading: true,
+      isHydrated: false, // Track if store has been hydrated from localStorage
       error: null,
 
       // Actions
@@ -88,10 +89,17 @@ const useAuthStore = create(
 
       checkAuth: async () => {
         try {
-          const { token } = get()
-          console.log('🔄 Checking auth, token present:', !!token)
+          const { token, isHydrated } = get()
+          console.log('🔄 Checking auth, token present:', !!token, 'hydrated:', isHydrated)
+          
+          // Don't check auth until store is hydrated
+          if (!isHydrated) {
+            console.log('⏳ Store not hydrated yet, skipping auth check')
+            return false
+          }
           
           if (!token) {
+            console.log('❌ No token found after hydration')
             set({ isLoading: false, isAuthenticated: false })
             return false
           }
@@ -141,6 +149,12 @@ const useAuthStore = create(
       // Clear errors
       clearError: () => {
         set({ error: null })
+      },
+
+      // Internal action to mark store as hydrated
+      _setHydrated: () => {
+        console.log('🔄 Store hydration complete')
+        set({ isHydrated: true })
       }
     }),
     {
@@ -149,7 +163,36 @@ const useAuthStore = create(
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated
-      })
+      }),
+      onRehydrateStorage: () => (state, error) => {
+        console.log('🔄 Rehydrating auth store...')
+        if (error) {
+          console.error('❌ Rehydration error:', error)
+        } else {
+          console.log('✅ Rehydration complete:', {
+            hasUser: !!state?.user,
+            hasToken: !!state?.token,
+            isAuthenticated: state?.isAuthenticated
+          })
+          
+          // Mark store as hydrated and trigger auth check
+          const store = useAuthStore.getState()
+          store._setHydrated()
+          
+          // If we have a token after rehydration, set up axios and verify
+          if (state?.token) {
+            console.log('🔄 Setting up axios with rehydrated token')
+            axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
+            // Trigger auth check after hydration
+            setTimeout(() => {
+              store.checkAuth()
+            }, 100)
+          } else {
+            // No token, mark as not loading
+            useAuthStore.setState({ isLoading: false })
+          }
+        }
+      }
     }
   )
 )
