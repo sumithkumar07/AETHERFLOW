@@ -87,12 +87,18 @@ function App() {
     }
   }, [theme])
 
-  // Show loading screen during initial app load and auth check
-  if (!isInitialized) {
+  // Show loading screen during initial app load and auth check - SIMPLIFIED FOR DEBUG
+  console.log('App render state:', { isAuthenticated, isLoading, isInitialized })
+  
+  // Temporary: Force isInitialized to true and isLoading to false for debugging
+  const debugInitialized = true
+  const debugLoading = false
+  
+  if (!debugInitialized) {
     return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
   }
 
-  if (isLoading) {
+  if (debugLoading) {
     return <LoadingStates.FullScreen message="Checking authentication..." />
   }
 
