@@ -2,8 +2,87 @@ import { create } from 'zustand'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
+// Enhanced AI models with detailed configurations
+const AI_MODELS = {
+  'gpt-4.1-nano': {
+    name: 'GPT-4.1 Nano',
+    provider: 'OpenAI',
+    description: 'Fastest and most efficient GPT-4 model',
+    capabilities: ['code', 'analysis', 'creative'],
+    speed: 'fast',
+    quality: 'high',
+    cost: 'free'
+  },
+  'claude-sonnet-4': {
+    name: 'Claude Sonnet 4',
+    provider: 'Anthropic',
+    description: 'Advanced reasoning and code understanding',
+    capabilities: ['code', 'analysis', 'reasoning', 'creative'],
+    speed: 'medium',
+    quality: 'highest',
+    cost: 'free'
+  },
+  'gemini-2.5-flash': {
+    name: 'Gemini 2.5 Flash',
+    provider: 'Google',
+    description: 'Lightning-fast responses with multimodal support',
+    capabilities: ['code', 'analysis', 'multimodal'],
+    speed: 'fastest',
+    quality: 'high',
+    cost: 'free'
+  },
+  'gpt-4': {
+    name: 'GPT-4',
+    provider: 'OpenAI',
+    description: 'Original GPT-4 with comprehensive capabilities',
+    capabilities: ['code', 'analysis', 'creative', 'reasoning'],
+    speed: 'medium',
+    quality: 'highest',
+    cost: 'free'
+  }
+}
+
+// Enhanced agent configurations
+const AI_AGENTS = {
+  developer: {
+    name: 'Developer Agent',
+    icon: '💻',
+    description: 'Expert in coding, debugging, and software architecture',
+    capabilities: ['Full-stack development', 'Code review', 'Architecture', 'Debugging'],
+    prompt: 'You are an expert software developer with deep knowledge of modern programming languages, frameworks, and best practices.'
+  },
+  designer: {
+    name: 'Designer Agent',
+    icon: '🎨',
+    description: 'UI/UX design specialist with modern design principles',
+    capabilities: ['UI/UX Design', 'Design Systems', 'User Research', 'Prototyping'],
+    prompt: 'You are a senior UI/UX designer with expertise in modern design principles, user experience, and design systems.'
+  },
+  tester: {
+    name: 'QA Agent',
+    icon: '🧪',
+    description: 'Quality assurance and testing specialist',
+    capabilities: ['Test Strategy', 'Automation', 'Bug Analysis', 'Performance Testing'],
+    prompt: 'You are a senior QA engineer specializing in test automation, quality assurance, and comprehensive testing strategies.'
+  },
+  integrator: {
+    name: 'Integration Agent',
+    icon: '🔗',
+    description: 'Third-party integration and API specialist',
+    capabilities: ['API Integration', 'Third-party Services', 'Data Migration', 'System Architecture'],
+    prompt: 'You are an integration specialist with expertise in connecting systems, APIs, and third-party services.'
+  },
+  analyst: {
+    name: 'Business Analyst',
+    icon: '📊',
+    description: 'Business requirements and data analysis expert',
+    capabilities: ['Requirements Analysis', 'Data Analysis', 'Process Optimization', 'Reporting'],
+    prompt: 'You are a senior business analyst with expertise in requirements gathering, process optimization, and data-driven insights.'
+  }
+}
+
 const useChatStore = create((set, get) => ({
-  // State
+  // Enhanced State
   messages: [],
   conversations: [],
   currentConversation: null,
@@ -11,68 +90,186 @@ const useChatStore = create((set, get) => ({
   error: null,
   selectedModel: 'gpt-4.1-nano',
   selectedAgent: 'developer',
+  
+  // Enhanced AI state
+  aiThinking: false,
+  modelStats: {
+    'gpt-4.1-nano': { usage: 0, avgResponseTime: 0 },
+    'claude-sonnet-4': { usage: 0, avgResponseTime: 0 },
+    'gemini-2.5-flash': { usage: 0, avgResponseTime: 0 },
+    'gpt-4': { usage: 0, avgResponseTime: 0 }
+  },
+  
+  // Context and conversation history
+  conversationContext: [],
+  maxContextLength: 10,
+  
+  // Real-time typing indicators
+  isAITyping: false,
+  typingTimeout: null,
 
-  // Actions
+  // Enhanced Actions
   sendMessage: async (messageData) => {
+    const startTime = Date.now()
+    
     try {
-      set({ loading: true, error: null })
+      set({ 
+        loading: true, 
+        aiThinking: true,
+        isAITyping: true,
+        error: null 
+      })
       
-      // Add user message to local state immediately
+      // Add user message to local state immediately with enhanced metadata
       const userMessage = {
-        id: Date.now().toString(),
+        id: `user_${Date.now()}`,
         content: messageData.content,
         sender: 'user',
         timestamp: new Date().toISOString(),
-        model: messageData.model,
-        agent: messageData.agent
+        model: messageData.model || get().selectedModel,
+        agent: messageData.agent || get().selectedAgent,
+        metadata: {
+          wordCount: messageData.content.split(' ').length,
+          hasCode: messageData.content.includes('```'),
+          sentiment: 'neutral'
+        }
       }
       
       set(state => ({
-        messages: [...state.messages, userMessage]
+        messages: [...state.messages, userMessage],
+        conversationContext: [...state.conversationContext.slice(-get().maxContextLength), userMessage]
       }))
       
-      // Send to backend
-      const response = await axios.post('/ai/chat', {
+      // Enhanced request with context and agent-specific prompting
+      const requestPayload = {
         message: messageData.content,
         model: messageData.model || get().selectedModel,
         agent: messageData.agent || get().selectedAgent,
         project_id: messageData.projectId,
-        conversation_id: get().currentConversation?.id
-      })
+        conversation_id: get().currentConversation?.id,
+        context: get().conversationContext.slice(-5), // Last 5 messages for context
+        agent_prompt: AI_AGENTS[messageData.agent || get().selectedAgent]?.prompt,
+        enhanced_features: {
+          code_analysis: true,
+          context_awareness: true,
+          follow_up_suggestions: true
+        }
+      }
       
+      const response = await axios.post('/ai/chat', requestPayload)
+      const responseTime = Date.now() - startTime
+      
+      // Enhanced AI message with metadata
       const aiMessage = {
-        id: (Date.now() + 1).toString(),
+        id: `ai_${Date.now()}`,
         content: response.data.response,
         sender: 'assistant',
         timestamp: new Date().toISOString(),
-        model: response.data.model_used,
-        agent: messageData.agent || get().selectedAgent
+        model: response.data.model_used || messageData.model || get().selectedModel,
+        agent: messageData.agent || get().selectedAgent,
+        metadata: {
+          responseTime,
+          wordCount: response.data.response.split(' ').length,
+          hasCode: response.data.response.includes('```'),
+          confidence: response.data.confidence || 0.95,
+          suggestions: response.data.suggestions || [],
+          usage: response.data.usage || {}
+        }
       }
       
+      // Update model statistics
+      const currentModel = messageData.model || get().selectedModel
       set(state => ({
         messages: [...state.messages, aiMessage],
-        loading: false
+        conversationContext: [...state.conversationContext, aiMessage],
+        loading: false,
+        aiThinking: false,
+        isAITyping: false,
+        modelStats: {
+          ...state.modelStats,
+          [currentModel]: {
+            usage: state.modelStats[currentModel].usage + 1,
+            avgResponseTime: (state.modelStats[currentModel].avgResponseTime + responseTime) / 2
+          }
+        }
       }))
       
-      return { success: true, message: aiMessage }
+      // Success feedback
+      if (responseTime < 3000) {
+        toast.success(`AI responded in ${(responseTime / 1000).toFixed(1)}s`, {
+          duration: 2000,
+          icon: '⚡'
+        })
+      }
+      
+      return { success: true, message: aiMessage, responseTime }
       
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to send message'
-      set({ error: errorMessage, loading: false })
+      
+      set({ 
+        error: errorMessage, 
+        loading: false,
+        aiThinking: false,
+        isAITyping: false
+      })
+      
+      // Enhanced error handling with user-friendly messages
+      let userFriendlyError = errorMessage
+      if (error.response?.status === 429) {
+        userFriendlyError = 'AI is busy right now. Please try again in a moment.'
+      } else if (error.response?.status >= 500) {
+        userFriendlyError = 'AI service is temporarily unavailable. Switching to backup model...'
+        // Auto-retry with different model
+        get().autoRetryWithFallbackModel(messageData)
+      }
+      
+      toast.error(userFriendlyError)
       return { success: false, error: errorMessage }
     }
   },
 
+  // Auto-retry with fallback model
+  autoRetryWithFallbackModel: async (messageData) => {
+    const currentModel = messageData.model || get().selectedModel
+    const fallbackModels = Object.keys(AI_MODELS).filter(model => model !== currentModel)
+    
+    if (fallbackModels.length > 0) {
+      const fallbackModel = fallbackModels[0]
+      toast.loading(`Retrying with ${AI_MODELS[fallbackModel].name}...`, { duration: 3000 })
+      
+      setTimeout(() => {
+        get().sendMessage({
+          ...messageData,
+          model: fallbackModel
+        })
+      }, 1500)
+    }
+  },
+
+  // Enhanced message fetching with conversation history
   fetchMessages: async (projectId) => {
     try {
       set({ loading: true, error: null })
       const response = await axios.get(`/ai/conversations?project_id=${projectId}`)
       
-      // For now, we'll use a simple message structure
-      // In a real app, you'd fetch actual conversation history
+      const messages = response.data.messages || []
+      const conversations = response.data.conversations || []
+      
+      // Process and enhance message metadata
+      const enhancedMessages = messages.map(msg => ({
+        ...msg,
+        metadata: {
+          wordCount: msg.content?.split(' ').length || 0,
+          hasCode: msg.content?.includes('```') || false,
+          ...msg.metadata
+        }
+      }))
+      
       set({ 
-        messages: response.data.messages || [],
-        conversations: response.data.conversations || [],
+        messages: enhancedMessages,
+        conversations,
+        conversationContext: enhancedMessages.slice(-get().maxContextLength),
         loading: false 
       })
       
@@ -84,21 +281,205 @@ const useChatStore = create((set, get) => ({
     }
   },
 
+  // Enhanced model selection with performance optimization
   setSelectedModel: (model) => {
-    set({ selectedModel: model })
+    const modelInfo = AI_MODELS[model]
+    if (modelInfo) {
+      set({ selectedModel: model })
+      toast.success(`Switched to ${modelInfo.name}`, {
+        duration: 2000,
+        icon: '🤖'
+      })
+    }
   },
 
+  // Enhanced agent selection
   setSelectedAgent: (agent) => {
-    set({ selectedAgent: agent })
+    const agentInfo = AI_AGENTS[agent]
+    if (agentInfo) {
+      set({ selectedAgent: agent })
+      toast.success(`Now using ${agentInfo.name}`, {
+        duration: 2000,
+        icon: agentInfo.icon
+      })
+    }
   },
 
+  // Get model information
+  getModelInfo: (modelId) => {
+    return AI_MODELS[modelId] || null
+  },
+
+  // Get agent information
+  getAgentInfo: (agentId) => {
+    return AI_AGENTS[agentId] || null
+  },
+
+  // Get all available models
+  getAvailableModels: () => {
+    return Object.entries(AI_MODELS).map(([id, model]) => ({
+      id,
+      ...model
+    }))
+  },
+
+  // Get all available agents
+  getAvailableAgents: () => {
+    return Object.entries(AI_AGENTS).map(([id, agent]) => ({
+      id,
+      ...agent
+    }))
+  },
+
+  // Get model performance stats
+  getModelStats: () => {
+    return get().modelStats
+  },
+
+  // Enhanced conversation management
+  createConversation: async (projectId, title) => {
+    try {
+      const response = await axios.post('/ai/conversations', {
+        project_id: projectId,
+        title: title || `Conversation ${Date.now()}`
+      })
+      
+      const newConversation = response.data
+      set(state => ({
+        conversations: [newConversation, ...state.conversations],
+        currentConversation: newConversation
+      }))
+      
+      return { success: true, conversation: newConversation }
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to create conversation'
+      toast.error(errorMessage)
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  // Switch conversation
+  switchConversation: async (conversationId) => {
+    try {
+      set({ loading: true })
+      const response = await axios.get(`/ai/conversations/${conversationId}`)
+      
+      const conversation = response.data
+      const messages = conversation.messages || []
+      
+      set({
+        currentConversation: conversation,
+        messages,
+        conversationContext: messages.slice(-get().maxContextLength),
+        loading: false
+      })
+      
+      return { success: true }
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to switch conversation'
+      set({ error: errorMessage, loading: false })
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  // Clear conversation context
+  clearConversationContext: () => {
+    set({ conversationContext: [] })
+  },
+
+  // Enhanced message management
+  deleteMessage: (messageId) => {
+    set(state => ({
+      messages: state.messages.filter(msg => msg.id !== messageId),
+      conversationContext: state.conversationContext.filter(msg => msg.id !== messageId)
+    }))
+    toast.success('Message deleted')
+  },
+
+  // Copy message content
+  copyMessage: (messageId) => {
+    const message = get().messages.find(msg => msg.id === messageId)
+    if (message) {
+      navigator.clipboard.writeText(message.content)
+      toast.success('Message copied to clipboard', { icon: '📋' })
+    }
+  },
+
+  // Regenerate AI response
+  regenerateResponse: async (messageId) => {
+    const state = get()
+    const messageIndex = state.messages.findIndex(msg => msg.id === messageId)
+    
+    if (messageIndex > 0) {
+      const previousUserMessage = state.messages[messageIndex - 1]
+      if (previousUserMessage && previousUserMessage.sender === 'user') {
+        // Remove the old AI response
+        set(state => ({
+          messages: state.messages.filter(msg => msg.id !== messageId)
+        }))
+        
+        // Resend the user message
+        return await get().sendMessage({
+          content: previousUserMessage.content,
+          model: previousUserMessage.model,
+          agent: previousUserMessage.agent
+        })
+      }
+    }
+    
+    return { success: false, error: 'Cannot regenerate this message' }
+  },
+
+  // Export conversation
+  exportConversation: (format = 'json') => {
+    const state = get()
+    const exportData = {
+      conversation: state.currentConversation,
+      messages: state.messages,
+      metadata: {
+        exportedAt: new Date().toISOString(),
+        messageCount: state.messages.length,
+        modelStats: state.modelStats
+      }
+    }
+    
+    const dataStr = format === 'json' 
+      ? JSON.stringify(exportData, null, 2)
+      : state.messages.map(msg => `${msg.sender}: ${msg.content}`).join('\n\n')
+    
+    const dataBlob = new Blob([dataStr], { type: 'text/plain' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `conversation_${Date.now()}.${format}`
+    link.click()
+    
+    toast.success(`Conversation exported as ${format.toUpperCase()}`)
+  },
+
+  // Clear messages
   clearMessages: () => {
-    set({ messages: [], currentConversation: null })
+    set({ 
+      messages: [], 
+      currentConversation: null,
+      conversationContext: []
+    })
+    toast.success('Conversation cleared')
   },
 
+  // Clear errors
   clearError: () => {
     set({ error: null })
+  },
+
+  // Reset AI thinking state
+  resetAIState: () => {
+    set({ 
+      aiThinking: false,
+      isAITyping: false,
+      loading: false
+    })
   }
 }))
 
-export { useChatStore }
+export { useChatStore, AI_MODELS, AI_AGENTS }
