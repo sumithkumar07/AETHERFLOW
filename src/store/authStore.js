@@ -72,6 +72,13 @@ const useAuthStore = create((set, get) => ({
           // Set authorization header for future requests
           axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
           
+          // Save to localStorage manually
+          localStorage.setItem('ai-tempo-token', access_token)
+          localStorage.setItem('ai-tempo-user', JSON.stringify(user))
+          if (refresh_token) {
+            localStorage.setItem('ai-tempo-refresh', refresh_token)
+          }
+          
           set({
             user,
             token: access_token,
