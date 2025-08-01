@@ -59,7 +59,7 @@ async def get_enterprise_integrations(current_user: User = Depends(get_current_u
         }
     ]
     
-    return {"enterprise_integrations": integrations}
+    return {"integrations": integrations}
 
 @router.get("/compliance/dashboard")
 async def get_compliance_dashboard(current_user: User = Depends(get_current_user)):
