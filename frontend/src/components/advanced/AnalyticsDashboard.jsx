@@ -4,7 +4,7 @@ import {
   ChartBarIcon, 
   UsersIcon, 
   ClockIcon, 
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   EyeIcon,
   CursorArrowRaysIcon 
 } from '@heroicons/react/24/outline'
