@@ -92,6 +92,10 @@ function AppContent() {
   const { isAuthenticated, isLoading, token, initialize, isInitialized: authInitialized } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
+  const [isGamificationOpen, setIsGamificationOpen] = useState(false)
+  const [isTourActive, setIsTourActive] = useState(false)
   const initializationAttempted = useRef(false)
 
   useEffect(() => {
@@ -108,6 +112,15 @@ function AppContent() {
         // Initialize auth store
         await initialize()
         
+        // Check if user needs onboarding
+        const hasSeenOnboarding = localStorage.getItem('ai-tempo-onboarding-complete')
+        if (!hasSeenOnboarding && isAuthenticated) {
+          setTimeout(() => setIsOnboardingOpen(true), 2000)
+        }
+        
+        // Register service worker for PWA
+        registerServiceWorker()
+        
         // Mark as initialized
         setIsInitialized(true)
         
@@ -118,7 +131,7 @@ function AppContent() {
     }
     
     initializeApp()
-  }, [initialize, initializeTheme])
+  }, [initialize, initializeTheme, isAuthenticated])
 
   // Apply theme class to document
   useEffect(() => {
@@ -128,6 +141,84 @@ function AppContent() {
       document.documentElement.classList.remove('dark')
     }
   }, [theme])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyboardShortcuts = (e) => {
+      // Global Search: Cmd/Ctrl + K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsSearchOpen(true)
+      }
+      
+      // Gamification Panel: Cmd/Ctrl + G
+      if ((e.metaKey || e.ctrlKey) && e.key === 'g') {
+        e.preventDefault()
+        if (isAuthenticated) {
+          setIsGamificationOpen(true)
+        }
+      }
+      
+      // Help/Tour: Shift + ?
+      if (e.shiftKey && e.key === '?') {
+        e.preventDefault()
+        setIsTourActive(true)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyboardShortcuts)
+    return () => document.removeEventListener('keydown', handleKeyboardShortcuts)
+  }, [isAuthenticated])
+
+  // Service Worker Registration
+  const registerServiceWorker = async () => {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js')
+        console.log('Service Worker registered successfully:', registration)
+        
+        // Handle updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New update available
+              if (confirm('A new version is available. Reload to update?')) {
+                window.location.reload()
+              }
+            }
+          })
+        })
+      } catch (error) {
+        console.error('Service Worker registration failed:', error)
+      }
+    }
+  }
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('ai-tempo-onboarding-complete', 'true')
+    setIsOnboardingOpen(false)
+    
+    // Start the interactive tour after onboarding
+    setTimeout(() => setIsTourActive(true), 1000)
+  }
+
+  // Handle onboarding skip
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('ai-tempo-onboarding-complete', 'true')
+    setIsOnboardingOpen(false)
+  }
+
+  // Handle tour completion
+  const handleTourComplete = () => {
+    setIsTourActive(false)
+  }
+
+  // Handle tour skip
+  const handleTourSkip = () => {
+    setIsTourActive(false)
+  }
 
   // Show loading screen during initial app load
   if (!isInitialized) {
