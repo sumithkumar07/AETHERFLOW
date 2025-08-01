@@ -237,7 +237,7 @@ const AnalyticsDashboard = () => {
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <TrendingUpIcon className="w-4 h-4 text-green-500 mr-1" />
+            <ArrowTrendingUpIcon className="w-4 h-4 text-green-500 mr-1" />
             <span className="text-sm text-green-600">+2.1% improvement</span>
           </div>
         </motion.div>
