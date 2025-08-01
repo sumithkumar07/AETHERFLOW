@@ -20,10 +20,10 @@ const Profile = React.lazy(() => import('./pages/Profile'))
 
 // Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
   
-  // Show loading only during actual auth operations
-  if (isLoading) {
+  // Show loading during initialization or auth operations
+  if (!isInitialized || isLoading) {
     return <LoadingStates.FullScreen message="Checking authentication..." />
   }
   
