@@ -134,21 +134,26 @@ const useAuthStore = create(
       initialize: async () => {
         const { token } = get()
         
-        set({ isInitialized: true })
-        
         // If no token exists, we're not authenticated
         if (!token) {
           set({
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: null
+            error: null,
+            isInitialized: true
           })
           return false
         }
         
-        // If we have a token, validate it silently (without setting loading state)
-        return await get().checkAuthSilent()
+        // If we have a token, validate it silently (without overriding existing auth state)
+        const isValid = await get().checkAuthSilent()
+        
+        set((state) => {
+          state.isInitialized = true
+        })
+        
+        return isValid
       },
 
       // Simplified auth check - no complex initialization
