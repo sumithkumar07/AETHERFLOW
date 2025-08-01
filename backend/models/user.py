@@ -10,9 +10,16 @@ class PyObjectId(str):
     
     @classmethod
     def validate(cls, v, handler=None):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
-        return str(v)
+        # Allow both ObjectId format and string IDs for flexibility
+        if isinstance(v, ObjectId):
+            return str(v)
+        if isinstance(v, str):
+            # If it's a valid ObjectId format, validate it
+            if ObjectId.is_valid(v):
+                return str(v)
+            # Otherwise, allow string IDs (for demo users, etc.)
+            return str(v)
+        raise ValueError("Invalid objectid")
 
 class UserBase(BaseModel):
     email: EmailStr
