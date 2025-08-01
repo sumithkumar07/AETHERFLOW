@@ -20,10 +20,10 @@ const Profile = React.lazy(() => import('./pages/Profile'))
 
 // Enhanced Protected Route component with proper loading states
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized, isInitializing } = useAuthStore()
   
-  // Show loading while auth is being checked or store is not initialized
-  if (isLoading || !isInitialized) {
+  // Show loading while auth is being checked, store is not initialized, or initialization is in progress
+  if (isLoading || !isInitialized || isInitializing) {
     return <LoadingStates.FullScreen message="Checking authentication..." />
   }
   
@@ -37,10 +37,10 @@ const ProtectedRoute = ({ children }) => {
 
 // Enhanced Public Route component 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized, isInitializing } = useAuthStore()
   
-  // Show loading while auth is being checked or store is not initialized
-  if (isLoading || !isInitialized) {
+  // Show loading while auth is being checked, store is not initialized, or initialization is in progress
+  if (isLoading || !isInitialized || isInitializing) {
     return <LoadingStates.FullScreen message="Loading application..." />
   }
   
