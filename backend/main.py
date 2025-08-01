@@ -105,6 +105,7 @@ app.include_router(security_router, prefix="/api/security", tags=["Zero Trust Se
 app.include_router(development_router, prefix="/api/development", tags=["Development Assistant"])
 app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Live Collaboration"])
 app.include_router(voice_router, prefix="/api/voice", tags=["Voice Interface"])
+app.include_router(workflows_router, prefix="/api/workflows", tags=["Workflow Automation"])
 
 @app.on_event("startup")
 async def startup_event():
