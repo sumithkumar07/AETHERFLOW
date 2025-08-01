@@ -371,6 +371,10 @@ class ModelLoadBalancer:
             "gemini-2.5-flash": 8
         }
     
+    async def initialize(self):
+        """Initialize load balancer"""
+        logger.info("Model load balancer initialized")
+    
     async def select_best_available(self, scored_models: List[Tuple[str, float]]) -> str:
         """Select best available model considering current load"""
         for model_name, score in scored_models:
