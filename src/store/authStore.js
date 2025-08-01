@@ -1,15 +1,16 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
 // Get backend URL from environment
-const BACKEND_URL = import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'
 
 // Configure axios defaults
 axios.defaults.baseURL = `${BACKEND_URL}/api`
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
+// Enhanced auth store with proper initialization timing
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -18,10 +19,36 @@ const useAuthStore = create(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
-      isLoading: true,
+      isLoading: true, // Start with true to prevent premature redirects
+      isInitialized: false, // Track if store has been hydrated
       error: null,
       loginAttempts: 0,
       lastLoginAttempt: null,
+
+      // Initialize store - prevents router redirects during hydration
+      initialize: () => {
+        const state = get()
+        
+        // If we have a token, validate it
+        if (state.token && !state.isInitialized) {
+          set({ isLoading: true })
+          
+          // Set up axios header
+          axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
+          
+          // Validate token on next tick to allow UI to render
+          setTimeout(() => {
+            get().checkAuth()
+          }, 100)
+        } else {
+          // No token, mark as initialized and not loading
+          set({ 
+            isLoading: false, 
+            isInitialized: true,
+            isAuthenticated: false 
+          })
+        }
+      },
 
       // Actions
       login: async (credentials) => {
@@ -40,6 +67,7 @@ const useAuthStore = create(
             refreshToken: refresh_token,
             isAuthenticated: true,
             isLoading: false,
+            isInitialized: true,
             error: null,
             loginAttempts: 0,
             lastLoginAttempt: null
@@ -55,6 +83,7 @@ const useAuthStore = create(
           set({
             error: errorMessage,
             isLoading: false,
+            isInitialized: true,
             loginAttempts: newAttempts,
             lastLoginAttempt: Date.now()
           })
@@ -80,6 +109,7 @@ const useAuthStore = create(
             refreshToken: refresh_token,
             isAuthenticated: true,
             isLoading: false,
+            isInitialized: true,
             error: null
           })
           
@@ -91,7 +121,8 @@ const useAuthStore = create(
           
           set({
             error: errorMessage,
-            isLoading: false
+            isLoading: false,
+            isInitialized: true
           })
           
           toast.error(errorMessage)
@@ -119,6 +150,7 @@ const useAuthStore = create(
             refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
+            isInitialized: true,
             error: null,
             loginAttempts: 0,
             lastLoginAttempt: null
@@ -128,9 +160,9 @@ const useAuthStore = create(
         }
       },
 
-      // Check authentication status
+      // Check authentication status with proper loading states
       checkAuth: async () => {
-        const { token } = get()
+        const { token, isInitialized } = get()
         
         // If no token exists, set auth as checked but not authenticated
         if (!token) {
@@ -138,6 +170,7 @@ const useAuthStore = create(
             user: null,
             isAuthenticated: false,
             isLoading: false,
+            isInitialized: true,
             error: null
           })
           return false
@@ -155,6 +188,7 @@ const useAuthStore = create(
             user,
             isAuthenticated: true,
             isLoading: false,
+            isInitialized: true,
             error: null
           })
           
@@ -179,6 +213,7 @@ const useAuthStore = create(
             refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
+            isInitialized: true,
             error: null
           })
           
@@ -367,6 +402,7 @@ const useAuthStore = create(
     }),
     {
       name: 'ai-tempo-auth',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
         token: state.token,
@@ -375,18 +411,25 @@ const useAuthStore = create(
         loginAttempts: state.loginAttempts,
         lastLoginAttempt: state.lastLoginAttempt
       }),
-      version: 1,
+      version: 2,
       migrate: (persistedState, version) => {
         // Handle migration from older versions
-        if (version === 0) {
+        if (version < 2) {
           return {
             ...persistedState,
-            refreshToken: null,
-            loginAttempts: 0,
-            lastLoginAttempt: null
+            isInitialized: false,
+            refreshToken: persistedState.refreshToken || null,
+            loginAttempts: persistedState.loginAttempts || 0,
+            lastLoginAttempt: persistedState.lastLoginAttempt || null
           }
         }
         return persistedState
+      },
+      onRehydrateStorage: () => (state) => {
+        // Initialize after rehydration
+        if (state) {
+          state.initialize()
+        }
       }
     }
   )
