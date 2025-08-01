@@ -133,12 +133,22 @@ const PluginMarketplace = ({ onInstallPlugin, installedPlugins = [] }) => {
 
   const loadPlugins = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setPlugins(mockPlugins)
+      // Try to load from API first
+      const response = await pluginAPI.getMarketplace()
+      
+      if (response.data.success) {
+        setPlugins(response.data.plugins)
+      } else {
+        // Fallback to mock data
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        setPlugins(mockPlugins)
+      }
       setLoading(false)
     } catch (error) {
       console.error('Failed to load plugins:', error)
+      // Fallback to mock data
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      setPlugins(mockPlugins)
       setLoading(false)
     }
   }
