@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
 
-from models.user import get_current_user
+from routes.auth import get_current_user
 from services.plugin_manager import PluginManager, PluginManifest, PluginType
 
 router = APIRouter()
