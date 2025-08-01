@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional, Dict, Any
 from models.database import get_database
 from services.search_service import SearchService, SearchResult
-from models.user import get_current_user
+from routes.auth import get_current_user
 import logging
 
 logger = logging.getLogger(__name__)
