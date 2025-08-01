@@ -10,44 +10,56 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'
 axios.defaults.baseURL = `${BACKEND_URL}/api`
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-// Enhanced auth store with immediate initialization
-const useAuthStore = create(
-  persist(
-    (set, get) => ({
-      // State
-      user: null,
-      token: null,
-      refreshToken: null,
-      isAuthenticated: false,
-      isLoading: false, // Start with false to prevent infinite loading
-      isInitialized: false, // Track if store has been hydrated
-      error: null,
-      loginAttempts: 0,
-      lastLoginAttempt: null,
+// Simplified auth store without persist middleware for debugging
+const useAuthStore = create((set, get) => ({
+  // State
+  user: null,
+  token: null,
+  refreshToken: null,
+  isAuthenticated: false,
+  isLoading: false, // Start with false
+  isInitialized: true, // Start as initialized
+  error: null,
+  loginAttempts: 0,
+  lastLoginAttempt: null,
 
-      // Initialize store - prevents router redirects during hydration
-      initialize: () => {
-        const state = get()
+  // Initialize store - simple version
+  initialize: () => {
+    // Try to load from localStorage manually for now
+    try {
+      const storedToken = localStorage.getItem('ai-tempo-token')
+      const storedUser = localStorage.getItem('ai-tempo-user')
+      
+      if (storedToken && storedUser) {
+        const user = JSON.parse(storedUser)
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
         
-        // Mark as initialized immediately to prevent loading loops
-        set({ isInitialized: true, isLoading: false })
+        set({
+          token: storedToken,
+          user: user,
+          isAuthenticated: true,
+          isLoading: false,
+          isInitialized: true
+        })
         
-        // If we have a token, validate it
-        if (state.token) {
-          set({ isLoading: true })
-          
-          // Set up axios header
-          axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
-          
-          // Validate token immediately
-          get().checkAuth()
-        } else {
-          // No token, mark as not authenticated
-          set({ 
-            isAuthenticated: false 
-          })
-        }
-      },
+        // Validate token in background
+        get().checkAuth()
+      } else {
+        set({
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: true
+        })
+      }
+    } catch (error) {
+      console.error('Failed to initialize auth:', error)
+      set({
+        isAuthenticated: false,
+        isLoading: false,
+        isInitialized: true
+      })
+    }
+  },
 
       // Actions
       login: async (credentials) => {
