@@ -10,7 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'
 axios.defaults.baseURL = `${BACKEND_URL}/api`
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-// Enhanced auth store with proper initialization timing
+// Enhanced auth store with immediate initialization
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -19,7 +19,7 @@ const useAuthStore = create(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
-      isLoading: true, // Start with true to prevent premature redirects
+      isLoading: false, // Start with false to prevent infinite loading
       isInitialized: false, // Track if store has been hydrated
       error: null,
       loginAttempts: 0,
@@ -30,7 +30,7 @@ const useAuthStore = create(
         const state = get()
         
         // Mark as initialized immediately to prevent loading loops
-        set({ isInitialized: true })
+        set({ isInitialized: true, isLoading: false })
         
         // If we have a token, validate it
         if (state.token) {
@@ -42,9 +42,8 @@ const useAuthStore = create(
           // Validate token immediately
           get().checkAuth()
         } else {
-          // No token, mark as not authenticated and not loading
+          // No token, mark as not authenticated
           set({ 
-            isLoading: false, 
             isAuthenticated: false 
           })
         }
