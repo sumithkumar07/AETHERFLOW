@@ -25,6 +25,7 @@ import Deploy from './pages/Deploy'
 import Agents from './pages/Agents'
 import Enterprise from './pages/Enterprise'
 import Subscription from './pages/Subscription'
+import AdvancedFeatures from './pages/AdvancedFeatures'
 
 // Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
