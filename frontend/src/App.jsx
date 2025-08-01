@@ -73,7 +73,7 @@ const SuspenseWrapper = ({ children }) => (
 )
 
 function App() {
-  const { isAuthenticated, isLoading, token, checkAuth } = useAuthStore()
+  const { isAuthenticated, isLoading, token, initialize } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
   const [isInitialized, setIsInitialized] = useState(false)
   const initializationAttempted = useRef(false)
@@ -89,10 +89,8 @@ function App() {
         // Initialize theme first (synchronous)
         initializeTheme()
         
-        // Check auth only if we have a token, otherwise we're not authenticated
-        if (token) {
-          await checkAuth()
-        }
+        // Initialize auth store
+        await initialize()
         
         // Mark as initialized
         setIsInitialized(true)
@@ -104,7 +102,7 @@ function App() {
     }
     
     initializeApp()
-  }, [checkAuth, initializeTheme]) // Removed token from dependencies
+  }, [initialize, initializeTheme])
 
   // Apply theme class to document
   useEffect(() => {
