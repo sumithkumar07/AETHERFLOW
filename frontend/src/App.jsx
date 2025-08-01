@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, useState } from 'react'
+import React, { useEffect, Suspense, useState, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
