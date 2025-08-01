@@ -449,7 +449,408 @@ class AdvancedAnalytics:
                 
             except Exception as e:
                 logger.error(f"Error updating real-time metrics: {e}")
-                await asyncio.sleep(10)  # Wait before retrying
+    async def _count_active_users(self, minutes: int) -> int:
+        """Count active users in the last N minutes"""
+        try:
+            cutoff_time = datetime.now() - timedelta(minutes=minutes)
+            count = await self.events_collection.distinct("user_id", {
+                "timestamp": {"$gte": cutoff_time}
+            })
+            return len(count)
+        except Exception as e:
+            logger.error(f"Error counting active users: {e}")
+            return 0
+    
+    async def _get_hourly_pageviews(self) -> int:
+        """Get page views in the last hour"""
+        try:
+            cutoff_time = datetime.now() - timedelta(hours=1)
+            count = await self.events_collection.count_documents({
+                "event_type": EventType.PAGE_VIEW.value,
+                "timestamp": {"$gte": cutoff_time}
+            })
+            return count
+        except Exception as e:
+            logger.error(f"Error getting hourly pageviews: {e}")
+            return 0
+    
+    async def _get_feature_usage(self, hours: int) -> Dict[str, int]:
+        """Get feature usage in the last N hours"""
+        try:
+            cutoff_time = datetime.now() - timedelta(hours=hours)
+            pipeline = [
+                {"$match": {
+                    "event_type": EventType.FEATURE_USED.value,
+                    "timestamp": {"$gte": cutoff_time}
+                }},
+                {"$group": {
+                    "_id": "$data.feature",
+                    "count": {"$sum": 1}
+                }}
+            ]
+            
+            cursor = self.events_collection.aggregate(pipeline)
+            result = {}
+            async for doc in cursor:
+                if doc["_id"]:
+                    result[doc["_id"]] = doc["count"]
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error getting feature usage: {e}")
+            return {}
+    
+    async def _get_ai_interactions(self, hours: int) -> int:
+        """Get AI interactions in the last N hours"""
+        try:
+            cutoff_time = datetime.now() - timedelta(hours=hours)
+            count = await self.events_collection.count_documents({
+                "event_type": EventType.AI_INTERACTION.value,
+                "timestamp": {"$gte": cutoff_time}
+            })
+            return count
+        except Exception as e:
+            logger.error(f"Error getting AI interactions: {e}")
+            return 0
+    
+    async def _calculate_error_rate(self, hours: int) -> float:
+        """Calculate error rate in the last N hours"""
+        try:
+            cutoff_time = datetime.now() - timedelta(hours=hours)
+            
+            total_events = await self.events_collection.count_documents({
+                "timestamp": {"$gte": cutoff_time}
+            })
+            
+            error_events = await self.events_collection.count_documents({
+                "event_type": EventType.ERROR_OCCURRED.value,
+                "timestamp": {"$gte": cutoff_time}
+            })
+            
+            if total_events == 0:
+                return 0.0
+            
+            return (error_events / total_events) * 100
+            
+        except Exception as e:
+            logger.error(f"Error calculating error rate: {e}")
+            return 0.0
+    
+    async def _get_conversion_metrics(self) -> Dict[str, Any]:
+        """Get conversion metrics"""
+        try:
+            # Simple conversion metrics
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            
+            signups = await self.events_collection.count_documents({
+                "event_type": EventType.USER_ACTION.value,
+                "data.action": "signup",
+                "timestamp": {"$gte": today}
+            })
+            
+            project_creations = await self.events_collection.count_documents({
+                "event_type": EventType.PROJECT_CREATED.value,
+                "timestamp": {"$gte": today}
+            })
+            
+            return {
+                "daily_signups": signups,
+                "daily_projects": project_creations,
+                "conversion_rate": (project_creations / max(signups, 1)) * 100
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting conversion metrics: {e}")
+            return {"daily_signups": 0, "daily_projects": 0, "conversion_rate": 0.0}
+    
+    async def _calculate_pageview_trend(self) -> str:
+        """Calculate pageview trend"""
+        try:
+            # Simple trend calculation
+            current_hour = await self._get_hourly_pageviews()
+            previous_hour_start = datetime.now() - timedelta(hours=2)
+            previous_hour_end = datetime.now() - timedelta(hours=1)
+            
+            previous_count = await self.events_collection.count_documents({
+                "event_type": EventType.PAGE_VIEW.value,
+                "timestamp": {"$gte": previous_hour_start, "$lt": previous_hour_end}
+            })
+            
+            if previous_count == 0:
+                return "stable"
+            
+            change = ((current_hour - previous_count) / previous_count) * 100
+            
+            if change > 10:
+                return "increasing"
+            elif change < -10:
+                return "decreasing"
+            else:
+                return "stable"
+                
+        except Exception as e:
+            logger.error(f"Error calculating pageview trend: {e}")
+            return "stable"
+    
+    async def _get_model_usage_stats(self) -> Dict[str, int]:
+        """Get AI model usage statistics"""
+        try:
+            cutoff_time = datetime.now() - timedelta(hours=1)
+            pipeline = [
+                {"$match": {
+                    "event_type": EventType.AI_INTERACTION.value,
+                    "timestamp": {"$gte": cutoff_time}
+                }},
+                {"$group": {
+                    "_id": "$data.model",
+                    "count": {"$sum": 1}
+                }}
+            ]
+            
+            cursor = self.events_collection.aggregate(pipeline)
+            result = {}
+            async for doc in cursor:
+                if doc["_id"]:
+                    result[doc["_id"]] = doc["count"]
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error getting model usage stats: {e}")
+            return {}
+    
+    async def _get_user_segment_distribution(self) -> Dict[str, int]:
+        """Get user segment distribution"""
+        try:
+            pipeline = [
+                {"$group": {
+                    "_id": "$segment",
+                    "count": {"$sum": 1}
+                }}
+            ]
+            
+            cursor = self.user_profiles_collection.aggregate(pipeline)
+            result = {}
+            async for doc in cursor:
+                if doc["_id"]:
+                    result[doc["_id"]] = doc["count"]
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error getting user segment distribution: {e}")
+            return {}
+    
+    async def _update_real_time_metrics_for_event(self, event: AnalyticsEvent):
+        """Update real-time metrics for a specific event"""
+        try:
+            # Update counters based on event type
+            if event.event_type == EventType.PAGE_VIEW:
+                self.real_time_metrics["pageviews"] = self.real_time_metrics.get("pageviews", 0) + 1
+            elif event.event_type == EventType.AI_INTERACTION:
+                self.real_time_metrics["ai_interactions"] = self.real_time_metrics.get("ai_interactions", 0) + 1
+                
+        except Exception as e:
+            logger.error(f"Error updating real-time metrics for event: {e}")
+    
+    async def _update_user_session(self, event: AnalyticsEvent):
+        """Update user session with new event"""
+        try:
+            if event.user_id in self.user_sessions:
+                self.user_sessions[event.user_id]["last_activity"] = event.timestamp
+                
+        except Exception as e:
+            logger.error(f"Error updating user session: {e}")
+    
+    def _get_current_session(self, user_id: str) -> Optional[str]:
+        """Get current session ID for user"""
+        if user_id in self.user_sessions:
+            return self.user_sessions[user_id]["session_id"]
+        return None
+    
+    async def _get_session_events(self, user_id: str, session_id: str) -> List[AnalyticsEvent]:
+        """Get events for a specific session"""
+        try:
+            cursor = self.events_collection.find({
+                "user_id": user_id,
+                "session_id": session_id
+            }).sort("timestamp", 1)
+            
+            events = []
+            async for doc in cursor:
+                event = AnalyticsEvent(
+                    event_id=doc["event_id"],
+                    user_id=doc["user_id"],
+                    session_id=doc["session_id"],
+                    event_type=EventType(doc["event_type"]),
+                    timestamp=doc["timestamp"],
+                    data=doc["data"],
+                    context=doc.get("context", {})
+                )
+                events.append(event)
+            
+            return events
+            
+        except Exception as e:
+            logger.error(f"Error getting session events: {e}")
+            return []
+    
+    async def _get_cached_profile(self, user_id: str) -> Optional[UserProfile]:
+        """Get cached user profile"""
+        # Simple in-memory cache for now
+        return None
+    
+    async def _cache_user_profile(self, profile: UserProfile):
+        """Cache user profile"""
+        # Simple in-memory cache for now
+        pass
+    
+    async def _extract_user_features(self, profile: UserProfile) -> Dict[str, Any]:
+        """Extract features for ML models"""
+        days_since_last = (datetime.now() - profile.last_seen).days
+        
+        return {
+            "days_since_last_activity": days_since_last,
+            "session_count": profile.total_sessions,
+            "avg_session_length": profile.total_time_spent.total_seconds() / max(profile.total_sessions, 1),
+            "engagement_score": profile.engagement_score,
+            "skill_level": profile.skill_level,
+            "favorite_features_count": len(profile.favorite_features)
+        }
+    
+    async def _determine_skill_level(self, events: List[Dict]) -> str:
+        """Determine user skill level from events"""
+        # Simple heuristic based on complexity of actions
+        advanced_actions = sum(1 for event in events 
+                             if event.get("data", {}).get("action") in ["deploy", "integrate", "optimize"])
+        
+        if advanced_actions > 10:
+            return "advanced"
+        elif advanced_actions > 3:
+            return "intermediate"
+        else:
+            return "beginner"
+    
+    async def _get_preferred_ai_models(self, events: List[Dict]) -> List[str]:
+        """Get user's preferred AI models"""
+        model_usage = defaultdict(int)
+        for event in events:
+            if event.get("event_type") == "ai_interaction":
+                model = event.get("data", {}).get("model")
+                if model:
+                    model_usage[model] += 1
+        
+        return sorted(model_usage.keys(), key=model_usage.get, reverse=True)[:3]
+    
+    async def _get_project_types(self, events: List[Dict]) -> List[str]:
+        """Get user's project types"""
+        project_types = set()
+        for event in events:
+            if event.get("event_type") == "project_created":
+                project_type = event.get("data", {}).get("type")
+                if project_type:
+                    project_types.add(project_type)
+        
+        return list(project_types)
+    
+    async def _calculate_engagement_score(self, events: List[Dict], sessions: int, time_spent: timedelta) -> float:
+        """Calculate user engagement score"""
+        try:
+            # Simple engagement calculation
+            base_score = min(sessions * 0.5, 10)  # Max 10 from sessions
+            time_score = min(time_spent.total_seconds() / 3600, 5)  # Max 5 from hours
+            action_score = min(len(events) * 0.1, 5)  # Max 5 from actions
+            
+            return base_score + time_score + action_score
+            
+        except Exception as e:
+            logger.error(f"Error calculating engagement score: {e}")
+            return 5.0
+    
+    async def _get_usage_data(self, days: int) -> List[Dict]:
+        """Get usage data for the last N days"""
+        try:
+            cutoff_time = datetime.now() - timedelta(days=days)
+            cursor = self.events_collection.find({
+                "timestamp": {"$gte": cutoff_time}
+            }).sort("timestamp", 1)
+            
+            return await cursor.to_list(length=None)
+            
+        except Exception as e:
+            logger.error(f"Error getting usage data: {e}")
+            return []
+    
+    def _analyze_hourly_patterns(self, usage_data: List[Dict]) -> Dict[str, float]:
+        """Analyze hourly usage patterns"""
+        hourly_counts = defaultdict(int)
+        
+        for event in usage_data:
+            hour = event["timestamp"].hour
+            hourly_counts[str(hour)] += 1
+        
+        # Normalize to percentage
+        total = sum(hourly_counts.values())
+        if total > 0:
+            return {hour: (count / total) * 100 for hour, count in hourly_counts.items()}
+        
+        return {}
+    
+    def _analyze_daily_patterns(self, usage_data: List[Dict]) -> Dict[str, float]:
+        """Analyze daily usage patterns"""
+        daily_counts = defaultdict(int)
+        
+        for event in usage_data:
+            day = str(event["timestamp"].weekday())  # 0=Monday, 6=Sunday
+            daily_counts[day] += 1
+        
+        # Calculate relative multipliers
+        avg_daily = sum(daily_counts.values()) / 7 if daily_counts else 1
+        return {day: count / avg_daily for day, count in daily_counts.items()}
+    
+    def _analyze_weekly_patterns(self, usage_data: List[Dict]) -> Dict[str, Any]:
+        """Analyze weekly usage patterns"""
+        # Simple weekly analysis
+        weekly_totals = []
+        current_week_start = datetime.now() - timedelta(days=datetime.now().weekday())
+        
+        for i in range(4):  # Last 4 weeks
+            week_start = current_week_start - timedelta(weeks=i)
+            week_end = week_start + timedelta(days=7)
+            
+            week_count = sum(1 for event in usage_data 
+                           if week_start <= event["timestamp"] < week_end)
+            weekly_totals.append(week_count)
+        
+        return {"weekly_totals": weekly_totals}
+    
+    def _analyze_seasonal_patterns(self, usage_data: List[Dict]) -> Dict[str, Any]:
+        """Analyze seasonal patterns"""
+        # Simple monthly analysis
+        monthly_counts = defaultdict(int)
+        
+        for event in usage_data:
+            month = str(event["timestamp"].month)
+            monthly_counts[month] += 1
+        
+        return dict(monthly_counts)
+    
+    def _analyze_trends(self, usage_data: List[Dict]) -> Dict[str, Any]:
+        """Analyze usage trends"""
+        if len(usage_data) < 2:
+            return {"growth_rate": 0.0}
+        
+        # Simple trend calculation
+        first_half = usage_data[:len(usage_data)//2]
+        second_half = usage_data[len(usage_data)//2:]
+        
+        first_half_count = len(first_half)
+        second_half_count = len(second_half)
+        
+        if first_half_count == 0:
+            growth_rate = 0.0
+        else:
+            growth_rate = (second_half_count - first_half_count) / first_half_count
+        
+        return {"growth_rate": growth_rate}
 
 class PredictiveModels:
     """Predictive analytics models"""
