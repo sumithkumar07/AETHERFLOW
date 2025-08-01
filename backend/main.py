@@ -183,6 +183,15 @@ async def startup_event():
         except Exception as e:
             logger.warning(f"Collaboration Engine initialization failed: {e}")
         
+        try:
+            # Initialize Voice Interface
+            voice_interface = VoiceInterface(db_wrapper)
+            await voice_interface.initialize()
+            set_voice_interface(voice_interface)
+            logger.info("✅ Voice Interface initialized")
+        except Exception as e:
+            logger.warning(f"Voice Interface initialization failed: {e}")
+        
         logger.info("🚀 AI Tempo Platform - ADVANCED EDITION initialized with graceful degradation!")
         logger.info("🎯 Core services active, advanced features loading...")
         
