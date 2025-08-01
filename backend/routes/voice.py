@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 from services.voice_interface import VoiceInterface
-from models.user import get_current_user
+from routes.auth import get_current_user
 
 logger = logging.getLogger(__name__)
 security = HTTPBearer()
