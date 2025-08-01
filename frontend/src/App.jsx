@@ -17,6 +17,11 @@ const Templates = React.lazy(() => import('./pages/Templates'))
 const Integrations = React.lazy(() => import('./pages/Integrations'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
+const Projects = React.lazy(() => import('./pages/Projects'))
+const Deploy = React.lazy(() => import('./pages/Deploy'))
+const Agents = React.lazy(() => import('./pages/Agents'))
+const Enterprise = React.lazy(() => import('./pages/Enterprise'))
+const Subscription = React.lazy(() => import('./pages/Subscription'))
 
 // Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
