@@ -110,7 +110,7 @@ const AdvancedAnalytics = () => {
           color="yellow"
         />
         <StatCard
-          icon={TrendingUpIcon}
+          icon={ChartBarIcon}
           title="Success Rate"
           value="98.7%"
           change={1.2}
