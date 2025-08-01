@@ -103,13 +103,37 @@ const AIModelRouter = ({ onModelSelect, currentModel = 'gpt-4o-mini' }) => {
   }
 
   const loadPerformanceData = async () => {
-    // Simulate performance data
-    setPerformance({
-      'gpt-4o-mini': { responseTime: 1.2, successRate: 98.5, usage: 45 },
-      'gpt-4': { responseTime: 3.8, successRate: 96.2, usage: 23 },
-      'claude-3-sonnet': { responseTime: 2.1, successRate: 97.8, usage: 31 },
-      'gemini-2.5-flash': { responseTime: 1.8, successRate: 95.1, usage: 28 }
-    })
+    try {
+      // Try to load performance data from API
+      const response = await aiRouterAPI.getModelPerformance()
+      
+      if (response.data.success) {
+        const perfData = response.data.data
+        setPerformance(perfData.performance_history || {
+          'gpt-4o-mini': { responseTime: 1.2, successRate: 98.5, usage: 45 },
+          'gpt-4': { responseTime: 3.8, successRate: 96.2, usage: 23 },
+          'claude-3-sonnet': { responseTime: 2.1, successRate: 97.8, usage: 31 },
+          'gemini-2.5-flash': { responseTime: 1.8, successRate: 95.1, usage: 28 }
+        })
+      } else {
+        // Fallback to mock data
+        setPerformance({
+          'gpt-4o-mini': { responseTime: 1.2, successRate: 98.5, usage: 45 },
+          'gpt-4': { responseTime: 3.8, successRate: 96.2, usage: 23 },
+          'claude-3-sonnet': { responseTime: 2.1, successRate: 97.8, usage: 31 },
+          'gemini-2.5-flash': { responseTime: 1.8, successRate: 95.1, usage: 28 }
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load performance data:', error)
+      // Fallback to mock data
+      setPerformance({
+        'gpt-4o-mini': { responseTime: 1.2, successRate: 98.5, usage: 45 },
+        'gpt-4': { responseTime: 3.8, successRate: 96.2, usage: 23 },
+        'claude-3-sonnet': { responseTime: 2.1, successRate: 97.8, usage: 31 },
+        'gemini-2.5-flash': { responseTime: 1.8, successRate: 95.1, usage: 28 }
+      })
+    }
   }
 
   const loadRecommendations = async () => {
