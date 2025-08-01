@@ -1,11 +1,11 @@
 {
   "summary": {
     "total": 22,
-    "passed": 21,
-    "failed": 0,
+    "passed": 7,
+    "failed": 14,
     "skipped": 1,
-    "duration": 1.4383020401000977,
-    "timestamp": "2025-08-01T10:39:14.749207"
+    "duration": 1.3471519947052002,
+    "timestamp": "2025-08-01T10:51:16.521488"
   },
   "results": [
     {
@@ -13,154 +13,154 @@
       "status": "PASS",
       "details": "API running: AI Code Studio API",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:13.315809"
+      "timestamp": "2025-08-01T10:51:15.178540"
     },
     {
       "test": "Detailed Health Check",
       "status": "PASS",
       "details": "Services: {'database': 'connected', 'ai': 'available', 'websocket': 'active'}",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:13.357677"
+      "timestamp": "2025-08-01T10:51:15.221091"
     },
     {
       "test": "User Registration",
       "status": "PASS",
-      "details": "User created: testuser2673@example.com",
+      "details": "User created: testuser4357@example.com",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:13.704787"
+      "timestamp": "2025-08-01T10:51:15.497016"
     },
     {
       "test": "Demo User Login",
       "status": "PASS",
       "details": "Token received for demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:13.978773"
+      "timestamp": "2025-08-01T10:51:15.769054"
     },
     {
       "test": "Get User Profile",
-      "status": "PASS",
-      "details": "Profile retrieved: demo@aicodestudio.com",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.024735"
+      "status": "FAIL",
+      "details": "Profile endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:15.813994"
     },
     {
       "test": "AI Chat Message",
-      "status": "PASS",
-      "details": "AI responded with model: gpt-4.1-nano",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.070697"
+      "status": "FAIL",
+      "details": "AI chat endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:15.859020"
     },
     {
       "test": "Get Conversations",
-      "status": "PASS",
-      "details": "Found 0 conversations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.117760"
+      "status": "FAIL",
+      "details": "Conversations endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:15.903020"
     },
     {
       "test": "Create Project",
-      "status": "PASS",
-      "details": "Project created: Test Project",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.167756"
+      "status": "FAIL",
+      "details": "Project creation failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:15.948995"
     },
     {
       "test": "Get Projects",
-      "status": "PASS",
-      "details": "Found 3 projects",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.214745"
+      "status": "FAIL",
+      "details": "Projects endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:15.992998"
     },
     {
       "test": "Get Templates",
       "status": "PASS",
       "details": "Found 4 templates",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.257769"
+      "timestamp": "2025-08-01T10:51:16.036050"
     },
     {
       "test": "Get Featured Templates",
       "status": "PASS",
       "details": "Found 3 featured templates",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.300819"
+      "timestamp": "2025-08-01T10:51:16.079052"
     },
     {
       "test": "Get Specific Template",
       "status": "PASS",
       "details": "Template: React Starter Kit",
       "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.343767"
+      "timestamp": "2025-08-01T10:51:16.122120"
     },
     {
       "test": "Enterprise Integrations",
-      "status": "PASS",
-      "details": "Found 3 integrations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.388717"
+      "status": "FAIL",
+      "details": "Enterprise integrations endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.167976"
     },
     {
       "test": "Compliance Dashboard",
-      "status": "PASS",
-      "details": "Compliance dashboard accessible",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.433771"
+      "status": "FAIL",
+      "details": "Compliance dashboard failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.212004"
     },
     {
       "test": "Automation Dashboard",
-      "status": "PASS",
-      "details": "Automation dashboard accessible",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.478751"
+      "status": "FAIL",
+      "details": "Automation dashboard failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.256024"
     },
     {
       "test": "Get Agents",
-      "status": "PASS",
-      "details": "Found 2 agents",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.523736"
+      "status": "FAIL",
+      "details": "Agents endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.300059"
     },
     {
       "test": "Orchestration Status",
-      "status": "PASS",
-      "details": "Orchestration system accessible",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.568747"
+      "status": "FAIL",
+      "details": "Orchestration status failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.344981"
     },
     {
       "test": "Get Agent Teams",
-      "status": "PASS",
-      "details": "Found 3 teams",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.613719"
+      "status": "FAIL",
+      "details": "Agent teams endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.389028"
     },
     {
       "test": "Get Available Integrations",
-      "status": "PASS",
-      "details": "Found 2 integrations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.658705"
+      "status": "FAIL",
+      "details": "Integrations endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.432995"
     },
     {
       "test": "Get Integration Categories",
-      "status": "PASS",
-      "details": "Found 4 categories",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.703703"
+      "status": "FAIL",
+      "details": "Categories endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.477026"
     },
     {
       "test": "Get Popular Integrations",
-      "status": "PASS",
-      "details": "Found 3 popular integrations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T10:39:14.748715"
+      "status": "FAIL",
+      "details": "Popular integrations endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-01T10:51:16.521017"
     },
     {
       "test": "WebSocket Connection",
       "status": "SKIP",
       "details": "websocket-client not installed",
       "response_code": null,
-      "timestamp": "2025-08-01T10:39:14.748997"
+      "timestamp": "2025-08-01T10:51:16.521259"
     }
   ]
 }
