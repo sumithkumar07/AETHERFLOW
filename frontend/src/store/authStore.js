@@ -20,6 +20,7 @@ const useAuthStore = create(
       refreshToken: null,
       isAuthenticated: false,
       isLoading: false, // Start false - will be set to true only during actual operations
+      isInitialized: false, // Add initialization state
       error: null,
       loginAttempts: 0,
       lastLoginAttempt: null,
