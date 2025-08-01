@@ -26,6 +26,8 @@ import Agents from './pages/Agents'
 import Enterprise from './pages/Enterprise'
 import Subscription from './pages/Subscription'
 import AdvancedFeatures from './pages/AdvancedFeatures'
+import AdvancedAnalytics from './pages/AdvancedAnalytics'
+import PerformanceMonitor from './pages/PerformanceMonitor'
 
 // Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
