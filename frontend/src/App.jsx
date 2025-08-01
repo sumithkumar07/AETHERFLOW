@@ -129,137 +129,135 @@ function App() {
         <Navigation />
         
         <main className="relative">
-          <SuspenseWrapper>
-            <Routes>
-              {/* Public Routes */}
-              <Route 
-                path="/" 
-                element={
-                  <PublicRoute>
-                    <Home />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/signup" 
-                element={
-                  <PublicRoute>
-                    <Signup />
-                  </PublicRoute>
-                } 
-              />
-              <Route path="/templates" element={<Templates />} />
-              
-              {/* Protected Routes */}
-              <Route 
-                path="/chat" 
-                element={
-                  <ProtectedRoute>
-                    <ChatHub />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/projects" 
-                element={
-                  <ProtectedRoute>
-                    <Projects />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/projects/:projectId" 
-                element={
-                  <ProtectedRoute>
-                    <IndividualProject />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/chat/:projectId" 
-                element={
-                  <ProtectedRoute>
-                    <IndividualProject />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/agents" 
-                element={
-                  <ProtectedRoute>
-                    <Agents />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/deploy" 
-                element={
-                  <ProtectedRoute>
-                    <Deploy />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/enterprise" 
-                element={
-                  <ProtectedRoute>
-                    <Enterprise />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/subscription" 
-                element={
-                  <ProtectedRoute>
-                    <Subscription />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/integrations" 
-                element={
-                  <ProtectedRoute>
-                    <Integrations />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Catch-all redirect - only after auth is determined */}
-              <Route 
-                path="*" 
-                element={
-                  <Navigate 
-                    to={isAuthenticated ? "/chat" : "/"} 
-                    replace 
-                  />
-                } 
-              />
-            </Routes>
-          </SuspenseWrapper>
+          <Routes>
+            {/* Public Routes */}
+            <Route 
+              path="/" 
+              element={
+                <PublicRoute>
+                  <Home />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/login" 
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/signup" 
+              element={
+                <PublicRoute>
+                  <Signup />
+                </PublicRoute>
+              } 
+            />
+            <Route path="/templates" element={<Templates />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <ChatHub />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/projects" 
+              element={
+                <ProtectedRoute>
+                  <Projects />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/projects/:projectId" 
+              element={
+                <ProtectedRoute>
+                  <IndividualProject />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat/:projectId" 
+              element={
+                <ProtectedRoute>
+                  <IndividualProject />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/agents" 
+              element={
+                <ProtectedRoute>
+                  <Agents />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/deploy" 
+              element={
+                <ProtectedRoute>
+                  <Deploy />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/enterprise" 
+              element={
+                <ProtectedRoute>
+                  <Enterprise />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/subscription" 
+              element={
+                <ProtectedRoute>
+                  <Subscription />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/integrations" 
+              element={
+                <ProtectedRoute>
+                  <Integrations />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Catch-all redirect - only after auth is determined */}
+            <Route 
+              path="*" 
+              element={
+                <Navigate 
+                  to={isAuthenticated ? "/chat" : "/"} 
+                  replace 
+                />
+              } 
+            />
+          </Routes>
         </main>
         
         {/* Enhanced toast notifications with better styling */}
