@@ -99,6 +99,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Minor: WebSocket connection established successfully. Minor connection cleanup issue but core functionality working."
+      - working: true
+        agent: "testing"
+        comment: "WebSocket connection established successfully. Core real-time functionality working. Minor cleanup issue during disconnection but does not affect functionality."
 
   - task: "Enterprise Features"
     implemented: true
