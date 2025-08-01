@@ -12,7 +12,11 @@ import {
   Bars3Icon,
   XMarkIcon,
   MoonIcon,
-  SunIcon
+  SunIcon,
+  FolderIcon,
+  RocketLaunchIcon,
+  UsersIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
