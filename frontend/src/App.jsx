@@ -220,6 +220,14 @@ function AppContent() {
               } 
             />
             <Route 
+              path="/advanced" 
+              element={
+                <ProtectedRoute>
+                  <AdvancedFeatures />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/subscription" 
               element={
                 <ProtectedRoute>
