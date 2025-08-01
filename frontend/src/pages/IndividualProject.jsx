@@ -213,6 +213,65 @@ const IndividualProject = () => {
               <RocketLaunchIcon className="w-4 h-4" />
               <span>Deploy</span>
             </button>
+            
+            {/* Enhanced Action Buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setIsAIAssistantOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                title="AI Code Assistant"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">AI Assistant</span>
+              </button>
+              
+              <button
+                onClick={() => setIsCollaborationOpen(!isCollaborationOpen)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                  isCollaborationOpen 
+                    ? 'bg-green-600 text-white hover:bg-green-700' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+                title="Real-time Collaboration"
+              >
+                <UserGroupIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Collaborate</span>
+              </button>
+              
+              <button
+                onClick={() => setIsLearningAssistantOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                title="Learning Assistant"
+              >
+                <AcademicCapIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Learn</span>
+              </button>
+              
+              <button
+                onClick={() => setIsVoiceReviewOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                title="Voice Code Review"
+              >
+                <MicrophoneIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Voice Review</span>
+              </button>
+              
+              <button
+                onClick={() => setIsErrorPreventionActive(!isErrorPreventionActive)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                  isErrorPreventionActive 
+                    ? 'bg-orange-600 text-white hover:bg-orange-700' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+                title="Smart Error Prevention"
+              >
+                <ShieldCheckIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">
+                  {detectedErrors.length > 0 ? `${detectedErrors.length} Issues` : 'Protected'}
+                </span>
+              </button>
+            </div>
+            
             <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
               <ShareIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
