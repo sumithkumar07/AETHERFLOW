@@ -44,7 +44,7 @@ export { DevelopmentAssistant } from './dev/DevelopmentAssistant'
 export { CollaborationEngine } from './collaboration/CollaborationEngine'
 
 // Integration Layer
-export { ArchitectureProvider, useArchitecture } from './integration/ArchitectureProvider'
+export { ArchitectureProvider, useArchitecture } from './integration/ArchitectureProvider.jsx'
 export { StoreEnhancer } from './integration/StoreEnhancer'
 export { GradualMigration } from './migration/GradualMigration'
 
