@@ -294,7 +294,7 @@ dashboard_service = AnalyticsDashboardService()
 async def get_analytics_dashboard(
     range: str = Query(default="7d", description="Time range (24h, 7d, 30d, 90d)")
 ):
-    """Get comprehensive analytics dashboard data"""
+    """Get comprehensive analytics dashboard data - Public endpoint for demo"""
     try:
         # Fetch all analytics data in parallel
         ai_insights, user_behavior, security_insights, performance_insights, business_intelligence = await asyncio.gather(
