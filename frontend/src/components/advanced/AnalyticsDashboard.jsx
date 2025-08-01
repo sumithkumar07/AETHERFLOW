@@ -8,6 +8,8 @@ import {
   EyeIcon,
   CursorArrowRaysIcon 
 } from '@heroicons/react/24/outline'
+import { analyticsAPI } from '../../services/advancedAPI'
+import toast from 'react-hot-toast'
 
 const AnalyticsDashboard = () => {
   const [analytics, setAnalytics] = useState({
