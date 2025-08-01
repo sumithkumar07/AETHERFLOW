@@ -125,45 +125,7 @@ const AdvancedFeatures = () => {
         )
 
       case 'analytics':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics Dashboard</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">2,341</div>
-                  <div className="text-gray-500">Active Users</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">94.2%</div>
-                  <div className="text-gray-500">User Retention</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">15.3s</div>
-                  <div className="text-gray-500">Avg Session</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h4 className="font-semibold text-gray-900 mb-3">Real-time User Journey</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 px-3 bg-blue-50 rounded">
-                  <span className="text-sm">Homepage → Login → Chat Hub</span>
-                  <span className="text-sm font-medium text-blue-600">45% conversion</span>
-                </div>
-                <div className="flex items-center justify-between py-2 px-3 bg-green-50 rounded">
-                  <span className="text-sm">Chat Hub → Project Creation</span>
-                  <span className="text-sm font-medium text-green-600">78% conversion</span>
-                </div>
-                <div className="flex items-center justify-between py-2 px-3 bg-purple-50 rounded">
-                  <span className="text-sm">Project → Deployment</span>
-                  <span className="text-sm font-medium text-purple-600">32% conversion</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
+        return <AnalyticsDashboard />
 
       case 'security':
         return (
