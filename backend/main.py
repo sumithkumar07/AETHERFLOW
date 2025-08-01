@@ -67,17 +67,22 @@ manager = ConnectionManager()
 ai_service = AIService()
 enhanced_ai_service = EnhancedAIService()
 
-# Initialize advanced services
+# Initialize advanced services with database wrapper
+class DatabaseWrapper:
+    async def get_database(self):
+        return await get_database()
+
+db_wrapper = DatabaseWrapper()
 intelligent_ai_router = IntelligentAIRouter()
-plugin_manager = PluginManager(get_database)
-advanced_analytics = AdvancedAnalytics(get_database)
+plugin_manager = PluginManager(db_wrapper)
+advanced_analytics = AdvancedAnalytics(db_wrapper)
 smart_recommendation_engine = SmartRecommendationEngine(advanced_analytics)
-zero_trust_gateway = ZeroTrustGateway(get_database)
-compliance_engine = ComplianceEngine(get_database)
-performance_optimizer = PerformanceOptimizer(get_database)
-adaptive_ui_service = AdaptiveUIService(get_database)
-development_assistant = DevelopmentAssistant(get_database)
-collaboration_engine = LiveCollaborationEngine(get_database)
+zero_trust_gateway = ZeroTrustGateway(db_wrapper)
+compliance_engine = ComplianceEngine(db_wrapper)
+performance_optimizer = PerformanceOptimizer(db_wrapper)
+adaptive_ui_service = AdaptiveUIService(db_wrapper)
+development_assistant = DevelopmentAssistant(db_wrapper)
+collaboration_engine = LiveCollaborationEngine(db_wrapper)
 
 # Include routers - Core APIs
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
