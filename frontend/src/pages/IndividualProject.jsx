@@ -25,6 +25,7 @@ import { useChatStore } from '../store/chatStore'
 import ChatMessage from '../components/ChatMessage'
 import ModelSelector from '../components/ModelSelector'
 import AgentSelector from '../components/AgentSelector'
+import AICodeAssistant from '../components/AICodeAssistant'
 import toast from 'react-hot-toast'
 
 const IndividualProject = () => {
