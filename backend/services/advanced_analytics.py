@@ -429,6 +429,27 @@ class AdvancedAnalytics:
             
         except Exception as e:
             logger.error(f"Error creating indexes: {e}")
+    
+    async def _update_real_time_metrics(self):
+        """Update real-time metrics continuously"""
+        while True:
+            try:
+                await asyncio.sleep(60)  # Update every minute
+                
+                # Update active user count
+                current_time = datetime.now()
+                five_minutes_ago = current_time - timedelta(minutes=5)
+                
+                # Count recent events as proxy for active users
+                recent_count = await self.events_collection.count_documents({
+                    "timestamp": {"$gte": five_minutes_ago}
+                })
+                
+                self.real_time_metrics["active_users"] = recent_count
+                
+            except Exception as e:
+                logger.error(f"Error updating real-time metrics: {e}")
+                await asyncio.sleep(10)  # Wait before retrying
 
 class PredictiveModels:
     """Predictive analytics models"""
