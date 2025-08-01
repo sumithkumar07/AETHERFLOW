@@ -47,6 +47,21 @@ const IndividualProject = () => {
   const [selectedModel, setSelectedModel] = useState('gpt-4.1-nano')
   const [selectedAgents, setSelectedAgents] = useState(['developer'])
   const [conversation, setConversation] = useState([])
+  
+  // Enhanced states for new features
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false)
+  const [isCollaborationOpen, setIsCollaborationOpen] = useState(false)
+  const [isErrorPreventionActive, setIsErrorPreventionActive] = useState(true)
+  const [isLearningAssistantOpen, setIsLearningAssistantOpen] = useState(false)
+  const [isVoiceReviewOpen, setIsVoiceReviewOpen] = useState(false)
+  const [currentCode, setCurrentCode] = useState('')
+  const [detectedErrors, setDetectedErrors] = useState([])
+  const [userActivity, setUserActivity] = useState({
+    typing_speed: 45,
+    session_duration: 0,
+    files_modified: 1,
+    last_activity: new Date()
+  })
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
 
