@@ -105,6 +105,14 @@ adaptive_ui_service = AdaptiveUIService(db_wrapper)
 development_assistant = DevelopmentAssistant(db_wrapper)
 collaboration_engine = LiveCollaborationEngine(db_wrapper)
 
+# Initialize cutting-edge services
+architectural_intelligence = ArchitecturalIntelligence(db_wrapper)
+smart_documentation_engine = SmartDocumentationEngine(db_wrapper)
+theme_intelligence = ThemeIntelligence(db_wrapper)
+project_migrator = ProjectMigrator(db_wrapper)
+code_quality_engine = CodeQualityEngine(db_wrapper)
+workspace_intelligence = WorkspaceIntelligence(db_wrapper)
+
 # Include routers - Core APIs
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
