@@ -53,6 +53,13 @@ from services.theme_intelligence import ThemeIntelligence
 from services.project_migrator import ProjectMigrator
 from services.code_quality_engine import CodeQualityEngine
 from services.workspace_intelligence import WorkspaceIntelligence
+from services.soundscape_engine import SoundscapeEngine
+from services.code_translator import CodeTranslator
+from services.emotional_ai import EmotionalAI
+from services.experimental_sandbox import ExperimentalSandbox
+from services.visual_programming import VisualProgramming
+from services.community_intelligence import CommunityIntelligence
+from services.resource_optimizer import ResourceOptimizer
 from routes.architectural_intelligence import set_architectural_intelligence_service
 from routes.smart_documentation import set_smart_documentation_service
 from routes.theme_intelligence import set_theme_intelligence_service
