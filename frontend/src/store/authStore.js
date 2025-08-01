@@ -440,9 +440,12 @@ const useAuthStore = create(
         return persistedState
       },
       onRehydrateStorage: () => (state) => {
-        // Initialize after rehydration
-        if (state) {
-          state.initialize()
+        // Initialize after rehydration only if state exists and not already initialized
+        if (state && !state.isInitialized && !state.isInitializing) {
+          // Small delay to ensure DOM is ready
+          setTimeout(() => {
+            state.initialize()
+          }, 50)
         }
       }
     }
