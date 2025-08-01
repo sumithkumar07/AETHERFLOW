@@ -427,14 +427,28 @@ const useAuthStore = create(
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.error('Failed to rehydrate auth store:', error)
+          // Set safe defaults on rehydration error
+          if (state) {
+            state.isLoading = false
+            state.isInitialized = true
+            state.isAuthenticated = false
+          }
           return
         }
         
-        // Initialize after rehydration with slight delay to ensure DOM is ready
+        // Mark as rehydrated immediately
         if (state) {
-          setTimeout(() => {
-            state.initialize()
-          }, 0)
+          state.isInitialized = true
+          state.isLoading = false
+          
+          // If we have a token, verify it
+          if (state.token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
+            // Defer auth check to prevent blocking UI
+            setTimeout(() => {
+              state.checkAuth()
+            }, 100)
+          }
         }
       }
     }
