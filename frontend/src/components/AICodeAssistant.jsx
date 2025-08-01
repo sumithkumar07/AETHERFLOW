@@ -1,419 +1,436 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   SparklesIcon,
-  CodeBracketIcon,
   LightBulbIcon,
-  XMarkIcon,
-  ChatBubbleLeftIcon,
-  CommandLineIcon,
+  CodeBracketIcon,
   DocumentTextIcon,
-  PaperAirplaneIcon,
-  ArrowsPointingOutIcon,
-  ArrowsPointingInIcon
+  XMarkIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlayIcon,
+  StopIcon,
+  MicrophoneIcon
 } from '@heroicons/react/24/outline'
+import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
 
-const AICodeAssistant = ({ projectId, projectName }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [input, setInput] = useState('')
+const AICodeAssistant = ({ 
+  isVisible, 
+  onClose, 
+  codeContext = "", 
+  cursorPosition = 0,
+  fileType = "javascript" 
+}) => {
+  const [activeTab, setActiveTab] = useState('completions')
+  const [completions, setCompletions] = useState([])
   const [suggestions, setSuggestions] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [conversation, setConversation] = useState([])
-  const inputRef = useRef(null)
-  const messagesRef = useRef(null)
+  const [expandedItems, setExpandedItems] = useState(new Set())
+  const [isVoiceActive, setIsVoiceActive] = useState(false)
+  const { user } = useAuthStore()
 
-  // Smart code suggestions based on context
-  const contextualSuggestions = [
-    {
-      id: 'optimize',
-      title: 'Optimize Performance',
-      description: 'Analyze code for performance improvements',
-      icon: LightBulbIcon,
-      prompt: 'Analyze the current code for performance bottlenecks and suggest optimizations'
-    },
-    {
-      id: 'debug',
-      title: 'Debug Issues',
-      description: 'Help identify and fix bugs',
-      icon: CommandLineIcon,
-      prompt: 'Help me debug any issues in the current code and suggest fixes'
-    },
-    {
-      id: 'refactor',
-      title: 'Code Refactoring',
-      description: 'Improve code structure and readability',
-      icon: CodeBracketIcon,
-      prompt: 'Suggest refactoring improvements for better code organization'
-    },
-    {
-      id: 'document',
-      title: 'Add Documentation',
-      description: 'Generate comments and documentation',
-      icon: DocumentTextIcon,
-      prompt: 'Generate comprehensive documentation and comments for the current code'
-    }
-  ]
-
-  // Auto-expand when first opened
+  // Auto-fetch completions when context changes
   useEffect(() => {
-    if (isOpen && conversation.length === 0) {
-      setTimeout(() => setIsExpanded(true), 300)
+    if (isVisible && codeContext) {
+      fetchCompletions()
     }
-  }, [isOpen, conversation.length])
+  }, [isVisible, codeContext, cursorPosition])
 
-  // Scroll to bottom of messages
-  useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight
-    }
-  }, [conversation])
-
-  // Simulate AI-powered code analysis and suggestions
-  const getSmartSuggestions = async (context) => {
+  const fetchCompletions = async () => {
+    if (!codeContext.trim()) return
+    
     setIsLoading(true)
     try {
-      // Simulate AI analysis delay
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
-      const contextSuggestions = [
-        'Consider using useMemo to optimize expensive calculations',
-        'This component could benefit from error boundaries',
-        'Add loading states for better user experience',
-        'Consider implementing code splitting for better performance'
-      ]
-      
-      setSuggestions(contextSuggestions)
+      const response = await fetch('/api/ai-completion/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({
+          code_context: codeContext,
+          cursor_position: cursorPosition,
+          file_type: fileType
+        })
+      })
+
+      const data = await response.json()
+      setCompletions(data.completions || [])
     } catch (error) {
-      console.error('Failed to get suggestions:', error)
+      console.error('Failed to fetch completions:', error)
+      toast.error('Failed to get AI completions')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSendMessage = async (message) => {
-    if (!message.trim()) return
-    
-    const userMessage = {
-      id: Date.now(),
-      type: 'user',
-      content: message,
-      timestamp: new Date()
-    }
-    
-    setConversation(prev => [...prev, userMessage])
-    setInput('')
+  const fetchSuggestions = async (issueType = 'optimization') => {
     setIsLoading(true)
-    
     try {
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const aiResponse = {
-        id: Date.now() + 1,
-        type: 'assistant',
-        content: generateContextualResponse(message),
-        timestamp: new Date(),
-        suggestions: ['Apply this change', 'Show example', 'Explain more']
-      }
-      
-      setConversation(prev => [...prev, aiResponse])
+      const response = await fetch('/api/ai-completion/suggestions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({
+          code_context: codeContext,
+          issue_type: issueType
+        })
+      })
+
+      const data = await response.json()
+      setSuggestions(data.suggestions || [])
     } catch (error) {
-      toast.error('Failed to get AI response')
+      console.error('Failed to fetch suggestions:', error)
+      toast.error('Failed to get AI suggestions')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const generateContextualResponse = (userMessage) => {
-    const responses = {
-      'optimize': `I've analyzed your ${projectName} project and found several optimization opportunities:
-
-1. **Component Memoization**: Use React.memo for components that receive the same props
-2. **State Updates**: Batch related state updates to reduce re-renders
-3. **Bundle Size**: Consider code splitting for routes and heavy components
-
-Here's an example optimization:
-
-\`\`\`jsx
-// Before
-const ExpensiveComponent = ({ data, filters }) => {
-  const processedData = processLargeData(data, filters)
-  return <div>{/* render */}</div>
-}
-
-// After
-const ExpensiveComponent = React.memo(({ data, filters }) => {
-  const processedData = useMemo(() => 
-    processLargeData(data, filters), [data, filters]
-  )
-  return <div>{/* render */}</div>
-})
-\`\`\``,
-      
-      'debug': `Let me help you debug the current issues in ${projectName}:
-
-**Common Issues Found:**
-1. **Missing Error Handling**: Add try-catch blocks for API calls
-2. **Memory Leaks**: Cleanup effects and event listeners
-3. **State Race Conditions**: Use useCallback for event handlers
-
-**Quick Fix Example:**
-\`\`\`jsx
-useEffect(() => {
-  const controller = new AbortController()
-  
-  fetchData({ signal: controller.signal })
-    .catch(err => {
-      if (err.name !== 'AbortError') {
-        console.error('Fetch failed:', err)
-      }
-    })
-  
-  return () => controller.abort()
-}, [])
-\`\`\``,
-      
-      'default': `I'm here to help with your ${projectName} project! I can assist with:
-
-• **Code Review**: Analyze your code for improvements
-• **Bug Fixing**: Help identify and resolve issues  
-• **Performance**: Optimize for better user experience
-• **Best Practices**: Suggest modern development patterns
-
-What specific aspect would you like help with?`
-    }
+  const generateDocumentation = async () => {
+    if (!codeContext.trim()) return
     
-    for (const [key, response] of Object.entries(responses)) {
-      if (userMessage.toLowerCase().includes(key)) {
-        return response
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/ai-completion/documentation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({
+          code_snippet: codeContext,
+          language: fileType
+        })
+      })
+
+      const data = await response.json()
+      
+      // Display documentation in a readable format
+      if (data.documentation) {
+        setActiveTab('documentation')
+        // You could store this in state and display it
+        toast.success('Documentation generated!')
       }
+    } catch (error) {
+      console.error('Failed to generate documentation:', error)
+      toast.error('Failed to generate documentation')
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  const toggleExpanded = (itemId) => {
+    const newExpanded = new Set(expandedItems)
+    if (newExpanded.has(itemId)) {
+      newExpanded.delete(itemId)
+    } else {
+      newExpanded.add(itemId)
+    }
+    setExpandedItems(newExpanded)
+  }
+
+  const handleCompletionSelect = (completion) => {
+    // This would integrate with your code editor
+    toast.success(`Applied: ${completion.text}`)
     
-    return responses.default
+    // Learn from user selection
+    fetch('/api/ai-completion/learn', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${user?.token}`
+      },
+      body: JSON.stringify({
+        context: { code_context: codeContext, cursor_position: cursorPosition },
+        selected_completion: completion
+      })
+    }).catch(console.error)
   }
 
-  const handleSuggestionClick = (suggestion) => {
-    handleSendMessage(suggestion.prompt)
+  const startVoiceExplanation = () => {
+    setIsVoiceActive(true)
+    // This would integrate with the voice code review service
+    toast.success('Voice explanation started')
+    
+    // Simulate voice explanation
+    setTimeout(() => {
+      setIsVoiceActive(false)
+      toast.success('Voice explanation completed')
+    }, 5000)
   }
 
-  const handleQuickAction = (action) => {
-    switch (action) {
-      case 'Apply this change':
-        toast.success('Changes applied to your code')
-        break
-      case 'Show example':
-        toast.success('Code example copied to clipboard')
-        break
-      case 'Explain more':
-        handleSendMessage('Can you explain this in more detail?')
-        break
+  const getSeverityColor = (severity) => {
+    switch (severity) {
+      case 'high': return 'text-red-600 bg-red-100 border-red-200'
+      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200'
+      case 'low': return 'text-green-600 bg-green-100 border-green-200'
+      default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }
 
-  return (
-    <>
-      {/* Floating Assistant Button */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-40 group"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <SparklesIcon className="w-6 h-6 text-white group-hover:animate-pulse" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* AI Assistant Panel */}
-      <AnimatePresence>
-        {isOpen && (
+  const renderCompletions = () => (
+    <div className="space-y-3">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-3 text-gray-600 dark:text-gray-400">Getting AI suggestions...</span>
+        </div>
+      ) : completions.length > 0 ? (
+        completions.map((completion, index) => (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.8 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1,
-              width: isExpanded ? 480 : 320,
-              height: isExpanded ? 600 : 400
-            }}
-            exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className={`fixed bottom-6 right-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-2xl z-40 flex flex-col transition-all duration-300`}
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer transition-all"
+            onClick={() => handleCompletionSelect(completion)}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200/50 dark:border-gray-700/50">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <SparklesIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                    AI Code Assistant
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {projectName}
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors"
-                >
-                  {isExpanded ? (
-                    <ArrowsPointingInIcon className="w-4 h-4" />
-                  ) : (
-                    <ArrowsPointingOutIcon className="w-4 h-4" />
-                  )}
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors"
-                >
-                  <XMarkIcon className="w-4 h-4" />
-                </button>
+                <CodeBracketIcon className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {completion.type}
+                </span>
+                <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                  {Math.round(completion.score * 100)}% match
+                </span>
               </div>
             </div>
+            <code className="text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 p-2 rounded block mb-2">
+              {completion.text}
+            </code>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {completion.description}
+            </p>
+          </motion.div>
+        ))
+      ) : (
+        <div className="text-center py-8">
+          <CodeBracketIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
+            Start typing to get AI-powered code completions
+          </p>
+        </div>
+      )}
+    </div>
+  )
 
-            {/* Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {conversation.length === 0 ? (
-                /* Welcome Screen */
-                <div className="flex-1 p-4 space-y-4">
-                  <div className="text-center py-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                      <CodeBracketIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      Ready to help!
+  const renderSuggestions = () => (
+    <div className="space-y-3">
+      <div className="flex space-x-2 mb-4">
+        {['optimization', 'readability', 'security', 'best_practice'].map((type) => (
+          <button
+            key={type}
+            onClick={() => fetchSuggestions(type)}
+            className="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors capitalize"
+          >
+            {type.replace('_', ' ')}
+          </button>
+        ))}
+      </div>
+
+      {suggestions.length > 0 ? (
+        suggestions.map((suggestion, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+          >
+            <div 
+              className="p-4 cursor-pointer"
+              onClick={() => toggleExpanded(`suggestion-${index}`)}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <LightBulbIcon className="w-5 h-5 text-yellow-500" />
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      {suggestion.title}
                     </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      I can help optimize, debug, and improve your code
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    {contextualSuggestions.map((suggestion) => {
-                      const Icon = suggestion.icon
-                      return (
-                        <button
-                          key={suggestion.id}
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="p-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl border border-gray-200/50 dark:border-gray-700/50 transition-colors text-left group"
-                        >
-                          <div className="flex items-start space-x-3">
-                            <div className="p-1.5 bg-white dark:bg-gray-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                              <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h5 className="font-medium text-gray-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                {suggestion.title}
-                              </h5>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                {suggestion.description}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      )
-                    })}
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className={`text-xs px-2 py-1 rounded-full border ${getSeverityColor(suggestion.impact)}`}>
+                        {suggestion.impact} impact
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {suggestion.type}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                /* Conversation */
-                <div 
-                  ref={messagesRef}
-                  className="flex-1 overflow-y-auto p-4 space-y-4"
+                {expandedItems.has(`suggestion-${index}`) ? 
+                  <ChevronUpIcon className="w-4 h-4 text-gray-400" /> :
+                  <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+                }
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {suggestion.description}
+              </p>
+            </div>
+
+            <AnimatePresence>
+              {expandedItems.has(`suggestion-${index}`) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="border-t border-gray-200 dark:border-gray-700 p-4"
                 >
-                  {conversation.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[80%] ${
-                        message.type === 'user' 
-                          ? 'bg-blue-500 text-white rounded-2xl rounded-br-sm' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl rounded-bl-sm'
-                      } px-4 py-3`}>
-                        <div className="text-sm whitespace-pre-wrap">
-                          {message.content}
-                        </div>
-                        {message.suggestions && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {message.suggestions.map((suggestion) => (
-                              <button
-                                key={suggestion}
-                                onClick={() => handleQuickAction(suggestion)}
-                                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs transition-colors"
-                              >
-                                {suggestion}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Before:</h5>
+                      <code className="text-xs text-gray-800 dark:text-gray-200 bg-red-50 dark:bg-red-900/20 p-2 rounded block">
+                        {suggestion.before}
+                      </code>
                     </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Analyzing...</span>
-                        </div>
-                      </div>
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">After:</h5>
+                      <code className="text-xs text-gray-800 dark:text-gray-200 bg-green-50 dark:bg-green-900/20 p-2 rounded block">
+                        {suggestion.after}
+                      </code>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* Input Area */}
-              <div className="border-t border-gray-200/50 dark:border-gray-700/50 p-4">
-                <div className="flex items-end space-x-2">
-                  <div className="flex-1 relative">
-                    <textarea
-                      ref={inputRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          handleSendMessage(input)
-                        }
-                      }}
-                      placeholder="Ask about your code..."
-                      className="w-full px-3 py-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                      rows="2"
-                      disabled={isLoading}
-                    />
-                    <button
-                      onClick={() => handleSendMessage(input)}
-                      disabled={!input.trim() || isLoading}
-                      className="absolute right-2 bottom-2 p-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
-                    >
-                      <PaperAirplaneIcon className="w-4 h-4" />
-                    </button>
                   </div>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Press Enter to send • Shift+Enter for new line
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        ))
+      ) : (
+        <div className="text-center py-8">
+          <LightBulbIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
+            Select a category to get smart suggestions
+          </p>
+        </div>
+      )}
+    </div>
+  )
+
+  if (!isVisible) return null
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="w-full max-w-4xl max-h-[90vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-2xl overflow-hidden"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <SparklesIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  AI Code Assistant
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  Get intelligent code completions and suggestions
                 </p>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={startVoiceExplanation}
+                className={`p-2 rounded-xl transition-colors ${
+                  isVoiceActive 
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' 
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <MicrophoneIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={generateDocumentation}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                title="Generate Documentation"
+              >
+                <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200/50 dark:border-gray-700/50">
+            <button
+              onClick={() => setActiveTab('completions')}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === 'completions'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              🤖 Completions
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('suggestions')
+                if (suggestions.length === 0) fetchSuggestions()
+              }}
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === 'suggestions'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              💡 Suggestions
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {activeTab === 'completions' ? renderCompletions() : renderSuggestions()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+            <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center space-x-1">
+                <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-xs">Tab</kbd>
+                <span>to accept</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-xs">Esc</kbd>
+                <span>to close</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+              <SparklesIcon className="w-3 h-3" />
+              <span>Powered by AI</span>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
 
