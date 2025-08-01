@@ -159,11 +159,25 @@ const PluginMarketplace = ({ onInstallPlugin, installedPlugins = [] }) => {
     setInstalling(prev => ({ ...prev, [plugin.id]: true }))
     
     try {
-      // Simulate installation
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      onInstallPlugin(plugin)
+      // Try to install through API
+      const response = await pluginAPI.installPlugin({
+        name: plugin.name,
+        type: plugin.category,
+        config: {}
+      })
+      
+      if (response.data.success) {
+        onInstallPlugin(plugin)
+        toast.success(`${plugin.name} installed successfully!`)
+      } else {
+        toast.error('Failed to install plugin')
+      }
     } catch (error) {
       console.error('Failed to install plugin:', error)
+      // Simulate installation for demo
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      onInstallPlugin(plugin)
+      toast.success(`${plugin.name} installed successfully! (Demo mode)`)
     } finally {
       setInstalling(prev => ({ ...prev, [plugin.id]: false }))
     }
