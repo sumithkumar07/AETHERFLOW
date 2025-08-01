@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from models.database import get_database
-from models.user import get_current_user
+from routes.auth import get_current_user
 from services.version_control_service import VersionControlService, BackupVersion, AutoCommit
 import logging
 
