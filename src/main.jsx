@@ -2,35 +2,35 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import { useThemeStore } from './store/themeStore'
 
-// Initialize theme immediately
+// Initialize theme from localStorage or system preference
 const initializeTheme = () => {
-  useThemeStore.getState().initializeTheme()
-}
-
-// Initialize Puter.js AI (already loaded via HTML script tag)
-const initializePuterAI = () => {
-  try {
-    if (typeof window !== 'undefined' && window.puter) {
-      console.log('✅ Puter.js AI available and ready')
-    } else {
-      console.warn('⚠️ Puter.js AI not available, using fallback responses')
-    }
-  } catch (error) {
-    console.warn('⚠️ Puter.js AI initialization error, using fallback responses', error)
+  const savedTheme = localStorage.getItem('theme')
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  
+  if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
   }
 }
 
-// Initialize theme immediately
+// Initialize theme before React renders
 initializeTheme()
 
-// Render the React app immediately
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  if (!localStorage.getItem('theme')) {
+    if (e.matches) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
+})
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
 )
-
-// Check Puter.js availability (non-blocking)
-initializePuterAI()
