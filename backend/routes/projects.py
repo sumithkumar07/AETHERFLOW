@@ -38,7 +38,7 @@ async def create_project(
             "status": ProjectStatus.DRAFT.value,
             "template_id": project.template_id,
             "requirements": project.requirements or [],
-            "tech_stack": project.tech_stack or [],
+            "tech_stack": [],
             "files": [],
             "build_logs": [],
             "deployment_url": None,
