@@ -35,8 +35,12 @@ const Navigation = () => {
 
   const authenticatedNavigation = [
     { name: 'Chat Hub', href: '/chat', icon: ChatBubbleLeftRightIcon },
+    { name: 'Projects', href: '/projects', icon: DocumentDuplicateIcon },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon },
+    { name: 'Agents', href: '/agents', icon: SparklesIcon },
+    { name: 'Deploy', href: '/deploy', icon: LinkIcon },
     { name: 'Integrations', href: '/integrations', icon: LinkIcon },
+    { name: 'Enterprise', href: '/enterprise', icon: Cog6ToothIcon },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon }
   ]
 
