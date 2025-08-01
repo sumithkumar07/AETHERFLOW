@@ -19,13 +19,13 @@ export default defineConfig({
     },
   },
   css: {
-    postcss: '../postcss.config.js',
+    postcss: './postcss.config.js',
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'zustand']
   },
   build: {
-    outDir: '../dist',
+    outDir: './dist',
     rollupOptions: {
       output: {
         manualChunks: {
