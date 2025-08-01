@@ -151,15 +151,15 @@ async def ai_assistant_chat(request: AIAssistantRequest):
 **Example Optimization:**
 ```jsx
 // Before
-const ExpensiveComponent = ({ data, filters }) => {{
-  const processedData = processLargeData(data, filters)
+const ExpensiveComponent = (props) => {{
+  const processedData = processLargeData(props.data, props.filters)
   return <div>{{/* render */}}</div>
 }}
 
 // After  
-const ExpensiveComponent = React.memo(({ data, filters }) => {{
+const ExpensiveComponent = React.memo((props) => {{
   const processedData = useMemo(() => 
-    processLargeData(data, filters), [data, filters]
+    processLargeData(props.data, props.filters), [props.data, props.filters]
   )
   return <div>{{/* render */}}</div>
 }})
