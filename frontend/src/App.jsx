@@ -18,14 +18,16 @@ const Integrations = React.lazy(() => import('./pages/Integrations'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
 
-// Protected Route component
+// Enhanced Protected Route component with proper loading states
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
   
-  if (isLoading) {
-    return <LoadingStates.FullScreen />
+  // Show loading while auth is being checked or store is not initialized
+  if (isLoading || !isInitialized) {
+    return <LoadingStates.FullScreen message="Checking authentication..." />
   }
   
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
@@ -33,12 +35,13 @@ const ProtectedRoute = ({ children }) => {
   return children
 }
 
-// Public Route component (redirects to chat if authenticated)
+// Enhanced Public Route component 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
   
-  if (isLoading) {
-    return <LoadingStates.FullScreen />
+  // Show loading while auth is being checked or store is not initialized
+  if (isLoading || !isInitialized) {
+    return <LoadingStates.FullScreen message="Loading application..." />
   }
   
   return children
@@ -54,22 +57,26 @@ const SuspenseWrapper = ({ children }) => (
 )
 
 function App() {
-  const { isAuthenticated, checkAuth, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized, initialize } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
 
   useEffect(() => {
     // Initialize theme and authentication on app startup
-    const initialize = async () => {
+    const initializeApp = async () => {
       try {
+        // Initialize theme first (synchronous)
         initializeTheme()
-        await checkAuth()
+        
+        // Initialize auth store (handles rehydration and validation)
+        initialize()
+        
       } catch (error) {
         console.error('App initialization error:', error)
       }
     }
     
-    initialize()
-  }, [checkAuth, initializeTheme])
+    initializeApp()
+  }, [initialize, initializeTheme])
 
   // Apply theme class to document
   useEffect(() => {
@@ -80,9 +87,9 @@ function App() {
     }
   }, [theme])
 
-  // Show loading screen during initial app load
-  if (isLoading) {
-    return <LoadingStates.FullScreen />
+  // Show loading screen during initial app load and auth check
+  if (isLoading || !isInitialized) {
+    return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
   }
 
   return (
@@ -162,7 +169,7 @@ function App() {
                 } 
               />
               
-              {/* Catch-all redirect */}
+              {/* Catch-all redirect - only after auth is determined */}
               <Route 
                 path="*" 
                 element={
@@ -176,7 +183,7 @@ function App() {
           </SuspenseWrapper>
         </main>
         
-        {/* Enhanced toast notifications */}
+        {/* Enhanced toast notifications with better styling */}
         <Toaster 
           position="top-right"
           toastOptions={{
@@ -188,11 +195,18 @@ function App() {
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
               borderRadius: '12px',
               color: '#374151',
+              fontSize: '14px',
+              maxWidth: '400px',
             },
             success: {
               iconTheme: {
                 primary: '#10B981',
                 secondary: '#ffffff',
+              },
+              style: {
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                color: '#065f46',
               },
             },
             error: {
@@ -200,11 +214,21 @@ function App() {
                 primary: '#EF4444',
                 secondary: '#ffffff',
               },
+              style: {
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                color: '#7f1d1d',
+              },
             },
             loading: {
               iconTheme: {
                 primary: '#3B82F6',
                 secondary: '#ffffff',
+              },
+              style: {
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                color: '#1e3a8a',
               },
             },
           }}
@@ -220,6 +244,15 @@ function App() {
           aria-atomic="true"
           className="sr-only"
         />
+        
+        {/* Development overlay for debugging */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono opacity-50 pointer-events-none">
+            Auth: {isAuthenticated ? '✅' : '❌'} | 
+            Loading: {isLoading ? '⏳' : '✅'} | 
+            Init: {isInitialized ? '✅' : '⏳'}
+          </div>
+        )}
       </div>
     </Router>
   )
