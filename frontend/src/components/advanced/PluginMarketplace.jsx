@@ -10,6 +10,8 @@ import {
   FunnelIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+import { pluginAPI } from '../../services/advancedAPI'
+import toast from 'react-hot-toast'
 
 const PluginMarketplace = ({ onInstallPlugin, installedPlugins = [] }) => {
   const [plugins, setPlugins] = useState([])
