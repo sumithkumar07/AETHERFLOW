@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
 
-from models.user import get_current_user
+from routes.auth import get_current_user
 from services.intelligent_ai_router import IntelligentAIRouter, TaskType, TaskComplexity
 
 router = APIRouter()
