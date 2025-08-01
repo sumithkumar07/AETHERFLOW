@@ -521,6 +521,12 @@ const IndividualProject = () => {
           </div>
         </div>
       </div>
+      
+      {/* AI Code Assistant - Floating */}
+      <AICodeAssistant 
+        projectId={project.id} 
+        projectName={project.name} 
+      />
     </div>
   )
 }
