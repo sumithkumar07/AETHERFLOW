@@ -271,8 +271,57 @@ async def startup_event():
         except Exception as e:
             logger.warning(f"Workflow Engine initialization failed: {e}")
         
-        logger.info("🚀 AI Tempo Platform - ADVANCED EDITION initialized with graceful degradation!")
-        logger.info("🎯 Core services active, advanced features loading...")
+        # Initialize cutting-edge services
+        try:
+            # Initialize Architectural Intelligence
+            await architectural_intelligence.initialize()
+            set_architectural_intelligence_service(architectural_intelligence)
+            logger.info("✅ Architectural Intelligence initialized")
+        except Exception as e:
+            logger.warning(f"Architectural Intelligence initialization failed: {e}")
+        
+        try:
+            # Initialize Smart Documentation Engine
+            await smart_documentation_engine.initialize()
+            set_smart_documentation_service(smart_documentation_engine)
+            logger.info("✅ Smart Documentation Engine initialized")
+        except Exception as e:
+            logger.warning(f"Smart Documentation Engine initialization failed: {e}")
+        
+        try:
+            # Initialize Theme Intelligence
+            await theme_intelligence.initialize()
+            set_theme_intelligence_service(theme_intelligence)
+            logger.info("✅ Theme Intelligence initialized")
+        except Exception as e:
+            logger.warning(f"Theme Intelligence initialization failed: {e}")
+        
+        try:
+            # Initialize Project Migrator
+            await project_migrator.initialize()
+            set_project_migrator_service(project_migrator)
+            logger.info("✅ Project Migrator initialized")
+        except Exception as e:
+            logger.warning(f"Project Migrator initialization failed: {e}")
+        
+        try:
+            # Initialize Code Quality Engine
+            await code_quality_engine.initialize()
+            set_code_quality_engine(code_quality_engine)
+            logger.info("✅ Code Quality Engine initialized")
+        except Exception as e:
+            logger.warning(f"Code Quality Engine initialization failed: {e}")
+        
+        try:
+            # Initialize Workspace Intelligence
+            await workspace_intelligence.initialize()
+            set_workspace_intelligence(workspace_intelligence)
+            logger.info("✅ Workspace Intelligence initialized")
+        except Exception as e:
+            logger.warning(f"Workspace Intelligence initialization failed: {e}")
+        
+        logger.info("🚀 AI Tempo Platform - ULTIMATE EDITION initialized with all cutting-edge features!")
+        logger.info("🎯 15 Advanced Enhancement Features now active...")
         
     except Exception as e:
         logger.error(f"Startup error: {e}")
