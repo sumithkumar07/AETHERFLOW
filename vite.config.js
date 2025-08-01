@@ -5,6 +5,8 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  root: './src',
+  publicDir: '../public',
   server: {
     host: '0.0.0.0',
     port: 3000,
@@ -18,18 +20,19 @@ export default defineConfig({
     },
   },
   css: {
-    postcss: './postcss.config.js',
+    postcss: '../postcss.config.js',
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'zustand']
   },
   build: {
+    outDir: '../dist',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['framer-motion', 'lucide-react']
+          ui: ['framer-motion', 'lucide-react', '@heroicons/react']
         }
       }
     }

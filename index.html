@@ -2,16 +2,88 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Code Studio - Next Generation AI-Powered Development</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://js.puter.com/v2/"></script>
+    <meta name="description" content="AI Tempo - Next-Generation AI Development Platform. Build applications through conversation with advanced AI agents." />
+    <meta name="keywords" content="AI development, code generation, AI assistant, development platform, React, FastAPI" />
+    <meta name="author" content="AI Tempo Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aitempo.dev/" />
+    <meta property="og:title" content="AI Tempo - Next-Generation AI Development Platform" />
+    <meta property="og:description" content="Build applications through conversation with advanced AI agents. Experience the perfect rhythm of AI-powered development." />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://aitempo.dev/" />
+    <meta property="twitter:title" content="AI Tempo - Next-Generation AI Development Platform" />
+    <meta property="twitter:description" content="Build applications through conversation with advanced AI agents. Experience the perfect rhythm of AI-powered development." />
+    <meta property="twitter:image" content="/og-image.png" />
+
+    <title>AI Tempo - Next-Generation AI Development Platform</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- CSS -->
+    <style>
+      /* Critical CSS for initial load */
+      html, body, #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: linear-gradient(135deg, #f1f5f9 0%, #dbeafe 50%, #e0e7ff 100%);
+      }
+      
+      .dark body {
+        background: linear-gradient(135deg, #111827 0%, #1e293b 50%, #1e1b4b 100%);
+      }
+      
+      /* Loading spinner */
+      .loading-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f4f6;
+        border-radius: 50%;
+        border-top-color: #3b82f6;
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      .loading-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: inherit;
+        z-index: 9999;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="root">
+      <!-- Loading state -->
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+    <script type="module" src="/main.jsx"></script>
   </body>
 </html>
