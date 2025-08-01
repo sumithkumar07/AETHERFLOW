@@ -93,4 +93,4 @@ async def get_agent_teams(current_user: User = Depends(get_current_user)):
         }
     ]
     
-    return {"teams": teams}
+    return teams
