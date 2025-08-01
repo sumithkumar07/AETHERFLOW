@@ -15,6 +15,32 @@ from collections import defaultdict, deque
 
 logger = logging.getLogger(__name__)
 
+# Simple prediction model classes
+class LinearTrendModel:
+    """Simple linear trend prediction model"""
+    def __init__(self):
+        self.slope = 0.0
+        self.intercept = 0.0
+    
+    def predict(self, x):
+        return self.slope * x + self.intercept
+
+class SeasonalPatternModel:
+    """Simple seasonal pattern model"""
+    def __init__(self):
+        self.patterns = {}
+    
+    def predict(self, time_key):
+        return self.patterns.get(time_key, 50.0)
+
+class LoadPredictorModel:
+    """Simple load prediction model"""
+    def __init__(self):
+        self.base_load = 50.0
+    
+    def predict(self, features):
+        return self.base_load
+
 class ServerHealth(Enum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"
