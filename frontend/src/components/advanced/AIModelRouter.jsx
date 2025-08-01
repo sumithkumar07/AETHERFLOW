@@ -65,11 +65,39 @@ const AIModelRouter = ({ onModelSelect, currentModel = 'gpt-4o-mini' }) => {
 
   const loadModels = async () => {
     try {
-      // In real implementation, fetch from API
-      setModels(Object.keys(modelCapabilities))
+      // Try to load models from API
+      const response = await aiRouterAPI.getAvailableModels()
+      
+      if (response.data.success) {
+        const apiModels = response.data.models
+        // Convert API response to local format
+        const modelList = apiModels.map(model => model.name)
+        setModels(modelList)
+        
+        // Update model capabilities with API data
+        apiModels.forEach(apiModel => {
+          if (modelCapabilities[apiModel.name]) {
+            modelCapabilities[apiModel.name] = {
+              ...modelCapabilities[apiModel.name],
+              cost: apiModel.cost_per_token,
+              speed: apiModel.speed_score,
+              quality: apiModel.quality_score,
+              strengths: apiModel.strengths,
+              bestFor: apiModel.specialized_for.map(task => 
+                task.replace('_', ' ').toLowerCase()
+              )
+            }
+          }
+        })
+      } else {
+        // Fallback to local data
+        setModels(Object.keys(modelCapabilities))
+      }
       setLoading(false)
     } catch (error) {
       console.error('Failed to load models:', error)
+      // Fallback to local data
+      setModels(Object.keys(modelCapabilities))
       setLoading(false)
     }
   }
