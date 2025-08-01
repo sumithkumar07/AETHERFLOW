@@ -676,13 +676,7 @@ const IndividualProject = () => {
         projectId={project.id}
         isVisible={isCollaborationOpen}
         onClose={() => setIsCollaborationOpen(false)}
-        onCollaboratorAction={(action) => {
-          console.log('Collaborator action:', action)
-          // Handle real-time collaboration actions
-          if (action.type === 'code_change') {
-            setCurrentCode(action.changes.code || currentCode)
-          }
-        }}
+        onCollaboratorAction={handleCollaboratorAction}
       />
       
       {/* Smart Error Prevention */}
@@ -690,12 +684,7 @@ const IndividualProject = () => {
         codeContent={currentCode}
         fileType="javascript"
         isActive={isErrorPreventionActive}
-        onErrorsDetected={(errorData) => {
-          setDetectedErrors(errorData.errors || [])
-          if (errorData.errors?.length > 0) {
-            toast.error(`${errorData.errors.length} issue(s) detected in your code`)
-          }
-        }}
+        onErrorsDetected={handleErrorsDetected}
         position={{ top: 20, right: 20 }}
       />
       
