@@ -276,7 +276,8 @@ function App() {
           <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono opacity-50 pointer-events-none">
             Auth: {isAuthenticated ? '✅' : '❌'} | 
             Loading: {isLoading ? '⏳' : '✅'} | 
-            Init: {isInitialized ? '✅' : '⏳'} |
+            App Init: {isInitialized ? '✅' : '⏳'} |
+            Auth Init: {authInitialized ? '✅' : '⏳'} |
             Token: {token ? '✅' : '❌'}
           </div>
         )}
