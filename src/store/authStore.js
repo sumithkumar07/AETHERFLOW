@@ -29,22 +29,22 @@ const useAuthStore = create(
       initialize: () => {
         const state = get()
         
+        // Mark as initialized immediately to prevent loading loops
+        set({ isInitialized: true })
+        
         // If we have a token, validate it
-        if (state.token && !state.isInitialized) {
+        if (state.token) {
           set({ isLoading: true })
           
           // Set up axios header
           axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
           
-          // Validate token on next tick to allow UI to render
-          setTimeout(() => {
-            get().checkAuth()
-          }, 100)
+          // Validate token immediately
+          get().checkAuth()
         } else {
-          // No token, mark as initialized and not loading
+          // No token, mark as not authenticated and not loading
           set({ 
             isLoading: false, 
-            isInitialized: true,
             isAuthenticated: false 
           })
         }
