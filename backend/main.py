@@ -125,6 +125,14 @@ from routes.predictive_ui import router as predictive_ui_router
 from routes.enhanced_integrations import router as enhanced_integrations_router
 from routes.voice_code_review import router as voice_code_review_router
 
+# Include routers - Cutting-Edge Features (Phase 1-5)
+from routes.architectural_intelligence import router as architectural_intelligence_router
+from routes.smart_documentation import router as smart_documentation_router
+from routes.theme_intelligence import router as theme_intelligence_router
+from routes.project_migration import router as project_migration_router
+from routes.code_quality import router as code_quality_router
+from routes.workspace_optimization import router as workspace_optimization_router
+
 app.include_router(search_router, prefix="/api", tags=["Global Search"])
 app.include_router(version_control_router, prefix="/api/version-control", tags=["Version Control"])
 app.include_router(gamification_router, prefix="/api/gamification", tags=["Gamification"])
@@ -135,6 +143,14 @@ app.include_router(template_generation_router, prefix="/api/template-generation"
 app.include_router(predictive_ui_router, prefix="/api/predictive-ui", tags=["Predictive User Interface"])
 app.include_router(enhanced_integrations_router, prefix="/api/enhanced-integrations", tags=["Enhanced Integrations"])
 app.include_router(voice_code_review_router, prefix="/api/voice-review", tags=["Voice Code Review"])
+
+# Cutting-Edge Features Routes
+app.include_router(architectural_intelligence_router, prefix="/api/architectural-intelligence", tags=["Architectural Intelligence"])
+app.include_router(smart_documentation_router, prefix="/api/smart-documentation", tags=["Smart Documentation"])
+app.include_router(theme_intelligence_router, prefix="/api/theme-intelligence", tags=["Theme Intelligence"])
+app.include_router(project_migration_router, prefix="/api/project-migration", tags=["Project Migration"])
+app.include_router(code_quality_router, prefix="/api/code-quality", tags=["Code Quality Engine"])
+app.include_router(workspace_optimization_router, prefix="/api/workspace-optimization", tags=["Workspace Intelligence"])
 
 @app.on_event("startup")
 async def startup_event():
