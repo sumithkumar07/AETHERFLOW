@@ -128,58 +128,7 @@ const AdvancedFeatures = () => {
         return <AnalyticsDashboard />
 
       case 'security':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Zero Trust Security</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Security Status</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Zero Trust Gateway</span>
-                      <span className="text-sm font-medium text-green-600 flex items-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                        Active
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Threat Detection</span>
-                      <span className="text-sm font-medium text-green-600 flex items-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                        Monitoring
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Compliance Engine</span>
-                      <span className="text-sm font-medium text-green-600 flex items-center">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                        GDPR Ready
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Recent Activity</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center text-green-600">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      No threats detected in last 24h
-                    </div>
-                    <div className="flex items-center text-blue-600">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                      156 successful authentications
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                      Audit log: 2.3GB stored
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
+        return <SecurityDashboard />
 
       case 'performance':
         return (
