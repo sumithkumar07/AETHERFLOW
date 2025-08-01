@@ -159,8 +159,12 @@ const useAuthStore = create((set, get) => ({
         } catch (error) {
           console.error('Logout error:', error)
         } finally {
-          // Clear client state regardless of server response
+          // Clear client state and localStorage
           delete axios.defaults.headers.common['Authorization']
+          
+          localStorage.removeItem('ai-tempo-token')
+          localStorage.removeItem('ai-tempo-user')
+          localStorage.removeItem('ai-tempo-refresh')
           
           set({
             user: null,
