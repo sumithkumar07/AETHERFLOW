@@ -73,7 +73,7 @@ const SuspenseWrapper = ({ children }) => (
 )
 
 function App() {
-  const { isAuthenticated, isLoading, token, initialize } = useAuthStore()
+  const { isAuthenticated, isLoading, token, initialize, isInitialized: authInitialized } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
   const [isInitialized, setIsInitialized] = useState(false)
   const initializationAttempted = useRef(false)
