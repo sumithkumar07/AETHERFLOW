@@ -4,7 +4,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 
 // Get backend URL from environment
-const BACKEND_URL = import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 
 // Configure axios defaults
 axios.defaults.baseURL = `${BACKEND_URL}/api`
