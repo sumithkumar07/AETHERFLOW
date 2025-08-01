@@ -346,3 +346,33 @@ export const ErrorState = ({
     )}
   </motion.div>
 )
+
+// Full screen loading components
+export const FullScreen = () => (
+  <PageLoader message="Loading Application..." />
+)
+
+export const PageTransition = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <LoadingSpinner size="xl" color="blue" />
+  </div>
+)
+
+// Default export with all components
+const LoadingStates = {
+  ProjectCardSkeleton,
+  TemplateCardSkeleton,
+  IntegrationCardSkeleton,
+  LoadingSpinner,
+  PulsingDots,
+  AIThinking,
+  PageLoader,
+  ProjectBuilding,
+  ProjectDeploying,
+  EmptyState,
+  ErrorState,
+  FullScreen,
+  PageTransition
+}
+
+export default LoadingStates
