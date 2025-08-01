@@ -54,6 +54,17 @@ class IntelligentAIRouter:
         self.load_balancer = ModelLoadBalancer()
         self.response_cache = ResponseCache()
         
+    async def initialize(self):
+        """Initialize the AI router"""
+        try:
+            await self.load_balancer.initialize()
+            await self.response_cache.initialize()
+            logger.info("Intelligent AI Router initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize AI router: {e}")
+            # Continue anyway for graceful degradation
+            pass
+    
     def _initialize_models(self) -> Dict[str, ModelCapabilities]:
         """Initialize available AI models with their capabilities"""
         return {
