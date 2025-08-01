@@ -10,8 +10,8 @@ import statistics
 import psutil
 import numpy as np
 from collections import defaultdict, deque
-import aioredis
-import aiocache
+# import aioredis  # Temporarily disabled due to compatibility issue
+# import aiocache  # Temporarily disabled
 
 logger = logging.getLogger(__name__)
 
