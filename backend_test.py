@@ -444,7 +444,21 @@ class BackendTester:
             ws = websocket.WebSocketApp(f"ws://localhost:8001/ws/test-client",
                                       on_open=on_open,
                                       on_error=on_error)
-            ws.run_forever(timeout=5)
+            # Use a simple run with timeout handling
+            import threading
+            import time
+            
+            def run_ws():
+                ws.run_forever()
+            
+            thread = threading.Thread(target=run_ws)
+            thread.daemon = True
+            thread.start()
+            thread.join(timeout=5)
+            
+            if thread.is_alive():
+                ws.close()
+                self.log_test("WebSocket Connection", "FAIL", "WebSocket connection timeout")
             
         except ImportError:
             self.log_test("WebSocket Connection", "SKIP", "websocket-client not installed")
