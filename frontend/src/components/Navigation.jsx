@@ -42,6 +42,7 @@ const Navigation = () => {
     { name: 'Chat Hub', href: '/chat', icon: ChatBubbleLeftRightIcon, category: 'main' },
     { name: 'Projects', href: '/projects', icon: FolderIcon, category: 'main' },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, category: 'main' },
+    { name: 'Advanced Features', href: '/advanced', icon: CpuChipIcon, category: 'advanced', badge: 'NEW' },
     { name: 'Agents', href: '/agents', icon: UsersIcon, category: 'advanced' },
     { name: 'Deploy', href: '/deploy', icon: RocketLaunchIcon, category: 'advanced' },
     { name: 'Integrations', href: '/integrations', icon: LinkIcon, category: 'advanced' },
