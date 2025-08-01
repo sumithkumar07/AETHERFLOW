@@ -403,6 +403,10 @@ class ResponseCache:
         self.cache_ttl = timedelta(hours=24)
         self.max_cache_size = 1000
     
+    async def initialize(self):
+        """Initialize response cache"""
+        logger.info("Response cache initialized")
+    
     def generate_key(self, task: str, context: Dict[str, Any] = None) -> str:
         """Generate cache key from task and context"""
         import hashlib
