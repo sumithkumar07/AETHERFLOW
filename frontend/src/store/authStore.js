@@ -130,6 +130,27 @@ const useAuthStore = create(
         }
       },
 
+      // Initialize auth store
+      initialize: async () => {
+        const { token } = get()
+        
+        set({ isInitialized: true })
+        
+        // If no token exists, we're not authenticated
+        if (!token) {
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null
+          })
+          return false
+        }
+        
+        // If we have a token, validate it
+        return await get().checkAuth()
+      },
+
       // Simplified auth check - no complex initialization
       checkAuth: async () => {
         const { token } = get()
