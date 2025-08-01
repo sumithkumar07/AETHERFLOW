@@ -85,6 +85,58 @@ const IndividualProject = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversation])
 
+  // Enhanced functions for new features
+  const handleCodeChange = (newCode) => {
+    setCurrentCode(newCode)
+    
+    // Update user activity
+    setUserActivity(prev => ({
+      ...prev,
+      files_modified: prev.files_modified + 1,
+      last_activity: new Date(),
+      session_duration: Date.now() - prev.session_start || 0
+    }))
+    
+    // Track typing activity for predictive UI
+    const typingSpeed = newCode.length / (Date.now() - (userActivity.session_start || Date.now())) * 60000
+    setUserActivity(prev => ({
+      ...prev,
+      typing_speed: Math.round(typingSpeed)
+    }))
+  }
+  
+  const handleCollaboratorAction = (action) => {
+    console.log('Collaborator action:', action)
+    
+    switch (action.type) {
+      case 'code_change':
+        if (action.changes && action.changes.code) {
+          setCurrentCode(action.changes.code)
+          toast.info(`${action.user.name} made changes to the code`)
+        }
+        break
+      case 'selection_update':
+        // Handle text selection updates from collaborators
+        console.log('Selection update from:', action.user.name)
+        break
+      default:
+        console.log('Unknown collaboration action:', action)
+    }
+  }
+  
+  const handleErrorsDetected = (errorData) => {
+    setDetectedErrors(errorData.errors || [])
+    
+    if (errorData.errors?.length > 0) {
+      const criticalErrors = errorData.errors.filter(e => e.severity === 'high')
+      if (criticalErrors.length > 0) {
+        toast.error(`${criticalErrors.length} critical issue(s) detected!`)
+      } else {
+        toast.warning(`${errorData.errors.length} issue(s) detected in your code`)
+      }
+    }
+  }
+
   const handleSendMessage = async (e) => {
     e.preventDefault()
     if (!input.trim() || isChatLoading) return
