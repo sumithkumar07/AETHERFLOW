@@ -7,6 +7,9 @@ import LoadingStates from './components/LoadingStates'
 import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
 
+// NEW: Import Enterprise Architecture Provider
+import { ArchitectureProvider } from './architecture'
+
 // Import pages directly instead of lazy loading for debugging
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -77,7 +80,8 @@ const SuspenseWrapper = ({ children }) => (
   </Suspense>
 )
 
-function App() {
+// Main App Component wrapped with Enterprise Architecture
+function AppContent() {
   const { isAuthenticated, isLoading, token, initialize, isInitialized: authInitialized } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
   const [isInitialized, setIsInitialized] = useState(false)
@@ -334,6 +338,15 @@ function App() {
         )}
       </div>
     </Router>
+  )
+}
+
+// Main App Component with Enterprise Architecture Provider
+function App() {
+  return (
+    <ArchitectureProvider>
+      <AppContent />
+    </ArchitectureProvider>
   )
 }
 
