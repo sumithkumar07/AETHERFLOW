@@ -49,7 +49,23 @@ const PublicRoute = ({ children }) => {
 
 // Enhanced loading component with better UX
 const SuspenseWrapper = ({ children }) => (
-  <Suspense fallback={<LoadingStates.PageTransition />}>
+  <Suspense fallback={
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center">
+      <motion.div 
+        className="text-center"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+          <LoadingStates.LoadingSpinner size="lg" color="white" />
+        </div>
+        <p className="text-gray-600 dark:text-gray-400">
+          Loading...
+        </p>
+      </motion.div>
+    </div>
+  }>
     <AnimatePresence mode="wait">
       {children}
     </AnimatePresence>
