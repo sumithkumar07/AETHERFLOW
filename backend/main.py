@@ -185,7 +185,7 @@ async def startup_event():
         
         try:
             # Initialize Voice Interface
-            voice_interface = VoiceInterface(db_wrapper)
+            voice_interface = VoiceInterface()
             await voice_interface.initialize()
             set_voice_interface(voice_interface)
             logger.info("✅ Voice Interface initialized")
