@@ -109,6 +109,15 @@ class LiveCollaborationEngine:
             logger.error(f"Failed to initialize collaboration engine: {e}")
             raise
     
+    async def _version_cleanup_loop(self):
+        """Clean up old document versions"""
+        while True:
+            try:
+                await asyncio.sleep(3600)  # Run every hour
+                await self.version_controller.cleanup_old_versions(days=30)
+            except Exception as e:
+                logger.error(f"Error in version cleanup loop: {e}")
+    
     async def apply_operation(self, document_id: str, operation: Operation) -> Dict[str, Any]:
         """Apply operation to document with operational transformation"""
         try:
