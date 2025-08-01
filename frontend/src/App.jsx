@@ -57,7 +57,7 @@ const SuspenseWrapper = ({ children }) => (
 )
 
 function App() {
-  const { isAuthenticated, isLoading, isInitialized, initialize } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized, isInitializing, initialize } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
 
   useEffect(() => {
@@ -88,7 +88,7 @@ function App() {
   }, [theme])
 
   // Show loading screen during initial app load and auth check
-  if (isLoading || !isInitialized) {
+  if (isLoading || !isInitialized || isInitializing) {
     return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
   }
 
