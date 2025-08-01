@@ -68,7 +68,10 @@ function App() {
         initializeTheme()
         
         // Initialize auth store (handles rehydration and validation)
-        initialize()
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          initialize()
+        }, 10)
         
       } catch (error) {
         console.error('App initialization error:', error)
