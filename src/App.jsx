@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense } from 'react'
+import React, { useEffect, Suspense, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,13 +18,18 @@ const Integrations = React.lazy(() => import('./pages/Integrations'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
 
-// Enhanced Protected Route component with proper loading states
+// Enhanced Protected Route component with better state management
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized, lastSuccessfulLogin, authOperationInProgress } = useAuthStore()
   
-  // Show loading while auth is being checked or store is not initialized
-  if (isLoading || !isInitialized) {
-    return <LoadingStates.FullScreen message="Checking authentication..." />
+  // Show loading while auth is being checked, store is not initialized, or auth operation in progress
+  if (isLoading || !isInitialized || authOperationInProgress) {
+    return <LoadingStates.FullScreen message="Verifying authentication..." />
+  }
+  
+  // If recently logged in (within 5 seconds), show loading briefly to prevent flash
+  if (lastSuccessfulLogin && (Date.now() - lastSuccessfulLogin) < 5000 && !isAuthenticated) {
+    return <LoadingStates.FullScreen message="Completing authentication..." />
   }
   
   // Redirect to login if not authenticated
@@ -35,19 +40,19 @@ const ProtectedRoute = ({ children }) => {
   return children
 }
 
-// Enhanced Public Route component 
+// Enhanced Public Route component with smart loading
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, isInitialized } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitialized, authOperationInProgress } = useAuthStore()
   
-  // Show loading while auth is being checked or store is not initialized
-  if (isLoading || !isInitialized) {
+  // Show loading while auth is being checked, during initialization, or during auth operations
+  if (isLoading || !isInitialized || authOperationInProgress) {
     return <LoadingStates.FullScreen message="Loading application..." />
   }
   
   return children
 }
 
-// Enhanced loading component with better UX
+// Enhanced loading component with better animations
 const SuspenseWrapper = ({ children }) => (
   <Suspense fallback={<LoadingStates.PageTransition />}>
     <AnimatePresence mode="wait">
@@ -58,15 +63,17 @@ const SuspenseWrapper = ({ children }) => (
 
 function App() {
   const { theme, initializeTheme } = useThemeStore()
+  const { initialize, isInitialized } = useAuthStore()
+  const initializationRef = useRef(false)
 
+  // Initialize theme only
   useEffect(() => {
-    // Initialize theme only
     try {
       initializeTheme()
     } catch (error) {
       console.error('Theme initialization error:', error)
     }
-  }, [])
+  }, [initializeTheme])
 
   // Apply theme class to document
   useEffect(() => {
@@ -77,16 +84,28 @@ function App() {
     }
   }, [theme])
 
-  // Initialize auth store on app mount
-  const { initialize } = useAuthStore()
-  
+  // Enhanced auth initialization with race condition prevention
   useEffect(() => {
-    initialize()
-  }, [initialize])
+    // Prevent multiple initialization attempts
+    if (initializationRef.current || isInitialized) {
+      return
+    }
+    
+    initializationRef.current = true
+    
+    // Small delay to ensure all components are mounted
+    const initTimeout = setTimeout(() => {
+      initialize()
+    }, 100)
+
+    return () => {
+      clearTimeout(initTimeout)
+    }
+  }, [initialize, isInitialized])
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 transition-all duration-500">
         <Navigation />
         
         <main className="relative">
@@ -118,13 +137,14 @@ function App() {
             duration: 4000,
             style: {
               background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(16px)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-              borderRadius: '12px',
+              boxShadow: '0 20px 32px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08)',
+              borderRadius: '16px',
               color: '#374151',
               fontSize: '14px',
-              maxWidth: '400px',
+              maxWidth: '420px',
+              padding: '16px 20px',
             },
             success: {
               iconTheme: {
@@ -173,11 +193,17 @@ function App() {
           className="sr-only"
         />
         
-        {/* Development overlay for debugging */}
+        {/* Enhanced development overlay */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono opacity-50 pointer-events-none">
-            Auth: {useAuthStore.getState().isAuthenticated ? 'ON' : 'OFF'} | Theme: {theme} | Mode: PRODUCTION
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            className="fixed bottom-4 left-4 bg-black/90 text-white text-xs p-3 rounded-lg font-mono pointer-events-none border border-white/20 backdrop-blur-sm"
+          >
+            <div>Auth: {useAuthStore.getState().isAuthenticated ? '✅' : '❌'}</div>
+            <div>Theme: {theme}</div>
+            <div>Mode: ENHANCED</div>
+          </motion.div>
         )}
       </div>
     </Router>
