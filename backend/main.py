@@ -46,6 +46,20 @@ from services.voice_interface import VoiceInterface
 from services.workflow_automation import WorkflowEngine
 from services.collaboration_engine import LiveCollaborationEngine
 
+# Import cutting-edge services
+from services.architectural_intelligence import ArchitecturalIntelligence
+from services.smart_documentation import SmartDocumentationEngine
+from services.theme_intelligence import ThemeIntelligence
+from services.project_migrator import ProjectMigrator
+from services.code_quality_engine import CodeQualityEngine
+from services.workspace_intelligence import WorkspaceIntelligence
+from routes.architectural_intelligence import set_architectural_intelligence_service
+from routes.smart_documentation import set_smart_documentation_service
+from routes.theme_intelligence import set_theme_intelligence_service
+from routes.project_migration import set_project_migrator_service
+from routes.code_quality import set_code_quality_engine
+from routes.workspace_optimization import set_workspace_intelligence
+
 # Load environment variables
 load_dotenv()
 
