@@ -341,12 +341,10 @@ function AppContent() {
   )
 }
 
-// Main App Component with Enterprise Architecture Provider
+// Main App Component (temporarily without Enterprise Architecture Provider)
 function App() {
   return (
-    <ArchitectureProvider>
-      <AppContent />
-    </ArchitectureProvider>
+    <AppContent />
   )
 }
 
