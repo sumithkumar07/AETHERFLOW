@@ -195,6 +195,15 @@ async def startup_event():
         except Exception as e:
             logger.warning(f"Voice Interface initialization failed: {e}")
         
+        try:
+            # Initialize Workflow Engine
+            workflow_engine = WorkflowEngine(db_wrapper)
+            await workflow_engine.initialize()
+            set_workflow_engine(workflow_engine)
+            logger.info("✅ Workflow Automation Engine initialized")
+        except Exception as e:
+            logger.warning(f"Workflow Engine initialization failed: {e}")
+        
         logger.info("🚀 AI Tempo Platform - ADVANCED EDITION initialized with graceful degradation!")
         logger.info("🎯 Core services active, advanced features loading...")
         
