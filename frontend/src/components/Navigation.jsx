@@ -23,6 +23,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
+import GlobalSmartSearch from './GlobalSmartSearch'
 
 const Navigation = () => {
   const location = useLocation()
