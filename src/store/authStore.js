@@ -128,19 +128,26 @@ const useAuthStore = create(
         }
       },
 
+      // Check authentication status
       checkAuth: async () => {
+        const { token } = get()
+        
+        // If no token exists, set auth as checked but not authenticated
+        if (!token) {
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null
+          })
+          return false
+        }
+        
         try {
-          const { token, refreshToken } = get()
+          set({ isLoading: true, error: null })
           
-          if (!token) {
-            set({ isLoading: false, isAuthenticated: false })
-            return false
-          }
-          
-          // Set authorization header
+          // Try to validate token with backend
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-          
-          // Verify token with server
           const response = await axios.get('/auth/me')
           const user = response.data
           
