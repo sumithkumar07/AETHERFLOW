@@ -487,6 +487,19 @@ class TestGenerator:
         self.test_templates = await self._load_test_templates()
         logger.info("Test generator initialized")
     
+    async def _load_test_templates(self):
+        """Load test templates for different languages"""
+        return {
+            "python": {
+                "unit_test": "import unittest\n\nclass Test{ClassName}(unittest.TestCase):\n    def test_{method_name}(self):\n        # Test implementation\n        pass",
+                "pytest": "import pytest\n\ndef test_{method_name}():\n    # Test implementation\n    pass"
+            },
+            "javascript": {
+                "jest": "describe('{module_name}', () => {\n  test('{test_description}', () => {\n    // Test implementation\n  });\n});",
+                "mocha": "describe('{module_name}', () => {\n  it('{test_description}', () => {\n    // Test implementation\n  });\n});"
+            }
+        }
+    
     async def generate_comprehensive_tests(self, code: str, language: str, test_type: TestType) -> TestSuite:
         """Generate comprehensive test suite"""
         try:
