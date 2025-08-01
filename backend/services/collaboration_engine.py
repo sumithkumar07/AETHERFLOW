@@ -649,6 +649,15 @@ class VersionController:
     async def initialize(self):
         logger.info("Version controller initialized")
     
+    async def cleanup_old_versions(self, days: int = 30):
+        """Clean up document versions older than specified days"""
+        try:
+            cutoff_date = datetime.now() - timedelta(days=days)
+            logger.info(f"Cleaning up document versions older than {cutoff_date}")
+            # Implementation would remove old versions from database
+        except Exception as e:
+            logger.error(f"Error cleaning up old versions: {e}")
+    
     async def create_snapshot(self, document_id: str, document_state: DocumentState, 
                             user_id: str, description: str) -> Dict[str, Any]:
         """Create a document snapshot"""
