@@ -347,18 +347,59 @@ export const ErrorState = ({
   </motion.div>
 )
 
-// Full screen loading components
-export const FullScreen = () => (
-  <PageLoader message="Loading Application..." />
-)
-
-export const PageTransition = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner size="xl" color="blue" />
+// Full screen loading component
+export const FullScreen = ({ message = "Loading your workspace..." }) => (
+  <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center z-50">
+    <motion.div 
+      className="text-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
+        <LoadingSpinner size="xl" color="white" />
+      </div>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+        AI Tempo
+      </h2>
+      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        {message}
+      </h3>
+      <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+        Setting up your AI-powered development environment
+      </p>
+      <motion.div 
+        className="mt-6 flex justify-center"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <PulsingDots color="blue" />
+      </motion.div>
+    </motion.div>
   </div>
 )
 
-// Default export with all components
+// Page transition loading
+export const PageTransition = () => (
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center">
+    <motion.div 
+      className="text-center"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+        <LoadingSpinner size="lg" color="white" />
+      </div>
+      <p className="text-gray-600 dark:text-gray-400">
+        Preparing page...
+      </p>
+    </motion.div>
+  </div>
+)
+
+// Default export with all loading components
 const LoadingStates = {
   ProjectCardSkeleton,
   TemplateCardSkeleton,
