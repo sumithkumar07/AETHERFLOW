@@ -79,7 +79,7 @@ adaptive_ui_service = AdaptiveUIService(get_database)
 development_assistant = DevelopmentAssistant(get_database)
 collaboration_engine = LiveCollaborationEngine(get_database)
 
-# Include routers
+# Include routers - Core APIs
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
 app.include_router(projects_router, prefix="/api/projects", tags=["Projects"])
@@ -87,6 +87,14 @@ app.include_router(templates_router, prefix="/api/templates", tags=["Templates"]
 app.include_router(integrations_router, prefix="/api/integrations", tags=["Integrations"])
 app.include_router(agents_router, prefix="/api/agents", tags=["Multi-Agent System"])
 app.include_router(enterprise_router, prefix="/api/enterprise", tags=["Enterprise Features"])
+
+# Include routers - Advanced Features
+app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advanced AI"])
+app.include_router(plugins_router, prefix="/api/plugins", tags=["Plugin System"])
+app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics & Intelligence"])
+app.include_router(security_router, prefix="/api/security", tags=["Zero Trust Security"])
+app.include_router(development_router, prefix="/api/development", tags=["Development Assistant"])
+app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Live Collaboration"])
 
 @app.on_event("startup")
 async def startup_event():
