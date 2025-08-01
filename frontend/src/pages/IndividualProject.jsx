@@ -26,6 +26,7 @@ import ChatMessage from '../components/ChatMessage'
 import ModelSelector from '../components/ModelSelector'
 import AgentSelector from '../components/AgentSelector'
 import AICodeAssistant from '../components/AICodeAssistant'
+import CollaborationIndicators from '../components/CollaborationIndicators'
 import toast from 'react-hot-toast'
 
 const IndividualProject = () => {
