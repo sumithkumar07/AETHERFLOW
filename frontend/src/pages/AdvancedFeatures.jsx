@@ -113,12 +113,21 @@ const AdvancedFeatures = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'ai-router':
-        return (
-          <AIModelRouter 
-            currentModel={currentModel}
-            onModelSelect={handleModelSelect}
-          />
-        )
+        try {
+          return (
+            <AIModelRouter 
+              currentModel={currentModel}
+              onModelSelect={handleModelSelect}
+            />
+          )
+        } catch (error) {
+          console.error('Error loading AI Router:', error)
+          return (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600">Error loading AI Router component</p>
+            </div>
+          )
+        }
 
       case 'plugins':
         return (
