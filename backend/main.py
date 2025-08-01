@@ -104,7 +104,7 @@ app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advance
 app.include_router(plugins_router, prefix="/api/plugins", tags=["Plugin System"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics & Intelligence"])
 app.include_router(performance_router, prefix="/api", tags=["Performance Monitoring"])
-app.include_router(analytics_dashboard_router, prefix="/api", tags=["Analytics Dashboard"])
+app.include_router(analytics_dashboard_router, prefix="/api/dashboard", tags=["Analytics Dashboard"])
 app.include_router(security_router, prefix="/api/security", tags=["Zero Trust Security"])
 app.include_router(development_router, prefix="/api/development", tags=["Development Assistant"])
 app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Live Collaboration"])
