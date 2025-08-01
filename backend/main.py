@@ -117,10 +117,24 @@ app.include_router(smart_features_router, tags=["Smart Features"])
 from routes.search import router as search_router
 from routes.version_control import router as version_control_router
 from routes.gamification import router as gamification_router
+from routes.ai_code_completion import router as ai_completion_router
+from routes.error_prevention import router as error_prevention_router
+from routes.learning_assistant import router as learning_assistant_router
+from routes.template_generation import router as template_generation_router
+from routes.predictive_ui import router as predictive_ui_router
+from routes.enhanced_integrations import router as enhanced_integrations_router
+from routes.voice_code_review import router as voice_code_review_router
 
 app.include_router(search_router, prefix="/api", tags=["Global Search"])
 app.include_router(version_control_router, prefix="/api/version-control", tags=["Version Control"])
 app.include_router(gamification_router, prefix="/api/gamification", tags=["Gamification"])
+app.include_router(ai_completion_router, prefix="/api/ai-completion", tags=["AI Code Completion"])
+app.include_router(error_prevention_router, prefix="/api/error-prevention", tags=["Smart Error Prevention"])
+app.include_router(learning_assistant_router, prefix="/api/learning", tags=["Contextual Learning"])
+app.include_router(template_generation_router, prefix="/api/template-generation", tags=["Smart Template Generation"])
+app.include_router(predictive_ui_router, prefix="/api/predictive-ui", tags=["Predictive User Interface"])
+app.include_router(enhanced_integrations_router, prefix="/api/enhanced-integrations", tags=["Enhanced Integrations"])
+app.include_router(voice_code_review_router, prefix="/api/voice-review", tags=["Voice Code Review"])
 
 @app.on_event("startup")
 async def startup_event():
