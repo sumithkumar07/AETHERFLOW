@@ -24,6 +24,8 @@ from routes.enterprise import router as enterprise_router
 from routes.advanced_ai import router as advanced_ai_router, set_ai_router
 from routes.plugins import router as plugins_router, set_plugin_manager
 from routes.analytics import router as analytics_router, set_analytics_services
+from routes.performance import router as performance_router
+from routes.analytics_dashboard import router as analytics_dashboard_router
 from routes.security import router as security_router, set_security_services
 from routes.development import router as development_router, set_development_assistant
 from routes.collaboration import router as collaboration_router, set_collaboration_engine
