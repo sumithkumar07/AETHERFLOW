@@ -240,10 +240,13 @@ const ModelSelector = ({ className = '' }) => {
               })}
             </div>
             
-            <div className="p-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
-              <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
-                All AI models are completely free via Puter.js integration ✨
-              </p>
+            <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex items-center justify-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <p className="text-green-800 dark:text-green-300 font-medium">
+                  🚀 Unlimited Local AI - No Limits, No Costs, Complete Privacy!
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
