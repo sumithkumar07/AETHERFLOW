@@ -1,7 +1,8 @@
-// Enhanced API Service - Comprehensive Backend Integration
-// This connects ALL 59+ backend services to the frontend
+// Enhanced API Service - REAL Backend Integration
+// This connects ALL 60+ backend services to the frontend using REAL data
 
 import { apiService } from './api.js'
+import realAPI from './realAPI.js'
 
 class EnhancedAPIService {
   constructor() {
