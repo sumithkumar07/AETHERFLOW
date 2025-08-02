@@ -306,12 +306,30 @@ const IndividualProject = () => {
               </button>
               
               <button
-                onClick={() => setIsVoiceReviewOpen(true)}
-                className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                title="Voice Code Review"
+                onClick={() => setIsVoiceToCodeOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                title="Voice to Code"
               >
                 <MicrophoneIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">Voice Review</span>
+                <span className="hidden sm:inline">Voice Code</span>
+              </button>
+              
+              <button
+                onClick={() => setIsDatabaseManagerOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                title="Database Manager"
+              >
+                <CircleStackIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Database</span>
+              </button>
+              
+              <button
+                onClick={() => setIsContainerManagerOpen(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+                title="Container Manager"
+              >
+                <CubeIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Containers</span>
               </button>
               
               <button
