@@ -467,6 +467,114 @@ class BackendTester:
         except Exception as e:
             self.log_test("WebSocket Connection", "FAIL", f"WebSocket test failed: {e}")
 
+    def test_experimental_sandbox_service(self):
+        """Test Experimental Sandbox Service endpoints"""
+        print("🧪 Testing Experimental Sandbox Service...")
+        
+        if not self.auth_token:
+            self.log_test("Experimental Sandbox Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test getting available experiments
+        response = self.make_request("GET", "/api/experimental-sandbox/available-experiments")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "language_features" in data and "experimental_apis" in data and "experiment_types" in data:
+                self.log_test("Get Available Experiments", "PASS", 
+                            f"Found {len(data['experiment_types'])} experiment types", response.status_code)
+            else:
+                self.log_test("Get Available Experiments", "FAIL", 
+                            "Missing experiment data", response.status_code)
+        else:
+            self.log_test("Get Available Experiments", "FAIL", 
+                        "Available experiments endpoint failed", response.status_code if response else None)
+        
+        # Test creating a sandbox
+        sandbox_request = {
+            "project_id": "test_project_123",
+            "experiment_type": "general",
+            "isolation_level": "high",
+            "description": "Test sandbox for API validation"
+        }
+        
+        response = self.make_request("POST", "/api/experimental-sandbox/create-sandbox", sandbox_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "sandbox_id" in data and "status" in data:
+                self.log_test("Create Sandbox", "PASS", 
+                            f"Sandbox created: {data.get('sandbox_id')}", response.status_code)
+                self.test_sandbox_id = data["sandbox_id"]
+            else:
+                self.log_test("Create Sandbox", "FAIL", 
+                            "Sandbox creation response invalid", response.status_code)
+        else:
+            self.log_test("Create Sandbox", "FAIL", 
+                        "Sandbox creation failed", response.status_code if response else None)
+
+    def test_visual_programming_service(self):
+        """Test Visual Programming Service endpoints"""
+        print("🎨 Testing Visual Programming Service...")
+        
+        # Test getting supported diagram types (public endpoint)
+        response = self.make_request("GET", "/api/visual-programming/supported-diagram-types")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "supported_types" in data and len(data["supported_types"]) > 0:
+                self.log_test("Get Supported Diagram Types", "PASS", 
+                            f"Found {len(data['supported_types'])} diagram types", response.status_code)
+            else:
+                self.log_test("Get Supported Diagram Types", "FAIL", 
+                            "No diagram types found", response.status_code)
+        else:
+            self.log_test("Get Supported Diagram Types", "FAIL", 
+                        "Supported diagram types endpoint failed", response.status_code if response else None)
+        
+        # Test getting diagram examples
+        response = self.make_request("GET", "/api/visual-programming/examples")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "examples" in data and len(data["examples"]) > 0:
+                self.log_test("Get Diagram Examples", "PASS", 
+                            f"Found {len(data['examples'])} diagram examples", response.status_code)
+            else:
+                self.log_test("Get Diagram Examples", "FAIL", 
+                            "No diagram examples found", response.status_code)
+        else:
+            self.log_test("Get Diagram Examples", "FAIL", 
+                        "Diagram examples endpoint failed", response.status_code if response else None)
+
+    def test_community_intelligence_service(self):
+        """Test Community Intelligence Service endpoints"""
+        print("👥 Testing Community Intelligence Service...")
+        
+        # Test getting community statistics (public endpoint)
+        response = self.make_request("GET", "/api/community-intelligence/statistics")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "community_overview" in data and "engagement_metrics" in data:
+                self.log_test("Get Community Statistics", "PASS", 
+                            f"Total developers: {data['community_overview'].get('total_developers', 0)}", response.status_code)
+            else:
+                self.log_test("Get Community Statistics", "FAIL", 
+                            "Missing community statistics data", response.status_code)
+        else:
+            self.log_test("Get Community Statistics", "FAIL", 
+                        "Community statistics endpoint failed", response.status_code if response else None)
+        
+        # Test getting trending content
+        response = self.make_request("GET", "/api/community-intelligence/trending")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "trending_patterns" in data and "trending_technologies" in data:
+                self.log_test("Get Trending Content", "PASS", 
+                            f"Found {len(data['trending_patterns'])} trending patterns", response.status_code)
+            else:
+                self.log_test("Get Trending Content", "FAIL", 
+                            "Missing trending content data", response.status_code)
+        else:
+            self.log_test("Get Trending Content", "FAIL", 
+                        "Trending content endpoint failed", response.status_code if response else None)
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Comprehensive Backend API Testing...")
