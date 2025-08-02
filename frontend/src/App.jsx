@@ -33,6 +33,7 @@ import Subscription from './pages/Subscription'
 import EnhancedAdvancedFeatures from './pages/EnhancedAdvancedFeatures'
 import AdvancedAnalytics from './pages/AdvancedAnalytics'
 import PerformanceMonitor from './pages/PerformanceMonitor'
+import EnhancedWorkflowsPage from './pages/EnhancedWorkflowsPage'
 
 // Simplified Protected Route component
 const ProtectedRoute = ({ children }) => {
