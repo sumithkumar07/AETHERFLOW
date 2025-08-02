@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class BackendTester:
-    def __init__(self, base_url: str = "http://localhost:8001"):
+    def __init__(self, base_url: str = "https://17d52f11-9749-45c3-8dac-7edeb9043d45.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = requests.Session()
         self.auth_token = None
