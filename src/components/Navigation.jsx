@@ -12,7 +12,16 @@ import {
   PuzzlePieceIcon,
   SparklesIcon,
   MoonIcon,
-  SunIcon
+  SunIcon,
+  ChevronDownIcon,
+  CpuChipIcon,
+  ChartBarIcon,
+  BeakerIcon,
+  UsersIcon,
+  MicrophoneIcon,
+  CodeBracketIcon,
+  BuildingOfficeIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
