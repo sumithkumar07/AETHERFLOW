@@ -174,16 +174,6 @@ from routes.experimental_sandbox import router as experimental_sandbox_router
 from routes.visual_programming import router as visual_programming_router
 from routes.community_intelligence import router as community_intelligence_router
 
-app.include_router(search_router, prefix="/api", tags=["Global Search"])
-app.include_router(version_control_router, prefix="/api/version-control", tags=["Version Control"])
-app.include_router(gamification_router, prefix="/api/gamification", tags=["Gamification"])
-app.include_router(ai_completion_router, prefix="/api/ai-completion", tags=["AI Code Completion"])
-app.include_router(error_prevention_router, prefix="/api/error-prevention", tags=["Smart Error Prevention"])
-app.include_router(learning_assistant_router, prefix="/api/learning", tags=["Contextual Learning"])
-app.include_router(template_generation_router, prefix="/api/template-generation", tags=["Smart Template Generation"])
-app.include_router(predictive_ui_router, prefix="/api/predictive-ui", tags=["Predictive User Interface"])
-app.include_router(enhanced_integrations_router, prefix="/api/enhanced-integrations", tags=["Enhanced Integrations"])
-app.include_router(voice_code_review_router, prefix="/api/voice-review", tags=["Voice Code Review"])
 app.include_router(enhanced_features_router, prefix="/api/enhanced", tags=["Enhanced Features"])
 
 # Cutting-Edge Features Routes
