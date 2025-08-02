@@ -245,7 +245,7 @@ const AdvancedPluginMarketplace = ({ className = '' }) => {
         {/* Plugin Stats */}
         <div className="flex items-center justify-between mb-4 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center space-x-1">
-            <DownloadIcon className="w-3 h-3" />
+            <ArrowDownTrayIcon className="w-3 h-3" />
             <span>{plugin.downloads.toLocaleString()}</span>
           </div>
           <div className="flex items-center space-x-1">
