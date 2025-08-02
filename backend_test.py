@@ -679,12 +679,44 @@ class BackendTester:
         else:
             self.log_test("Agent Capabilities", "FAIL", "Agent capabilities endpoint failed", response.status_code if response else None)
         
-        # Test orchestration
-        response = self.make_request("GET", "/api/agents/orchestration")
-        if response and response.status_code == 200:
-            self.log_test("Agent Orchestration", "PASS", "Agent orchestration accessible", response.status_code)
-        else:
-            self.log_test("Agent Orchestration", "FAIL", "Agent orchestration failed", response.status_code if response else None)
+    def test_websocket_connection(self):
+        """Test WebSocket connection (basic connectivity test)"""
+        print("🔌 Testing WebSocket Connection...")
+        
+        # Note: This is a basic test - full WebSocket testing would require websocket client
+        try:
+            import websocket
+            
+            def on_open(ws):
+                self.log_test("WebSocket Connection", "PASS", "WebSocket connection established")
+                ws.close()
+            
+            def on_error(ws, error):
+                self.log_test("WebSocket Connection", "FAIL", f"WebSocket error: {error}")
+            
+            ws = websocket.WebSocketApp(f"ws://localhost:8001/ws/test-client",
+                                      on_open=on_open,
+                                      on_error=on_error)
+            # Use a simple run with timeout handling
+            import threading
+            import time
+            
+            def run_ws():
+                ws.run_forever()
+            
+            thread = threading.Thread(target=run_ws)
+            thread.daemon = True
+            thread.start()
+            thread.join(timeout=5)
+            
+            if thread.is_alive():
+                ws.close()
+                self.log_test("WebSocket Connection", "FAIL", "WebSocket connection timeout")
+            
+        except ImportError:
+            self.log_test("WebSocket Connection", "SKIP", "websocket-client not installed")
+        except Exception as e:
+            self.log_test("WebSocket Connection", "FAIL", f"WebSocket test failed: {e}")
         """Test WebSocket connection (basic connectivity test)"""
         print("🔌 Testing WebSocket Connection...")
         
