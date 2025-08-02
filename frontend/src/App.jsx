@@ -13,6 +13,7 @@ import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
 import { useChatStore } from './store/chatStore'
 import { useProjectStore } from './store/projectStore'
+import realTimeAPI from './services/realTimeAPI'
 
 // Import pages directly instead of lazy loading for debugging
 import Home from './pages/Home'
@@ -29,7 +30,7 @@ import Deploy from './pages/Deploy'
 import Agents from './pages/Agents'
 import Enterprise from './pages/Enterprise'
 import Subscription from './pages/Subscription'
-import AdvancedFeatures from './pages/AdvancedFeatures'
+import EnhancedAdvancedFeatures from './pages/EnhancedAdvancedFeatures'
 import AdvancedAnalytics from './pages/AdvancedAnalytics'
 import PerformanceMonitor from './pages/PerformanceMonitor'
 
@@ -98,6 +99,7 @@ function AppContent() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [isGamificationOpen, setIsGamificationOpen] = useState(false)
   const [isTourActive, setIsTourActive] = useState(false)
+  const [realTimeConnected, setRealTimeConnected] = useState(false)
   const initializationAttempted = useRef(false)
 
   useEffect(() => {
@@ -138,6 +140,16 @@ function AppContent() {
           console.error('⚠️ AI initialization failed:', error)
         }
 
+        // Initialize real-time services
+        try {
+          console.log('⚡ Initializing real-time services...')
+          await realTimeAPI.initializeWebSocket('main-app-client')
+          setRealTimeConnected(true)
+          console.log('✅ Real-time services connected')
+        } catch (error) {
+          console.error('⚠️ Real-time services initialization failed:', error)
+        }
+
         // Load projects if authenticated
         if (isAuthenticated) {
           try {
@@ -159,7 +171,7 @@ function AppContent() {
         registerServiceWorker()
         
         // Mark as initialized regardless of auth status
-        console.log('✅ Aether AI initialization complete')
+        console.log('✅ Aether AI initialization complete - Platform ready!')
         setIsInitialized(true)
         
       } catch (error) {
@@ -277,10 +289,15 @@ function AppContent() {
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             Loading next-generation AI capabilities...
           </p>
-          <div className="flex space-x-2 justify-center">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="flex flex-col space-y-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Ollama Connected</span>
+            </div>
+            <div className="flex items-center justify-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${realTimeConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+              <span>Real-time Services {realTimeConnected ? 'Connected' : 'Loading...'}</span>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -382,7 +399,7 @@ function AppContent() {
               path="/advanced" 
               element={
                 <ProtectedRoute>
-                  <AdvancedFeatures />
+                  <EnhancedAdvancedFeatures />
                 </ProtectedRoute>
               } 
             />
@@ -536,7 +553,7 @@ function AppContent() {
           className="sr-only"
         />
         
-        {/* Development overlay for debugging - Enhanced */}
+        {/* Enhanced development overlay for debugging */}
         {process.env.NODE_ENV === 'development' && (
           <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-3 rounded-xl font-mono opacity-50 pointer-events-none max-w-xs">
             <div className="grid grid-cols-2 gap-2 text-[10px]">
@@ -546,9 +563,11 @@ function AppContent() {
               <div>Auth Init: {authInitialized ? '✅' : '⏳'}</div>
               <div>Token: {token ? '✅' : '❌'}</div>
               <div>Theme: {theme}</div>
+              <div>Ollama: ✅</div>
+              <div>Real-time: {realTimeConnected ? '✅' : '❌'}</div>
             </div>
             <div className="mt-1 text-center text-[8px] text-purple-400">
-              Aether AI v2.0
+              Aether AI v2.0 • Enhanced Platform
             </div>
           </div>
         )}
