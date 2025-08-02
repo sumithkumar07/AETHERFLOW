@@ -28,17 +28,18 @@ const useProjectStore = create((set, get) => ({
   createProject: async (projectData) => {
     try {
       set({ loading: true, error: null })
-      const response = await axios.post('/projects', projectData)
-      const newProject = response.data
+      const response = await axios.post('/api/projects/', projectData)
+      const newProject = response.data.project
       
-      set(state => ({ 
+      set(state => ({
         projects: [newProject, ...state.projects],
-        currentProject: newProject,
-        loading: false 
+        loading: false
       }))
       
+      toast.success('Project created successfully!')
       return { success: true, project: newProject }
     } catch (error) {
+      console.error('Project creation error:', error)
       const errorMessage = error.response?.data?.detail || 'Failed to create project'
       set({ error: errorMessage, loading: false })
       toast.error(errorMessage)
