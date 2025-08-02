@@ -54,7 +54,7 @@ librosa>=0.10.0
 soundfile>=0.12.0
 
 # Code Analysis & Quality
-ast-decompiler>=1.0.0
+ast-decompiler>=0.8.0
 bandit>=1.7.0
 mypy>=1.4.0
 black>=23.7.0
