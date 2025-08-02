@@ -58,6 +58,9 @@ const IndividualProject = () => {
   const [isErrorPreventionActive, setIsErrorPreventionActive] = useState(true)
   const [isLearningAssistantOpen, setIsLearningAssistantOpen] = useState(false)
   const [isVoiceReviewOpen, setIsVoiceReviewOpen] = useState(false)
+  const [isVoiceToCodeOpen, setIsVoiceToCodeOpen] = useState(false)
+  const [isDatabaseManagerOpen, setIsDatabaseManagerOpen] = useState(false)
+  const [isContainerManagerOpen, setIsContainerManagerOpen] = useState(false)
   const [currentCode, setCurrentCode] = useState('')
   const [detectedErrors, setDetectedErrors] = useState([])
   const [userActivity, setUserActivity] = useState({
