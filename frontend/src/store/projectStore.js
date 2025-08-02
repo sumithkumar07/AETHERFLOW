@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
-import axios from 'axios'
+import { apiService } from '../services/api'
 import toast from 'react-hot-toast'
 
 const useProjectStore = create(
@@ -45,8 +45,8 @@ const useProjectStore = create(
               ...options.params
             }
 
-            const response = await axios.get('/projects', { params })
-            const { projects, total, page, has_more } = response.data
+            const response = await apiService.getProjects(params)
+            const { projects, total, page, has_more } = response
 
             set((state) => {
               if (options.append) {
@@ -88,14 +88,14 @@ const useProjectStore = create(
               state.error = null
             })
 
-            const response = await axios.post('/projects', {
+            const response = await apiService.createProject({
               ...projectData,
-              status: 'initializing',
+              status: 'draft',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
 
-            const newProject = response.data
+            const newProject = response.project
 
             set((state) => {
               state.projects.unshift(newProject)
@@ -127,12 +127,12 @@ const useProjectStore = create(
               state.error = null
             })
 
-            const response = await axios.put(`/projects/${projectId}`, {
+            const response = await apiService.updateProject(projectId, {
               ...updates,
               updated_at: new Date().toISOString()
             })
 
-            const updatedProject = response.data
+            const updatedProject = response.project
 
             set((state) => {
               const index = state.projects.findIndex(p => p.id === projectId)
@@ -171,7 +171,7 @@ const useProjectStore = create(
               state.error = null
             })
 
-            await axios.delete(`/projects/${projectId}`)
+            await apiService.deleteProject(projectId)
 
             set((state) => {
               state.projects = state.projects.filter(p => p.id !== projectId)
@@ -219,8 +219,8 @@ const useProjectStore = create(
             }
 
             // Fetch project from server
-            const response = await axios.get(`/projects/${projectId}`)
-            const project = response.data
+            const response = await apiService.getProject(projectId)
+            const project = response.project
 
             set((state) => {
               state.currentProject = project
@@ -253,6 +253,46 @@ const useProjectStore = create(
           }
         },
 
+        buildProject: async (projectId) => {
+          try {
+            set((state) => {
+              state.isLoading = true
+              state.error = null
+            })
+
+            const response = await apiService.buildProject(projectId)
+
+            // Update project status
+            set((state) => {
+              const index = state.projects.findIndex(p => p.id === projectId)
+              if (index !== -1) {
+                state.projects[index].status = 'building'
+              }
+              
+              if (state.currentProject?.id === projectId) {
+                state.currentProject.status = 'building'
+              }
+              
+              state.isLoading = false
+              state.error = null
+            })
+
+            toast.success('Build started successfully!')
+            return response
+
+          } catch (error) {
+            const errorMessage = error.response?.data?.detail || 'Failed to start build'
+            
+            set((state) => {
+              state.error = errorMessage
+              state.isLoading = false
+            })
+
+            toast.error(errorMessage)
+            throw error
+          }
+        },
+
         deployProject: async (projectId, deploymentConfig = {}) => {
           try {
             set((state) => {
@@ -260,20 +300,19 @@ const useProjectStore = create(
               state.error = null
             })
 
-            const response = await axios.post(`/projects/${projectId}/deploy`, deploymentConfig)
-            const deployment = response.data
+            const response = await apiService.deployProject(projectId)
 
             // Update project status
             set((state) => {
               const index = state.projects.findIndex(p => p.id === projectId)
               if (index !== -1) {
                 state.projects[index].status = 'deploying'
-                state.projects[index].deployment = deployment
+                state.projects[index].deployment = response
               }
               
               if (state.currentProject?.id === projectId) {
                 state.currentProject.status = 'deploying'
-                state.currentProject.deployment = deployment
+                state.currentProject.deployment = response
               }
               
               state.isLoading = false
@@ -281,7 +320,7 @@ const useProjectStore = create(
             })
 
             toast.success('Deployment started!')
-            return deployment
+            return response
 
           } catch (error) {
             const errorMessage = error.response?.data?.detail || 'Failed to deploy project'
@@ -296,16 +335,68 @@ const useProjectStore = create(
           }
         },
 
-        duplicateProject: async (projectId, newName) => {
+        // NEW: Project Files Management
+        getProjectFiles: async (projectId) => {
           try {
-            const response = await axios.post(`/projects/${projectId}/duplicate`, {
-              name: newName
+            const response = await apiService.getProjectFiles(projectId)
+            return response.files
+          } catch (error) {
+            const errorMessage = error.response?.data?.detail || 'Failed to fetch project files'
+            toast.error(errorMessage)
+            throw error
+          }
+        },
+
+        saveProjectFile: async (projectId, fileData) => {
+          try {
+            const response = await apiService.saveProjectFile(projectId, fileData)
+            
+            // Update project status to ready after saving files
+            set((state) => {
+              const index = state.projects.findIndex(p => p.id === projectId)
+              if (index !== -1) {
+                state.projects[index].status = 'ready'
+                state.projects[index].updated_at = new Date().toISOString()
+              }
+              
+              if (state.currentProject?.id === projectId) {
+                state.currentProject.status = 'ready'
+                state.currentProject.updated_at = new Date().toISOString()
+              }
             })
 
-            const duplicatedProject = response.data
+            toast.success('File saved successfully!')
+            return response
+          } catch (error) {
+            const errorMessage = error.response?.data?.detail || 'Failed to save file'
+            toast.error(errorMessage)
+            throw error
+          }
+        },
 
-            set((state) => {
-              state.projects.unshift(duplicatedProject)
+        // NEW: Project Logs
+        getProjectLogs: async (projectId, limit = 50) => {
+          try {
+            const response = await apiService.getProjectLogs(projectId, limit)
+            return response.logs
+          } catch (error) {
+            const errorMessage = error.response?.data?.detail || 'Failed to fetch project logs'
+            toast.error(errorMessage)
+            throw error
+          }
+        },
+
+        // NEW: Advanced Project Features
+        duplicateProject: async (projectId, newName) => {
+          try {
+            // Since backend doesn't have duplicate endpoint, we'll implement it client-side
+            const project = await get().selectProject(projectId)
+            const duplicatedProject = await get().createProject({
+              ...project,
+              name: newName || `${project.name} (Copy)`,
+              id: undefined,
+              created_at: undefined,
+              updated_at: undefined
             })
 
             toast.success('Project duplicated successfully!')
@@ -320,19 +411,9 @@ const useProjectStore = create(
 
         archiveProject: async (projectId) => {
           try {
-            await axios.post(`/projects/${projectId}/archive`)
-
-            set((state) => {
-              const index = state.projects.findIndex(p => p.id === projectId)
-              if (index !== -1) {
-                state.projects[index].status = 'archived'
-                state.projects[index].archived_at = new Date().toISOString()
-              }
-              
-              if (state.currentProject?.id === projectId) {
-                state.currentProject.status = 'archived'
-                state.currentProject.archived_at = new Date().toISOString()
-              }
+            await get().updateProject(projectId, { 
+              status: 'archived',
+              archived_at: new Date().toISOString()
             })
 
             toast.success('Project archived successfully!')
@@ -347,20 +428,8 @@ const useProjectStore = create(
 
         restoreProject: async (projectId) => {
           try {
-            await axios.post(`/projects/${projectId}/restore`)
-
-            set((state) => {
-              const index = state.projects.findIndex(p => p.id === projectId)
-              if (index !== -1) {
-                state.projects[index].status = 'ready'
-                delete state.projects[index].archived_at
-              }
-              
-              if (state.currentProject?.id === projectId) {
-                state.currentProject.status = 'ready'
-                delete state.currentProject.archived_at
-              }
-            })
+            const updateData = { status: 'ready' }
+            await get().updateProject(projectId, updateData)
 
             toast.success('Project restored successfully!')
             return true
@@ -438,8 +507,8 @@ const useProjectStore = create(
             stats.byType[project.type] = (stats.byType[project.type] || 0) + 1
             
             // Count by tech stack
-            if (project.techStack) {
-              project.techStack.forEach(tech => {
+            if (project.tech_stack) {
+              project.tech_stack.forEach(tech => {
                 stats.byTechStack[tech] = (stats.byTechStack[tech] || 0) + 1
               })
             }
