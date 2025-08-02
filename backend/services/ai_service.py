@@ -291,7 +291,7 @@ async def implement_solution():
 
 Ready to proceed with implementation!""",
 
-            "designer": f"""🎨 **Aether AI Designer Response**
+            "designer": """🎨 **Aether AI Designer Response**
 
 Perfect! I'll create a stunning design for your request.
 
@@ -301,7 +301,7 @@ Perfect! I'll create a stunning design for your request.
 - Adaptive UI that responds to user behavior
 - Micro-interactions and smooth animations
 
-**Your request:** {message[:100]}...
+**Your request:** """ + message[:100] + """...
 
 **Implementation:**
 ```css
