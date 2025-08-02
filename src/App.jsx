@@ -21,6 +21,18 @@ const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
 const EnhancedFeaturesDemo = React.lazy(() => import('./components/EnhancedFeaturesDemo'))
 
+// Advanced AI Components
+const AdvancedAIDashboard = React.lazy(() => import('./components/advanced/AdvancedAIDashboard'))
+const VisualProgramming = React.lazy(() => import('./components/advanced/VisualProgramming'))
+const VoiceInterface = React.lazy(() => import('./components/advanced/VoiceInterface'))
+
+// Enterprise Components
+const EnterpriseDashboard = React.lazy(() => import('./components/enterprise/EnterpriseDashboard'))
+const SmartAnalytics = React.lazy(() => import('./components/enhanced/SmartAnalytics'))
+
+// Collaboration Components
+const CollaborationCenter = React.lazy(() => import('./components/collaboration/CollaborationCenter'))
+
 // Enhanced Protected Route component with better state management
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading, isInitialized, lastSuccessfulLogin, authOperationInProgress } = useAuthStore()
