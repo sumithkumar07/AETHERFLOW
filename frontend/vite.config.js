@@ -11,7 +11,8 @@ export default defineConfig({
     port: 3000,
     hmr: {
       overlay: false
-    }
+    },
+    allowedHosts: ['all']
   },
   resolve: {
     alias: {
