@@ -2,47 +2,49 @@ import { create } from 'zustand'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-// Enhanced AI models with detailed configurations
+// Enhanced AI models with local Ollama configurations
 const AI_MODELS = {
-  'gpt-4.1-nano': {
-    name: 'GPT-4.1 Nano',
-    provider: 'OpenAI',
-    description: 'Fastest and most efficient GPT-4 model',
-    capabilities: ['code', 'analysis', 'creative'],
+  'codellama:13b': {
+    name: 'CodeLlama 13B',
+    provider: 'Meta (Local)',
+    description: 'Specialized for code generation, debugging, and software architecture',
+    capabilities: ['code', 'debugging', 'architecture', 'best-practices'],
+    speed: 'medium',
+    quality: 'highest',
+    cost: 'free',
+    icon: '💻',
+    type: 'coding',
+    size: '13B',
+    unlimited: true,
+    local: true
+  },
+  'llama3.1:8b': {
+    name: 'LLaMA 3.1 8B',
+    provider: 'Meta (Local)',
+    description: 'Excellent general-purpose model for various tasks',
+    capabilities: ['general', 'analysis', 'creative', 'reasoning'],
     speed: 'fast',
     quality: 'high',
     cost: 'free',
-    icon: '🚀'
+    icon: '🧠',
+    type: 'general',
+    size: '8B',
+    unlimited: true,
+    local: true
   },
-  'claude-sonnet-4': {
-    name: 'Claude Sonnet 4',
-    provider: 'Anthropic',
-    description: 'Advanced reasoning and code understanding',
-    capabilities: ['code', 'analysis', 'reasoning', 'creative'],
-    speed: 'medium',
-    quality: 'highest',
-    cost: 'free',
-    icon: '🧠'
-  },
-  'gemini-2.5-flash': {
-    name: 'Gemini 2.5 Flash',
-    provider: 'Google',
-    description: 'Lightning-fast responses with multimodal support',
-    capabilities: ['code', 'analysis', 'multimodal'],
+  'deepseek-coder:6.7b': {
+    name: 'DeepSeek Coder 6.7B',
+    provider: 'DeepSeek (Local)',
+    description: 'Fast responses for quick coding tasks and completion',
+    capabilities: ['code', 'completion', 'quick-fixes', 'snippets'],
     speed: 'fastest',
     quality: 'high',
     cost: 'free',
-    icon: '⚡'
-  },
-  'gpt-4': {
-    name: 'GPT-4',
-    provider: 'OpenAI',
-    description: 'Original GPT-4 with comprehensive capabilities',
-    capabilities: ['code', 'analysis', 'creative', 'reasoning'],
-    speed: 'medium',
-    quality: 'highest',
-    cost: 'free',
-    icon: '🔥'
+    icon: '⚡',
+    type: 'coding-fast',
+    size: '6.7B',
+    unlimited: true,
+    local: true
   }
 }
 
