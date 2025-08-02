@@ -484,9 +484,9 @@ const solution = async () => {{
     
     def _generate_test_code(self, requirements: str, language: str) -> str:
         """Generate test code"""
-        return f'''
+        return '''
 def test_solution():
-    """Test for: {requirements}"""
+    """Test for: ''' + requirements + '''"""
     result = solution()
     assert result is not None
     assert quality_score(result) > 0.95
