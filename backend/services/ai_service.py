@@ -392,7 +392,7 @@ What design challenge can I help you solve? I can provide:
 
         # Tester agent responses
         elif agent == "tester":
-            return f"""As your QA specialist, I'll help ensure your application is robust and reliable!
+            return """As your QA specialist, I'll help ensure your application is robust and reliable!
 
 ## Testing Strategy
 
