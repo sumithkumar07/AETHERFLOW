@@ -1,357 +1,483 @@
 import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   CpuChipIcon,
-  PuzzlePieceIcon,
-  ChartBarIcon,
-  ShieldCheckIcon,
-  RocketLaunchIcon,
-  SparklesIcon,
   CodeBracketIcon,
+  BeakerIcon,
+  PaintBrushIcon,
+  DocumentDuplicateIcon,
+  CogIcon,
+  SparklesIcon,
+  RocketLaunchIcon,
+  EyeIcon,
+  GlobeAltIcon,
+  LanguageIcon,
+  PresentationChartLineIcon,
+  VideoCameraIcon,
+  MagnifyingGlassIcon,
+  ShieldCheckIcon,
   UserGroupIcon,
-  Cog6ToothIcon
+  CommandLineIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
-
-// Import advanced components
-import AIModelRouter from '../components/advanced/AIModelRouter'
-import PluginMarketplace from '../components/advanced/PluginMarketplace'
-import AnalyticsDashboard from '../components/advanced/AnalyticsDashboard'
-import SecurityDashboard from '../components/advanced/SecurityDashboard'
-import CollaborationInterface from '../components/advanced/CollaborationInterface'
+import enhancedAPI from '../services/enhancedAPI'
+import LoadingStates from '../components/LoadingStates'
 
 const AdvancedFeatures = () => {
-  const [activeTab, setActiveTab] = useState('ai-router')
-  const [currentModel, setCurrentModel] = useState('gpt-4o-mini')
-  const [installedPlugins, setInstalledPlugins] = useState(['stripe-integration'])
   const [features, setFeatures] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [activeFeature, setActiveFeature] = useState(null)
+  const [featureDetails, setFeatureDetails] = useState({})
 
-  const tabs = [
-    { 
-      id: 'ai-router', 
-      name: 'AI Router', 
+  useEffect(() => {
+    loadAdvancedFeatures()
+  }, [])
+
+  const loadAdvancedFeatures = async () => {
+    try {
+      setLoading(true)
+      
+      // Load comprehensive feature data from all backend services
+      const batchCalls = [
+        { key: 'architectural', method: 'getArchitecturalIntelligence', params: ['current-project'] },
+        { key: 'smartDocs', method: 'generateSmartDocumentation', params: ['current-project'] },
+        { key: 'visual', method: 'getVisualProgramming' },
+        { key: 'plugins', method: 'getPluginEcosystem' },
+        { key: 'workflows', method: 'getWorkflowAutomation' },
+        { key: 'enhanced', method: 'getEnhancedServices' },
+        { key: 'collaboration', method: 'getCollaborationStatus', params: ['all'] },
+        { key: 'security', method: 'getSecurityDashboard' }
+      ]
+
+      const results = await enhancedAPI.batchApiCalls(batchCalls)
+      setFeatures(results)
+      
+    } catch (error) {
+      console.error('Failed to load advanced features:', error)
+      setFeatures(getMockFeatures())
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getMockFeatures = () => ({
+    architectural: { score: 92, patterns: 15, recommendations: 8 },
+    smartDocs: { generated: true, coverage: 85, sections: 12 },
+    visual: { tools: 8, projects: 23, components: 145 },
+    plugins: { installed: 12, available: 156, featured: 8 },
+    workflows: { active: 15, automated: 89, efficiency: 94 },
+    enhanced: { video: true, seo: 94, i18n: 12, presentations: 34 },
+    collaboration: { activeUsers: 145, projects: 67 },
+    security: { score: 96, threats: 0, compliance: 98 }
+  })
+
+  const featureCategories = [
+    {
+      title: 'AI Intelligence',
+      description: 'Advanced AI-powered development tools',
       icon: CpuChipIcon,
-      description: 'Smart AI model selection and optimization'
+      color: 'from-blue-500 to-cyan-600',
+      features: [
+        {
+          id: 'architectural',
+          name: 'Architectural Intelligence',
+          description: 'AI-powered system architecture analysis and recommendations',
+          icon: CodeBracketIcon,
+          status: 'active',
+          metrics: features.architectural
+        },
+        {
+          id: 'smartDocs',
+          name: 'Smart Documentation',
+          description: 'Automatic documentation generation with AI insights',
+          icon: DocumentDuplicateIcon,
+          status: 'active',
+          metrics: features.smartDocs
+        },
+        {
+          id: 'codeQuality',
+          name: 'AI Code Quality Engine',
+          description: 'Real-time code analysis and quality improvements',
+          icon: BeakerIcon,
+          status: 'active',
+          metrics: { score: 94, issues: 3, improvements: 12 }
+        }
+      ]
     },
-    { 
-      id: 'plugins', 
-      name: 'Plugin System', 
-      icon: PuzzlePieceIcon,
-      description: 'Hot-pluggable integrations and workflows'
+    {
+      title: 'Visual Development',
+      description: 'Next-generation visual programming tools',
+      icon: PaintBrushIcon,
+      color: 'from-purple-500 to-pink-600',
+      features: [
+        {
+          id: 'visual',
+          name: 'Visual Programming',
+          description: 'Drag-and-drop visual coding environment',
+          icon: PaintBrushIcon,
+          status: 'active',
+          metrics: features.visual
+        },
+        {
+          id: 'themeIntelligence',
+          name: 'Theme Intelligence',
+          description: 'AI-powered design system generation',
+          icon: SparklesIcon,
+          status: 'active',
+          metrics: { themes: 45, generated: true, score: 96 }
+        },
+        {
+          id: 'adaptiveUI',
+          name: 'Adaptive UI',
+          description: 'Self-optimizing user interface components',
+          icon: EyeIcon,
+          status: 'beta',
+          metrics: { adaptations: 234, efficiency: 89 }
+        }
+      ]
     },
-    { 
-      id: 'analytics', 
-      name: 'Analytics', 
-      icon: ChartBarIcon,
-      description: 'Advanced analytics and business intelligence'
+    {
+      title: 'Automation & Workflows',
+      description: 'Intelligent automation and workflow management',
+      icon: CogIcon,
+      color: 'from-green-500 to-emerald-600',
+      features: [
+        {
+          id: 'workflows',
+          name: 'Workflow Automation',
+          description: 'Intelligent CI/CD and deployment pipelines',
+          icon: ArrowPathIcon,
+          status: 'active',
+          metrics: features.workflows
+        },
+        {
+          id: 'plugins',
+          name: 'Plugin Ecosystem',
+          description: 'Extensible plugin system with marketplace',
+          icon: CogIcon,
+          status: 'active',
+          metrics: features.plugins
+        },
+        {
+          id: 'devAssistant',
+          name: 'Development Assistant',
+          description: 'AI-powered development guidance and automation',
+          icon: RocketLaunchIcon,
+          status: 'active',
+          metrics: { suggestions: 156, automated: 89, saved: '24h' }
+        }
+      ]
     },
-    { 
-      id: 'security', 
-      name: 'Security', 
-      icon: ShieldCheckIcon,
-      description: 'Zero-trust security and compliance'
-    },
-    { 
-      id: 'performance', 
-      name: 'Performance', 
-      icon: RocketLaunchIcon,
-      description: 'Performance optimization and auto-scaling'
-    },
-    { 
-      id: 'ux', 
-      name: 'User Experience', 
-      icon: SparklesIcon,
-      description: 'Adaptive UI and personalization'
-    },
-    { 
-      id: 'development', 
-      name: 'Dev Assistant', 
-      icon: CodeBracketIcon,
-      description: 'AI-powered development assistance'
-    },
-    { 
-      id: 'collaboration', 
-      name: 'Collaboration', 
+    {
+      title: 'Collaboration & Security',
+      description: 'Enterprise-grade collaboration and security features',
       icon: UserGroupIcon,
-      description: 'Real-time collaboration and editing'
+      color: 'from-orange-500 to-red-600',
+      features: [
+        {
+          id: 'collaboration',
+          name: 'Live Collaboration',
+          description: 'Real-time collaborative development environment',
+          icon: UserGroupIcon,
+          status: 'active',
+          metrics: features.collaboration
+        },
+        {
+          id: 'security',
+          name: 'Zero Trust Security',
+          description: 'Advanced security scanning and compliance',
+          icon: ShieldCheckIcon,
+          status: 'active',
+          metrics: features.security
+        },
+        {
+          id: 'experimental',
+          name: 'Experimental Sandbox',
+          description: 'Safe environment for testing cutting-edge features',
+          icon: BeakerIcon,
+          status: 'experimental',
+          metrics: { experiments: 23, success: 87, active: 5 }
+        }
+      ]
+    },
+    {
+      title: 'Enhanced Services',
+      description: 'Additional powerful development services',
+      icon: SparklesIcon,
+      color: 'from-indigo-500 to-purple-600',
+      features: [
+        {
+          id: 'video',
+          name: 'Video Explanations',
+          description: 'AI-generated video tutorials and explanations',
+          icon: VideoCameraIcon,
+          status: 'active',
+          metrics: features.enhanced?.video ? { videos: 45, generated: 23 } : null
+        },
+        {
+          id: 'seo',
+          name: 'SEO Optimization',
+          description: 'Automated SEO analysis and improvements',
+          icon: MagnifyingGlassIcon,
+          status: 'active',
+          metrics: { score: features.enhanced?.seo || 94, optimized: true }
+        },
+        {
+          id: 'i18n',
+          name: 'Internationalization',
+          description: 'Multi-language support and localization',
+          icon: LanguageIcon,
+          status: 'active',
+          metrics: { languages: features.enhanced?.i18n || 12, coverage: 89 }
+        },
+        {
+          id: 'presentations',
+          name: 'AI Presentations',
+          description: 'Automated presentation and pitch deck generation',
+          icon: PresentationChartLineIcon,
+          status: 'active',
+          metrics: { templates: features.enhanced?.presentations || 34, generated: 12 }
+        }
+      ]
     }
   ]
 
-  useEffect(() => {
-    loadFeatureData()
-  }, [])
+  const FeatureCard = ({ feature, categoryColor }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
+      className={`card p-6 cursor-pointer transition-all duration-300 ${
+        activeFeature === feature.id ? 'ring-2 ring-blue-500 shadow-lg' : 'hover-lift'
+      }`}
+      onClick={() => setActiveFeature(feature.id === activeFeature ? null : feature.id)}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${categoryColor} p-3 shadow-lg`}>
+          <feature.icon className="w-6 h-6 text-white" />
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+            feature.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+            feature.status === 'beta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+          }`}>
+            {feature.status}
+          </span>
+          {feature.status === 'active' && (
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          )}
+        </div>
+      </div>
 
-  const loadFeatureData = async () => {
-    try {
-      // Load feature configurations and status
-      setFeatures({
-        aiRouter: { enabled: true, configured: true },
-        plugins: { enabled: true, installed: installedPlugins.length },
-        analytics: { enabled: true, tracking: true },
-        security: { enabled: true, threats: 0 },
-        performance: { enabled: true, optimization: 'auto' },
-        ux: { enabled: true, personalization: true },
-        development: { enabled: true, assistant: true },
-        collaboration: { enabled: true, realtime: true }
-      })
-    } catch (error) {
-      console.error('Error loading feature data:', error)
-    }
-  }
+      <div className="space-y-3">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            {feature.name}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {feature.description}
+          </p>
+        </div>
 
-  const handleModelSelect = (modelId) => {
-    setCurrentModel(modelId)
-    // In real implementation, this would update the global AI configuration
-    console.log('Selected model:', modelId)
-  }
-
-  const handleInstallPlugin = (plugin) => {
-    setInstalledPlugins(prev => [...prev, plugin.id])
-    // In real implementation, this would install the plugin
-    console.log('Installing plugin:', plugin)
-  }
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'ai-router':
-        try {
-          return (
-            <AIModelRouter 
-              currentModel={currentModel}
-              onModelSelect={handleModelSelect}
-            />
-          )
-        } catch (error) {
-          console.error('Error loading AI Router:', error)
-          return (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600">Error loading AI Router component</p>
-            </div>
-          )
-        }
-
-      case 'plugins':
-        return (
-          <PluginMarketplace 
-            installedPlugins={installedPlugins}
-            onInstallPlugin={handleInstallPlugin}
-          />
-        )
-
-      case 'analytics':
-        return <AnalyticsDashboard />
-
-      case 'security':
-        return <SecurityDashboard />
-
-      case 'performance':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Optimization</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">127ms</div>
-                  <div className="text-gray-500">Avg Response Time</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">99.9%</div>
-                  <div className="text-gray-500">Uptime</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">Auto</div>
-                  <div className="text-gray-500">Scaling Status</div>
-                </div>
+        {feature.metrics && (
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            {Object.entries(feature.metrics).slice(0, 3).map(([key, value], index) => (
+              <div
+                key={index}
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs"
+              >
+                <span className="text-gray-600 dark:text-gray-400 capitalize">
+                  {key.replace(/([A-Z])/g, ' $1').toLowerCase()}:
+                </span>
+                <span className="text-gray-900 dark:text-white font-medium ml-1">
+                  {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
+                </span>
               </div>
-            </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h4 className="font-semibold text-gray-900 mb-3">Auto-Scaling Status</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Current Load</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="w-3/4 h-full bg-green-500"></div>
-                    </div>
-                    <span className="text-sm font-medium">75%</span>
+      {activeFeature === feature.id && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900 dark:text-white">Feature Details</h4>
+            
+            {feature.metrics && Object.keys(feature.metrics).length > 3 && (
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(feature.metrics).slice(3).map(([key, value], index) => (
+                  <div key={index} className="text-sm">
+                    <span className="text-gray-600 dark:text-gray-400 capitalize">
+                      {key.replace(/([A-Z])/g, ' $1').toLowerCase()}:
+                    </span>
+                    <span className="text-gray-900 dark:text-white font-medium ml-1">
+                      {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Active Instances</span>
-                  <span className="text-sm font-medium">3 / 5</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Next Scale Check</span>
-                  <span className="text-sm font-medium">2 minutes</span>
-                </div>
+                ))}
               </div>
+            )}
+
+            <div className="flex space-x-2 pt-2">
+              <button className="btn-primary text-sm px-4 py-2">
+                Configure
+              </button>
+              <button className="btn-secondary text-sm px-4 py-2">
+                Learn More
+              </button>
             </div>
           </div>
-        )
+        </motion.div>
+      )}
+    </motion.div>
+  )
 
-      case 'ux':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Adaptive User Experience</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Personalization Engine</div>
-                    <div className="text-sm text-gray-600">Customizes interface based on user behavior</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-600">Active</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Voice Interface</div>
-                    <div className="text-sm text-gray-600">Natural language commands and responses</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-600">Ready</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Accessibility Enhancer</div>
-                    <div className="text-sm text-gray-600">Automatic accessibility improvements</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-600">Enabled</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center space-x-3 mb-8">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl animate-pulse" />
+            <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
           </div>
-        )
-
-      case 'development':
-        return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Development Assistant</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Code Analysis</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Quality Score</span>
-                      <span className="font-medium text-green-600">8.7/10</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Bugs Detected</span>
-                      <span className="font-medium text-yellow-600">3 minor</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Test Coverage</span>
-                      <span className="font-medium text-blue-600">92%</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Smart Suggestions</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="p-2 bg-blue-50 rounded">
-                      <div className="font-medium text-blue-900">Performance Optimization</div>
-                      <div className="text-blue-700">Consider caching API responses</div>
-                    </div>
-                    <div className="p-2 bg-green-50 rounded">
-                      <div className="font-medium text-green-900">Code Quality</div>
-                      <div className="text-green-700">Add error handling to async functions</div>
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="card p-6 animate-pulse">
+                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-2xl mb-4" />
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded" />
               </div>
-            </div>
+            ))}
           </div>
-        )
-
-      case 'collaboration':
-        return (
-          <CollaborationInterface 
-            projectId="demo-project"
-            currentUser={{ name: 'Demo User', avatar: 'D' }}
-          />
-        )
-
-      default:
-        return null
-    }
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 p-8">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
-        <div className="mb-8">
+        <div className="text-center space-y-4">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="flex items-center justify-center space-x-4 mb-6"
           >
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Advanced Features</h1>
-            <p className="text-lg text-gray-600">
-              Enterprise-grade capabilities for maximum productivity
-            </p>
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-3xl flex items-center justify-center shadow-2xl animate-pulse-glow">
+              <CpuChipIcon className="w-8 h-8 text-white" />
+            </div>
+            <div className="text-left">
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                Advanced Features
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Cutting-edge AI-powered development tools and services
+              </p>
+            </div>
           </motion.div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 mb-6">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon
-              const isActive = activeTab === tab.id
-              const feature = features[tab.id.replace('-', '').replace('dev', 'development')]
-
-              return (
-                <motion.button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    p-4 rounded-xl border-2 text-left transition-all duration-200 relative
-                    ${isActive 
-                      ? 'border-blue-500 bg-blue-50 shadow-lg' 
-                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
-                    }
-                  `}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Status indicator */}
-                  {feature?.enabled && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
-
-                  <IconComponent className={`w-6 h-6 mb-2 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
-                  <div className={`font-medium text-sm ${isActive ? 'text-blue-900' : 'text-gray-900'}`}>
-                    {tab.name}
-                  </div>
-                  <div className={`text-xs ${isActive ? 'text-blue-600' : 'text-gray-500'} line-clamp-2`}>
-                    {tab.description}
-                  </div>
-                </motion.button>
-              )
-            })}
+          <div className="flex items-center justify-center space-x-6">
+            <div className="flex items-center space-x-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                All Systems Operational
+              </span>
+            </div>
+            <button
+              onClick={loadAdvancedFeatures}
+              className="btn-secondary text-sm px-4 py-2"
+            >
+              <ArrowPathIcon className="w-4 h-4 mr-2" />
+              Refresh
+            </button>
           </div>
         </div>
 
-        {/* Tab Content */}
+        {/* Feature Categories */}
+        {featureCategories.map((category, categoryIndex) => {
+          const CategoryIcon = category.icon
+          
+          return (
+            <motion.section
+              key={category.title}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: categoryIndex * 0.1 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center space-x-4">
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${category.color} p-3`}>
+                  <CategoryIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {category.title}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {category.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {category.features.map((feature) => (
+                  <FeatureCard
+                    key={feature.id}
+                    feature={feature}
+                    categoryColor={category.color}
+                  />
+                ))}
+              </div>
+            </motion.section>
+          )
+        })}
+
+        {/* Feature Integration Status */}
         <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card p-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20"
         >
-          {renderTabContent()}
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Platform Integration Status
+          </h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {featureCategories.reduce((acc, cat) => acc + cat.features.length, 0)}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Features</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {featureCategories.reduce((acc, cat) => 
+                  acc + cat.features.filter(f => f.status === 'active').length, 0
+                )}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Active Features</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {Object.keys(features).length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Services Connected</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                95%
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Integration Score</div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
