@@ -124,6 +124,9 @@ theme_intelligence = ThemeIntelligence(db_wrapper)
 project_migrator = ProjectMigrator(db_wrapper)
 code_quality_engine = CodeQualityEngine(db_wrapper)
 workspace_intelligence = WorkspaceIntelligence(db_wrapper)
+experimental_sandbox = ExperimentalSandbox(db_wrapper)
+visual_programming = VisualProgramming(db_wrapper)
+community_intelligence = CommunityIntelligence(db_wrapper)
 
 # Include routers - Core APIs
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
