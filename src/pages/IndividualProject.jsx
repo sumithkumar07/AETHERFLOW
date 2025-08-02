@@ -46,20 +46,56 @@ const IndividualProject = () => {
     selectedAgent
   } = useChatStore()
   
+  // Enhanced features state
+  const { 
+    initializeEnhancedFeatures, 
+    trackDevelopmentPattern,
+    updateContextAwareness,
+    getEnhancedProjectData
+  } = useEnhancedProjectStore()
+  
   const [message, setMessage] = useState('')
   const [activePanel, setActivePanel] = useState('structure')
+  const [rightPanelTab, setRightPanelTab] = useState('context')
+  
+  // Enhancement feature toggles
+  const [showSmartSuggestions, setShowSmartSuggestions] = useState(false)
+  const [showVoiceCommands, setShowVoiceCommands] = useState(false)
+  const [adaptiveMode, setAdaptiveMode] = useState(false)
 
   useEffect(() => {
     if (projectId) {
       fetchProject(projectId)
       fetchMessages(projectId)
+      
+      // Initialize enhanced features
+      initializeEnhancedFeatures(projectId)
+      updateContextAwareness('project_workspace', { projectId })
     }
-  }, [projectId, fetchProject, fetchMessages])
+  }, [projectId, fetchProject, fetchMessages, initializeEnhancedFeatures, updateContextAwareness])
+
+  // Track user interactions for flow state analysis
+  useEffect(() => {
+    if (projectId && messages.length > 0) {
+      trackDevelopmentPattern(projectId, 'chat_interaction', {
+        messageCount: messages.length,
+        activeAgent: selectedAgent,
+        selectedModel: selectedModel
+      })
+    }
+  }, [messages.length, projectId, selectedAgent, selectedModel, trackDevelopmentPattern])
 
   const handleSendMessage = async (e) => {
     e.preventDefault()
     
     if (!message.trim()) return
+    
+    // Track development pattern
+    trackDevelopmentPattern(projectId, 'send_message', {
+      messageLength: message.length,
+      hasCode: message.includes('```'),
+      agent: selectedAgent
+    })
     
     const result = await sendMessage({
       content: message,
@@ -72,6 +108,20 @@ const IndividualProject = () => {
       setMessage('')
     } else {
       toast.error(result.error || 'Failed to send message')
+    }
+  }
+
+  const handleVoiceCommand = (commandData) => {
+    switch (commandData.type) {
+      case 'navigation':
+        if (commandData.action === 'show_files') {
+          setActivePanel('structure')
+        } else if (commandData.action === 'chat_hub') {
+          navigate('/chat')
+        }
+        break
+      default:
+        console.log('Unhandled voice command:', commandData)
     }
   }
 
