@@ -140,6 +140,18 @@ function App() {
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               
+              {/* Advanced AI Routes */}
+              <Route path="/advanced-ai" element={<ProtectedRoute><AdvancedAIDashboard /></ProtectedRoute>} />
+              <Route path="/visual-programming" element={<ProtectedRoute><VisualProgramming /></ProtectedRoute>} />
+              <Route path="/voice-interface" element={<ProtectedRoute><VoiceInterface /></ProtectedRoute>} />
+              
+              {/* Enterprise Routes */}
+              <Route path="/enterprise" element={<ProtectedRoute><EnterpriseDashboard /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><SmartAnalytics /></ProtectedRoute>} />
+              
+              {/* Collaboration Routes */}
+              <Route path="/collaboration" element={<ProtectedRoute><CollaborationCenter /></ProtectedRoute>} />
+              
               {/* Catch all redirect */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
