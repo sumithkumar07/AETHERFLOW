@@ -188,6 +188,9 @@ app.include_router(theme_intelligence_router, prefix="/api/theme-intelligence", 
 app.include_router(project_migration_router, prefix="/api/project-migration", tags=["Project Migration"])
 app.include_router(code_quality_router, prefix="/api/code-quality", tags=["Code Quality Engine"])
 app.include_router(workspace_optimization_router, prefix="/api/workspace-optimization", tags=["Workspace Intelligence"])
+app.include_router(experimental_sandbox_router, prefix="/api/experimental-sandbox", tags=["Experimental Sandbox"])
+app.include_router(visual_programming_router, prefix="/api/visual-programming", tags=["Visual Programming"])
+app.include_router(community_intelligence_router, prefix="/api/community-intelligence", tags=["Community Intelligence"])
 
 @app.on_event("startup")
 async def startup_event():
