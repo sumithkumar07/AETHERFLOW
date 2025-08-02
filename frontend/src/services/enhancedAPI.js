@@ -84,11 +84,13 @@ class EnhancedAPIService {
     }
   }
 
-  // Voice-to-Code Integration
+  // Voice-to-Code Integration (REAL BACKEND)
   async getVoiceCapabilities() {
     try {
-      return await this.api.getVoiceCapabilities()
+      const response = await this.api.client.get('/api/voice/voice-capabilities')
+      return response.data
     } catch (error) {
+      console.warn('Voice capabilities failed, using fallback:', error)
       return {
         available: false,
         languages: ['en-US'],
