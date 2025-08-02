@@ -2,326 +2,592 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
-  PlusIcon, 
-  ChatBubbleLeftRightIcon,
-  FolderIcon,
-  ClockIcon,
-  CodeBracketIcon,
+  PlusIcon,
   RocketLaunchIcon,
+  ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  EllipsisHorizontalIcon
+  ClockIcon,
+  CodeBracketIcon,
+  SwatchIcon,
+  CogIcon,
+  FireIcon,
+  LightBulbIcon,
+  SparklesIcon,
+  ArrowRightIcon,
+  DocumentTextIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  BeakerIcon,
+  BoltIcon,
+  AcademicCapIcon,
+  PlayIcon,
+  CloudArrowUpIcon,
+  CheckBadgeIcon
 } from '@heroicons/react/24/outline'
-import { useAuthStore } from '../store/authStore'
-import { useProjectStore } from '../store/projectStore'
 import LoadingStates from '../components/LoadingStates'
+import ProjectCreationModal from '../components/ProjectCreationModal'
+import { useProjectStore } from '../store/projectStore'
+import { useAuthStore } from '../store/authStore'
+import { useAdvancedFeaturesStore } from '../store/advancedFeaturesStore'
 import toast from 'react-hot-toast'
 
 const ChatHub = () => {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { projects, loading, fetchProjects, createProject } = useProjectStore()
+  const { 
+    projects, 
+    loading: projectsLoading, 
+    fetchProjects, 
+    createProject,
+    buildProject,
+    deployProject,
+    deploymentStatus
+  } = useProjectStore()
+  
+  const {
+    fetchAnalytics,
+    analyzeArchitecture,
+    fetchWorkflows
+  } = useAdvancedFeaturesStore()
+  
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filter, setFilter] = useState('all')
-  const [projectIdea, setProjectIdea] = useState('')
-  const [creatingProject, setCreatingProject] = useState(false)
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [quickActions, setQuickActions] = useState([])
+  const [smartRecommendations, setSmartRecommendations] = useState([])
+  const [dashboardStats, setDashboardStats] = useState({
+    totalProjects: 0,
+    activeProjects: 0,
+    deploymentsThisWeek: 0,
+    avgBuildTime: '2.3m'
+  })
 
   useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
-
-  const handleCreateProject = async (e) => {
-    e.preventDefault()
-    
-    if (!projectIdea.trim()) {
-      toast.error('Please describe your project idea')
-      return
+    if (user) {
+      fetchProjects()
+      loadDashboardData()
     }
+  }, [user])
 
-    setCreatingProject(true)
+  // Load enhanced dashboard data
+  const loadDashboardData = async () => {
     try {
-      const result = await createProject({
-        name: projectIdea.slice(0, 50),
-        description: projectIdea,
-        tech_stack: ['React', 'FastAPI', 'MongoDB'],
-        status: 'active'
-      })
-
-      if (result.success) {
-        toast.success('Project created successfully!')
-        navigate(`/chat/${result.project.id}`)
-      } else {
-        toast.error(result.error || 'Failed to create project')
-      }
+      // Fetch analytics for overall dashboard
+      await fetchAnalytics('dashboard')
+      
+      // Load smart recommendations based on user activity
+      const recommendations = [
+        {
+          id: 1,
+          type: 'template',
+          title: 'Try the E-commerce Starter',
+          description: 'Perfect for your next online store project',
+          action: () => navigate('/templates'),
+          icon: RocketLaunchIcon,
+          color: 'blue'
+        },
+        {
+          id: 2,
+          type: 'feature',
+          title: 'Enable Voice Commands',
+          description: 'Speed up your workflow with AI voice controls',
+          action: () => toast.success('Voice commands enabled in project settings!'),
+          icon: BoltIcon,
+          color: 'green'
+        },
+        {
+          id: 3,
+          type: 'integration',
+          title: 'Connect GitHub',
+          description: 'Sync your repositories for better collaboration',
+          action: () => navigate('/integrations'),
+          icon: CogIcon,
+          color: 'purple'
+        }
+      ]
+      
+      setSmartRecommendations(recommendations)
+      
+      // Generate quick actions based on recent activity
+      const actions = [
+        {
+          id: 1,
+          title: 'Create React App',
+          description: 'Start a modern React project',
+          icon: CodeBracketIcon,
+          color: 'from-blue-500 to-cyan-500',
+          action: () => handleQuickCreate('React Application', 'react_app')
+        },
+        {
+          id: 2,
+          title: 'API Service',
+          description: 'Build a REST API with FastAPI',
+          icon: CogIcon,
+          color: 'from-green-500 to-teal-500',
+          action: () => handleQuickCreate('API Service', 'api_service')
+        },
+        {
+          id: 3,
+          title: 'Full Stack App',
+          description: 'Complete web application',
+          icon: RocketLaunchIcon,
+          color: 'from-purple-500 to-pink-500',
+          action: () => handleQuickCreate('Full Stack App', 'full_stack')
+        },
+        {
+          id: 4,
+          title: 'Browse Templates',
+          description: 'Explore our template library',
+          icon: SwatchIcon,
+          color: 'from-yellow-500 to-orange-500',
+          action: () => navigate('/templates')
+        }
+      ]
+      
+      setQuickActions(actions)
+      
     } catch (error) {
-      toast.error('Failed to create project')
-    } finally {
-      setCreatingProject(false)
+      console.error('Dashboard data loading error:', error)
+    }
+  }
+
+  const handleQuickCreate = async (name, type) => {
+    const result = await createProject({
+      name: name,
+      description: `A ${type.replace('_', ' ')} project created from ChatHub`,
+      type: type
+    })
+    
+    if (result.success) {
+      navigate(`/chat/${result.project.id}`)
+    }
+  }
+
+  const handleProjectAction = async (project, action) => {
+    switch (action) {
+      case 'build':
+        const buildResult = await buildProject(project.id)
+        if (buildResult.success) {
+          toast.success(`Build started for ${project.name}`)
+        }
+        break
+      case 'deploy':
+        const deployResult = await deployProject(project.id)
+        if (deployResult.success) {
+          toast.success(`Deployment started for ${project.name}`)
+        }
+        break
+      case 'analyze':
+        analyzeArchitecture(project.id)
+        toast.success('Analyzing project architecture...')
+        break
+      default:
+        navigate(`/chat/${project.id}`)
     }
   }
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    if (filter === 'all') return matchesSearch
-    if (filter === 'active') return matchesSearch && project.status === 'active'
-    if (filter === 'complete') return matchesSearch && project.status === 'completed'
-    
-    return matchesSearch
+                         project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || project.status === filterStatus
+    return matchesSearch && matchesStatus
   })
 
-  const quickSuggestions = [
-    "Build a modern e-commerce platform",
-    "Create a social media dashboard",
-    "Develop a task management app",
-    "Build an AI-powered chat bot"
-  ]
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'deployed': return <CloudArrowUpIcon className="w-4 h-4" />
+      case 'building': return <CogIcon className="w-4 h-4 animate-spin" />
+      case 'ready': return <CheckBadgeIcon className="w-4 h-4" />
+      default: return <DocumentTextIcon className="w-4 h-4" />
+    }
+  }
 
-  if (loading) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'deployed': return 'text-green-600 dark:text-green-400'
+      case 'building': return 'text-yellow-600 dark:text-yellow-400'
+      case 'ready': return 'text-blue-600 dark:text-blue-400'
+      case 'error': return 'text-red-600 dark:text-red-400'
+      default: return 'text-gray-600 dark:text-gray-400'
+    }
+  }
+
+  if (projectsLoading) {
     return <LoadingStates.FullScreen message="Loading your projects..." />
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        
+        {/* Enhanced Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="text-center mb-12"
         >
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, {user?.name || 'Developer'}!
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
+              <ChatBubbleLeftRightIcon className="w-10 h-10 text-white" />
+            </div>
+          </div>
+          
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Welcome back, {user?.name}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Ready to build something amazing? Start a new project or continue where you left off.
+          
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+            Your AI-powered development workspace. Create, build, and deploy applications 
+            with the help of intelligent agents and advanced tools.
           </p>
+
+          {/* Dashboard Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {[
+              { label: 'Total Projects', value: projects.length, icon: DocumentTextIcon, color: 'blue' },
+              { label: 'Active Projects', value: projects.filter(p => p.status !== 'archived').length, icon: RocketLaunchIcon, color: 'green' },
+              { label: 'Deployed', value: projects.filter(p => p.status === 'deployed').length, icon: CloudArrowUpIcon, color: 'purple' },
+              { label: 'This Week', value: '+3', icon: ChartBarIcon, color: 'yellow' }
+            ].map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
+                      <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-900/20`}>
+                      <Icon className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Sidebar - Projects */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="card h-fit sticky top-24"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                  <FolderIcon className="w-5 h-5 mr-2" />
-                  Recent Projects
-                </h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {projects.length} projects
-                </span>
-              </div>
-
-              {/* Search and Filter */}
-              <div className="space-y-3 mb-6">
-                <div className="relative">
-                  <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="flex space-x-2">
-                  {['all', 'active', 'complete'].map((filterOption) => (
-                    <button
-                      key={filterOption}
-                      onClick={() => setFilter(filterOption)}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                        filter === filterOption
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Projects List */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {filteredProjects.length > 0 ? (
-                  filteredProjects.map((project) => (
-                    <motion.div
-                      key={project.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Link
-                        to={`/chat/${project.id}`}
-                        className="block p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                            {project.name}
-                          </h3>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            project.status === 'active' 
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                              : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                          }`}>
-                            {project.status}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                          {project.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            {project.tech_stack?.slice(0, 2).map((tech) => (
-                              <span
-                                key={tech}
-                                className="px-2 py-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                            <ClockIcon className="w-3 h-3 mr-1" />
-                            {new Date(project.updated_at).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <FolderIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500 dark:text-gray-400">
-                      {searchTerm ? 'No projects found' : 'No projects yet'}
-                    </p>
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-12"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+            <SparklesIcon className="w-6 h-6 mr-2 text-purple-600" />
+            Quick Start
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {quickActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <motion.div
+                  key={action.id}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={action.action}
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer transition-all duration-300 hover:shadow-2xl group"
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                )}
+                  
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    {action.title}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {action.description}
+                  </p>
+                  
+                  <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
+                    Get started
+                    <ArrowRightIcon className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </motion.div>
+
+        {/* Smart Recommendations */}
+        {smartRecommendations.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mb-12"
+          >
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+              <LightBulbIcon className="w-6 h-6 mr-2 text-yellow-500" />
+              Smart Recommendations
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {smartRecommendations.map((rec) => {
+                const Icon = rec.icon
+                return (
+                  <motion.div
+                    key={rec.id}
+                    whileHover={{ scale: 1.02 }}
+                    onClick={rec.action}
+                    className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-${rec.color}-200/50 dark:border-${rec.color}-700/50 hover:border-${rec.color}-300 dark:hover:border-${rec.color}-600 cursor-pointer transition-all duration-300 hover:shadow-xl`}
+                  >
+                    <div className={`w-10 h-10 rounded-lg bg-${rec.color}-100 dark:bg-${rec.color}-900/20 flex items-center justify-center mb-4`}>
+                      <Icon className={`w-5 h-5 text-${rec.color}-600 dark:text-${rec.color}-400`} />
+                    </div>
+                    
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      {rec.title}
+                    </h3>
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {rec.description}
+                    </p>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Projects Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-0 flex items-center">
+              <DocumentTextIcon className="w-6 h-6 mr-2" />
+              Your Projects ({filteredProjects.length})
+            </h2>
+            
+            <div className="flex items-center space-x-4">
+              {/* Search */}
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-64 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
               </div>
-            </motion.div>
+              
+              {/* Filter */}
+              <div className="relative">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="appearance-none bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-300/50 dark:border-gray-600/50 rounded-lg px-4 py-2 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="draft">Draft</option>
+                  <option value="building">Building</option>
+                  <option value="ready">Ready</option>
+                  <option value="deployed">Deployed</option>
+                </select>
+                <FunnelIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCreateModal(true)}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <PlusIcon className="w-5 h-5" />
+                <span>New Project</span>
+              </motion.button>
+            </div>
           </div>
 
-          {/* Main Content - Project Creation */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card"
+          {/* Projects Grid */}
+          {filteredProjects.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
             >
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <PlusIcon className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  Ready to build something amazing?
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Describe your project idea and let our AI agents help you bring it to life.
-                </p>
-              </div>
-
-              {/* Project Creation Form */}
-              <form onSubmit={handleCreateProject} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    What would you like to build today?
-                  </label>
-                  <textarea
-                    value={projectIdea}
-                    onChange={(e) => setProjectIdea(e.target.value)}
-                    placeholder="Describe your project idea in detail... The more context you provide, the better our AI can assist you!"
-                    rows={6}
-                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={creatingProject || !projectIdea.trim()}
-                  className="w-full btn-primary py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              <ChatBubbleLeftRightIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+                {projects.length === 0 ? "No projects yet" : "No projects found"}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-8">
+                {projects.length === 0 
+                  ? "Start building amazing applications with AI assistance" 
+                  : "Try adjusting your search or filter criteria"
+                }
+              </p>
+              {projects.length === 0 && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowCreateModal(true)}
+                  className="btn-primary"
                 >
-                  {creatingProject ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Creating Project...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RocketLaunchIcon className="w-5 h-5" />
-                      <span>Start Building</span>
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {/* Quick Suggestions */}
-              <div className="mt-8">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Quick suggestions:
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {quickSuggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setProjectIdea(suggestion)}
-                      className="text-left p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm text-gray-700 dark:text-gray-300"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Featured Templates */}
-              <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Or start with a template
-                  </h3>
-                  <Link
-                    to="/templates"
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
-                  >
-                    View all templates →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    { name: 'React Starter Kit', description: 'Modern React app with authentication' },
-                    { name: 'E-commerce Store', description: 'Full-featured online store' }
-                  ].map((template, index) => (
-                    <Link
-                      key={index}
-                      to="/templates"
-                      className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg hover:shadow-md transition-shadow border border-blue-100 dark:border-blue-800"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                          <CodeBracketIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white">
-                            {template.name}
-                          </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {template.description}
-                          </p>
+                  Create Your First Project
+                </motion.button>
+              )}
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                >
+                  <div className="p-6">
+                    {/* Project Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1 mb-1">
+                          {project.name}
+                        </h3>
+                        
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${project.statusColor}`}>
+                            {getStatusIcon(project.status)}
+                            <span className="ml-1 capitalize">{project.status}</span>
+                          </span>
+                          
+                          {deploymentStatus[project.id] && deploymentStatus[project.id] !== project.status && (
+                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full animate-pulse ${
+                              deploymentStatus[project.id] === 'building' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300' :
+                              deploymentStatus[project.id] === 'deploying' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' : ''
+                            }`}>
+                              {deploymentStatus[project.id]}
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+                      
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {project.progress || 0}%
+                        </div>
+                        <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-1.5 rounded-full transition-all duration-500"
+                            style={{ width: `${project.progress || 0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Project Description */}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                      {project.description || 'No description provided'}
+                    </p>
+
+                    {/* Tech Stack */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {(project.techStackDisplay || project.tech_stack || []).slice(0, 3).map((tech, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                      {(project.tech_stack?.length > 3) && (
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded">
+                          +{project.tech_stack.length - 3}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Project Meta */}
+                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+                      <div className="flex items-center space-x-1">
+                        <ClockIcon className="w-3 h-3" />
+                        <span>{project.lastActivityText || 'No recent activity'}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <DocumentTextIcon className="w-3 h-3" />
+                        <span>{project.files?.length || 0} files</span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center space-x-2">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleProjectAction(project, 'chat')}
+                        className="flex-1 btn-primary text-sm py-2 flex items-center justify-center space-x-1"
+                      >
+                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                        <span>Open</span>
+                      </motion.button>
+                      
+                      {project.status === 'ready' && (
+                        <button
+                          onClick={() => handleProjectAction(project, 'deploy')}
+                          disabled={deploymentStatus[project.id] === 'deploying'}
+                          className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded-lg transition-colors disabled:opacity-50"
+                          title="Deploy"
+                        >
+                          <CloudArrowUpIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                      
+                      {project.status === 'draft' && (
+                        <button
+                          onClick={() => handleProjectAction(project, 'build')}
+                          disabled={deploymentStatus[project.id] === 'building'}
+                          className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg transition-colors disabled:opacity-50"
+                          title="Build"
+                        >
+                          <CogIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => handleProjectAction(project, 'analyze')}
+                        className="p-2 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-lg transition-colors"
+                        title="Analyze Architecture"
+                      >
+                        <ChartBarIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
       </div>
+
+      {/* Project Creation Modal */}
+      {showCreateModal && (
+        <ProjectCreationModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreateProject={async (projectData) => {
+            const result = await createProject(projectData)
+            if (result.success) {
+              setShowCreateModal(false)
+              navigate(`/chat/${result.project.id}`)
+            }
+            return result
+          }}
+        />
+      )}
     </div>
   )
 }
