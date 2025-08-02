@@ -8,6 +8,7 @@ import GlobalSearch from './components/GlobalSearch'
 import SmartOnboarding from './components/SmartOnboarding'
 import GamificationSystem from './components/GamificationSystem'
 import InteractiveTour from './components/InteractiveTour'
+import PWAEnhancement from './components/PWAEnhancement'
 import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
 
