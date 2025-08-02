@@ -32,6 +32,7 @@ const Navigation = () => {
   const { isAuthenticated, user, logout } = useAuthStore()
   const { theme, toggleTheme } = useThemeStore()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isAdvancedDropdownOpen, setIsAdvancedDropdownOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
@@ -43,8 +44,46 @@ const Navigation = () => {
     { name: 'Home', href: '/', icon: HomeIcon, public: true },
     { name: 'Chat Hub', href: '/chat', icon: ChatBubbleLeftRightIcon, protected: true },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, public: true },
-    { name: 'Integrations', href: '/integrations', icon: PuzzlePieceIcon, protected: true },
-    { name: 'Settings', href: '/settings', icon: CogIcon, protected: true }
+    { name: 'Integrations', href: '/integrations', icon: PuzzlePieceIcon, protected: true }
+  ]
+
+  const advancedFeatures = [
+    { 
+      name: 'Advanced AI', 
+      href: '/advanced-ai', 
+      icon: CpuChipIcon, 
+      description: 'Multi-agent AI system with intelligent routing' 
+    },
+    { 
+      name: 'Visual Programming', 
+      href: '/visual-programming', 
+      icon: CodeBracketIcon, 
+      description: 'Convert diagrams to code using AI' 
+    },
+    { 
+      name: 'Voice Interface', 
+      href: '/voice-interface', 
+      icon: MicrophoneIcon, 
+      description: 'Control platform with voice commands' 
+    },
+    { 
+      name: 'Enterprise Dashboard', 
+      href: '/enterprise', 
+      icon: BuildingOfficeIcon, 
+      description: 'Enterprise management and monitoring' 
+    },
+    { 
+      name: 'Smart Analytics', 
+      href: '/analytics', 
+      icon: ChartBarIcon, 
+      description: 'AI-powered insights and predictions' 
+    },
+    { 
+      name: 'Collaboration Center', 
+      href: '/collaboration', 
+      icon: UsersIcon, 
+      description: 'Real-time collaborative workspace' 
+    }
   ]
 
   const isActivePath = (path) => {
