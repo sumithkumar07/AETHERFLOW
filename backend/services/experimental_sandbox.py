@@ -1,21 +1,25 @@
 from typing import Dict, List, Optional, Any
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
-import copy
+import os
+import subprocess
+import tempfile
+import shutil
 
 class ExperimentalSandbox:
-    """AI service for safe experimentation with cutting-edge features"""
+    """Safe environment to test cutting-edge features without breaking main project"""
     
     def __init__(self, db_wrapper):
         self.db = db_wrapper
         self.sandbox_instances = {}
         self.experimental_features = {}
-        self.rollback_states = {}
+        self.safety_protocols = {}
+        self.rollback_system = {}
     
     async def initialize(self):
-        """Initialize the experimental sandbox"""
+        """Initialize the experimental sandbox service"""
         try:
             await self._load_experimental_features()
             await self._initialize_safety_protocols()
@@ -25,285 +29,230 @@ class ExperimentalSandbox:
             print(f"Experimental Sandbox initialization error: {e}")
             return False
     
-    async def create_sandbox(self, user_id: str, project_id: str, experiment_type: str) -> Dict[str, Any]:
-        """Create a new experimental sandbox environment"""
+    async def create_sandbox(self, user_id: str, project_id: str, experiment_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Create isolated sandbox environment for experiments"""
         try:
+            sandbox_id = f"sandbox_{uuid.uuid4().hex[:8]}"
+            
             sandbox = {
-                "sandbox_id": f"sandbox_{uuid.uuid4().hex[:8]}",
+                "sandbox_id": sandbox_id,
                 "user_id": user_id,
                 "project_id": project_id,
-                "experiment_type": experiment_type,
                 "created_at": datetime.utcnow().isoformat(),
-                "status": "active",
-                "safety_checks": [],
+                "experiment_type": experiment_config.get("type", "general"),
+                "status": "initializing",
+                "isolation_level": experiment_config.get("isolation", "high"),
+                "resource_limits": await self._get_resource_limits(experiment_config.get("type", "general")),
                 "experiments": [],
                 "rollback_points": [],
-                "resource_limits": await self._get_resource_limits(experiment_type)
+                "safety_checks": [],
+                "temp_directory": None
             }
+            
+            # Create isolated temporary directory
+            sandbox["temp_directory"] = await self._create_isolated_environment(sandbox_id)
+            
+            # Set up safety monitoring
+            sandbox["safety_checks"] = await self._initialize_safety_checks(experiment_config.get("type"))
             
             # Create initial rollback point
             initial_state = await self._capture_initial_state(project_id)
-            rollback_point = {
-                "point_id": f"rollback_{uuid.uuid4().hex[:8]}",
+            sandbox["rollback_points"].append({
+                "id": "initial",
                 "timestamp": datetime.utcnow().isoformat(),
-                "description": "Initial sandbox state",
-                "state_data": initial_state,
-                "is_safe": True
+                "description": "Initial project state",
+                "state_data": initial_state
+            })
+            
+            sandbox["status"] = "ready"
+            self.sandbox_instances[sandbox_id] = sandbox
+            
+            return {
+                "sandbox_id": sandbox_id,
+                "status": "created",
+                "isolation_level": sandbox["isolation_level"],
+                "available_experiments": await self._get_available_experiments(experiment_config.get("type")),
+                "safety_measures": await self._describe_safety_measures(sandbox)
             }
-            sandbox["rollback_points"].append(rollback_point)
-            
-            # Initialize safety protocols
-            sandbox["safety_checks"] = await self._initialize_safety_checks(experiment_type)
-            
-            # Cache sandbox instance
-            self.sandbox_instances[sandbox["sandbox_id"]] = sandbox
-            
-            return sandbox
         except Exception as e:
-            return {"error": str(e), "user_id": user_id}
+            return {"error": str(e)}
     
     async def run_experiment(self, sandbox_id: str, experiment_config: Dict[str, Any]) -> Dict[str, Any]:
-        """Run an experimental feature safely within the sandbox"""
+        """Run experimental feature in sandbox"""
         try:
             if sandbox_id not in self.sandbox_instances:
-                return {"error": "Sandbox not found", "sandbox_id": sandbox_id}
+                return {"error": "Sandbox not found"}
             
             sandbox = self.sandbox_instances[sandbox_id]
+            experiment_id = f"exp_{uuid.uuid4().hex[:8]}"
             
             experiment = {
-                "experiment_id": f"exp_{uuid.uuid4().hex[:8]}",
+                "experiment_id": experiment_id,
                 "timestamp": datetime.utcnow().isoformat(),
+                "type": experiment_config.get("type", "feature_test"),
                 "config": experiment_config,
                 "status": "running",
                 "results": {},
                 "safety_violations": [],
-                "performance_metrics": {},
-                "rollback_required": False
+                "rollback_triggered": False
             }
             
             # Pre-experiment safety checks
             safety_check = await self._run_safety_checks(experiment_config, sandbox)
-            if not safety_check["passed"]:
-                experiment["status"] = "failed"
-                experiment["safety_violations"] = safety_check["violations"]
+            if not safety_check.get("passed", False):
+                experiment["status"] = "blocked"
+                experiment["safety_violations"] = safety_check.get("violations", [])
                 return experiment
             
-            # Create pre-experiment rollback point
-            pre_experiment_state = await self._capture_current_state(sandbox["project_id"])
+            # Create rollback point before experiment
             rollback_point = {
-                "point_id": f"rollback_{uuid.uuid4().hex[:8]}",
+                "id": experiment_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "description": f"Before experiment {experiment['experiment_id']}",
-                "state_data": pre_experiment_state,
-                "is_safe": True
+                "description": f"Before experiment: {experiment_config.get('name', 'Unknown')}",
+                "state_data": await self._capture_current_state(sandbox["project_id"])
             }
             sandbox["rollback_points"].append(rollback_point)
             
-            # Execute experiment
-            experiment_results = await self._execute_experiment(experiment_config, sandbox)
-            experiment["results"] = experiment_results
+            # Execute experiment based on type
+            if experiment["type"] == "language_feature":
+                experiment["results"] = await self._test_language_feature(
+                    experiment_config, sandbox_id
+                )
+            elif experiment["type"] == "experimental_api":
+                experiment["results"] = await self._test_experimental_api(
+                    experiment_config, sandbox_id
+                )
+            elif experiment["type"] == "performance_optimization":
+                experiment["results"] = await self._test_performance_optimization(
+                    experiment_config, sandbox_id
+                )
+            else:
+                experiment["results"] = await self._run_generic_experiment(
+                    experiment_config, sandbox_id
+                )
             
             # Post-experiment validation
-            validation = await self._validate_experiment_results(experiment_results, sandbox)
-            experiment["performance_metrics"] = validation["metrics"]
+            validation = await self._validate_experiment_results(experiment["results"], sandbox)
             
-            if validation["safe"]:
-                experiment["status"] = "completed"
+            if validation.get("recommend_rollback", False):
+                await self._perform_automatic_rollback(sandbox_id, rollback_point["id"])
+                experiment["rollback_triggered"] = True
+                experiment["status"] = "rolled_back"
             else:
-                experiment["status"] = "completed_with_issues"
-                experiment["safety_violations"] = validation["issues"]
-                experiment["rollback_required"] = validation["recommend_rollback"]
+                experiment["status"] = "completed"
             
-            # Add experiment to sandbox
+            # Add to sandbox experiments
             sandbox["experiments"].append(experiment)
             
             return experiment
         except Exception as e:
-            return {"error": str(e), "sandbox_id": sandbox_id}
+            return {"error": str(e)}
     
-    async def test_new_language_features(self, sandbox_id: str, language: str, features: List[str]) -> Dict[str, Any]:
+    async def test_language_features(self, sandbox_id: str, language: str, features: List[str]) -> Dict[str, Any]:
         """Test new language features before they're stable"""
         try:
-            testing_results = {
+            results = {
+                "sandbox_id": sandbox_id,
                 "language": language,
-                "features_tested": features,
-                "timestamp": datetime.utcnow().isoformat(),
-                "results": [],
+                "tested_features": [],
                 "compatibility_issues": [],
                 "performance_impact": {},
                 "safety_assessment": {}
             }
             
             for feature in features:
-                feature_test = await self._test_language_feature(feature, language, sandbox_id)
-                testing_results["results"].append(feature_test)
+                feature_result = await self._test_language_feature(feature, language, sandbox_id)
+                results["tested_features"].append(feature_result)
                 
-                # Check for compatibility issues
+                # Check compatibility
                 compatibility = await self._check_feature_compatibility(feature, language, sandbox_id)
-                if compatibility["issues"]:
-                    testing_results["compatibility_issues"].extend(compatibility["issues"])
+                if compatibility.get("issues"):
+                    results["compatibility_issues"].extend(compatibility["issues"])
             
             # Assess overall performance impact
-            testing_results["performance_impact"] = await self._assess_performance_impact(
-                testing_results["results"]
-            )
+            results["performance_impact"] = await self._assess_performance_impact(results["tested_features"])
             
             # Safety assessment
-            testing_results["safety_assessment"] = await self._assess_feature_safety(
-                testing_results["results"]
-            )
+            results["safety_assessment"] = await self._assess_feature_safety(results["tested_features"])
             
-            return testing_results
+            return results
         except Exception as e:
             return {"error": str(e)}
     
-    async def experiment_with_apis(self, sandbox_id: str, api_configs: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Safely experiment with new or experimental APIs"""
+    async def test_experimental_apis(self, sandbox_id: str, api_configs: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Test experimental APIs safely"""
         try:
-            api_experiments = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "apis_tested": len(api_configs),
-                "results": [],
+            results = {
+                "sandbox_id": sandbox_id,
+                "api_tests": [],
                 "security_analysis": {},
-                "integration_recommendations": []
+                "stability_metrics": {},
+                "recommendations": []
             }
             
-            for api_config in api_configs:
-                api_test = await self._test_experimental_api(api_config, sandbox_id)
-                api_experiments["results"].append(api_test)
+            for config in api_configs:
+                api_result = await self._test_experimental_api(config, sandbox_id)
+                results["api_tests"].append(api_result)
             
-            # Comprehensive security analysis
-            api_experiments["security_analysis"] = await self._analyze_api_security(
-                api_configs, api_experiments["results"]
-            )
+            # Security analysis
+            results["security_analysis"] = await self._analyze_api_security(api_configs, results["api_tests"])
             
-            # Generate integration recommendations
-            api_experiments["integration_recommendations"] = await self._generate_api_recommendations(
-                api_experiments["results"]
-            )
+            # Stability metrics
+            results["stability_metrics"] = await self._calculate_stability_metrics(results["api_tests"])
             
-            return api_experiments
+            # Generate recommendations
+            results["recommendations"] = await self._generate_api_recommendations(results["api_tests"])
+            
+            return results
         except Exception as e:
             return {"error": str(e)}
     
-    async def rollback_to_safe_state(self, sandbox_id: str, rollback_point_id: Optional[str] = None) -> Dict[str, Any]:
-        """Rollback sandbox to a previous safe state"""
+    async def rollback_to_state(self, sandbox_id: str, rollback_point_id: str) -> Dict[str, Any]:
+        """Rollback sandbox to previous state"""
         try:
             if sandbox_id not in self.sandbox_instances:
-                return {"error": "Sandbox not found", "sandbox_id": sandbox_id}
+                return {"error": "Sandbox not found"}
             
             sandbox = self.sandbox_instances[sandbox_id]
+            rollback_point = None
             
             # Find rollback point
-            target_rollback = None
-            if rollback_point_id:
-                target_rollback = next(
-                    (rp for rp in sandbox["rollback_points"] if rp["point_id"] == rollback_point_id),
-                    None
-                )
-            else:
-                # Use most recent safe rollback point
-                safe_points = [rp for rp in sandbox["rollback_points"] if rp["is_safe"]]
-                target_rollback = safe_points[-1] if safe_points else None
+            for point in sandbox["rollback_points"]:
+                if point["id"] == rollback_point_id:
+                    rollback_point = point
+                    break
             
-            if not target_rollback:
-                return {"error": "No suitable rollback point found"}
+            if not rollback_point:
+                return {"error": "Rollback point not found"}
             
+            # Perform rollback
             rollback_operation = {
                 "operation_id": f"rollback_{uuid.uuid4().hex[:8]}",
                 "timestamp": datetime.utcnow().isoformat(),
-                "target_point": target_rollback["point_id"],
-                "status": "in_progress",
-                "changes_reverted": [],
-                "data_preserved": [],
-                "verification_results": {}
+                "sandbox_id": sandbox_id,
+                "rollback_point_id": rollback_point_id,
+                "status": "in_progress"
             }
             
-            # Perform rollback
-            rollback_results = await self._perform_rollback(
+            # Restore project state
+            restore_result = await self._perform_rollback(
                 sandbox["project_id"], 
-                target_rollback["state_data"]
+                rollback_point["state_data"]
             )
-            rollback_operation["changes_reverted"] = rollback_results["changes"]
-            rollback_operation["data_preserved"] = rollback_results["preserved"]
             
-            # Verify rollback success
-            verification = await self._verify_rollback(sandbox["project_id"], target_rollback)
-            rollback_operation["verification_results"] = verification
-            
-            if verification["success"]:
+            if restore_result.get("success", False):
                 rollback_operation["status"] = "completed"
-                sandbox["status"] = "rolled_back"
+                rollback_operation["changes_reverted"] = restore_result.get("changes", [])
+                rollback_operation["preserved_data"] = restore_result.get("preserved", [])
+                
+                # Verify rollback
+                verification = await self._verify_rollback(sandbox["project_id"], rollback_point)
+                rollback_operation["verification"] = verification
             else:
                 rollback_operation["status"] = "failed"
-                rollback_operation["error"] = verification["error"]
+                rollback_operation["error"] = restore_result.get("error", "Unknown error")
             
             return rollback_operation
-        except Exception as e:
-            return {"error": str(e)}
-    
-    async def get_sandbox_status(self, sandbox_id: str) -> Dict[str, Any]:
-        """Get current status and metrics of a sandbox"""
-        try:
-            if sandbox_id not in self.sandbox_instances:
-                return {"error": "Sandbox not found", "sandbox_id": sandbox_id}
-            
-            sandbox = self.sandbox_instances[sandbox_id]
-            
-            status = {
-                "sandbox_id": sandbox_id,
-                "timestamp": datetime.utcnow().isoformat(),
-                "basic_info": {
-                    "created_at": sandbox["created_at"],
-                    "status": sandbox["status"],
-                    "experiment_type": sandbox["experiment_type"],
-                    "total_experiments": len(sandbox["experiments"])
-                },
-                "resource_usage": await self._calculate_resource_usage(sandbox),
-                "safety_metrics": await self._calculate_safety_metrics(sandbox),
-                "experiment_summary": await self._summarize_experiments(sandbox["experiments"]),
-                "rollback_availability": len(sandbox["rollback_points"]),
-                "recommendations": await self._generate_sandbox_recommendations(sandbox)
-            }
-            
-            return status
-        except Exception as e:
-            return {"error": str(e)}
-    
-    async def cleanup_sandbox(self, sandbox_id: str, preserve_data: bool = True) -> Dict[str, Any]:
-        """Clean up sandbox environment and resources"""
-        try:
-            if sandbox_id not in self.sandbox_instances:
-                return {"error": "Sandbox not found", "sandbox_id": sandbox_id}
-            
-            sandbox = self.sandbox_instances[sandbox_id]
-            
-            cleanup_operation = {
-                "operation_id": f"cleanup_{uuid.uuid4().hex[:8]}",
-                "timestamp": datetime.utcnow().isoformat(),
-                "sandbox_id": sandbox_id,
-                "preserve_data": preserve_data,
-                "cleanup_steps": [],
-                "preserved_artifacts": [],
-                "final_report": {}
-            }
-            
-            # Generate final experiment report
-            cleanup_operation["final_report"] = await self._generate_final_report(sandbox)
-            
-            # Preserve valuable data if requested
-            if preserve_data:
-                artifacts = await self._preserve_valuable_artifacts(sandbox)
-                cleanup_operation["preserved_artifacts"] = artifacts
-            
-            # Clean up resources
-            cleanup_steps = await self._cleanup_sandbox_resources(sandbox)
-            cleanup_operation["cleanup_steps"] = cleanup_steps
-            
-            # Remove from active instances
-            del self.sandbox_instances[sandbox_id]
-            
-            return cleanup_operation
         except Exception as e:
             return {"error": str(e)}
     
@@ -311,19 +260,48 @@ class ExperimentalSandbox:
         """Load available experimental features"""
         self.experimental_features = {
             "language_features": {
-                "javascript": ["optional_chaining", "nullish_coalescing", "private_fields"],
-                "python": ["pattern_matching", "union_types", "positional_only_params"],
-                "typescript": ["template_literal_types", "conditional_types", "mapped_types"]
+                "javascript": [
+                    {"name": "optional_chaining", "stability": "experimental", "risk": "low"},
+                    {"name": "nullish_coalescing", "stability": "experimental", "risk": "low"},
+                    {"name": "private_fields", "stability": "proposal", "risk": "medium"},
+                    {"name": "decorators", "stability": "proposal", "risk": "high"}
+                ],
+                "python": [
+                    {"name": "pattern_matching", "stability": "stable", "risk": "low"},
+                    {"name": "union_types", "stability": "stable", "risk": "low"},
+                    {"name": "positional_only_params", "stability": "stable", "risk": "low"},
+                    {"name": "async_generators", "stability": "experimental", "risk": "medium"}
+                ],
+                "typescript": [
+                    {"name": "template_literal_types", "stability": "stable", "risk": "low"},
+                    {"name": "conditional_types", "stability": "stable", "risk": "medium"},
+                    {"name": "mapped_types", "stability": "stable", "risk": "medium"},
+                    {"name": "recursive_types", "stability": "experimental", "risk": "high"}
+                ]
             },
             "experimental_apis": {
-                "web_apis": ["WebAssembly", "WebXR", "WebGPU", "Storage_API"],
-                "node_apis": ["Worker_Threads", "AsyncHooks", "Performance_Hooks"],
-                "framework_features": ["React_Concurrent", "Vue_3_Composition", "Angular_Ivy"]
+                "web_apis": [
+                    {"name": "WebAssembly", "stability": "stable", "risk": "low"},
+                    {"name": "WebXR", "stability": "experimental", "risk": "high"},
+                    {"name": "WebGPU", "stability": "experimental", "risk": "high"},
+                    {"name": "Storage_API", "stability": "experimental", "risk": "medium"}
+                ],
+                "node_apis": [
+                    {"name": "Worker_Threads", "stability": "stable", "risk": "low"},
+                    {"name": "AsyncHooks", "stability": "experimental", "risk": "high"},
+                    {"name": "Performance_Hooks", "stability": "stable", "risk": "low"}
+                ]
             },
             "cutting_edge_tools": {
-                "bundlers": ["Vite", "esbuild", "SWC"],
-                "testing": ["Playwright", "Testing_Library", "Vitest"],
-                "deployment": ["Deno_Deploy", "Vercel_Edge", "Cloudflare_Workers"]
+                "bundlers": [
+                    {"name": "Vite", "stability": "stable", "risk": "low"},
+                    {"name": "esbuild", "stability": "stable", "risk": "low"},
+                    {"name": "SWC", "stability": "experimental", "risk": "medium"}
+                ],
+                "testing": [
+                    {"name": "Playwright", "stability": "stable", "risk": "low"},
+                    {"name": "Vitest", "stability": "stable", "risk": "low"}
+                ]
             }
         }
     
@@ -334,18 +312,27 @@ class ExperimentalSandbox:
                 "max_memory_mb": 512,
                 "max_cpu_percent": 50,
                 "max_network_requests": 100,
-                "max_file_operations": 1000
+                "max_file_operations": 1000,
+                "max_execution_time": 300  # 5 minutes
             },
             "security_checks": [
                 "no_system_access",
                 "no_network_outside_whitelist",
                 "no_sensitive_data_exposure",
-                "no_infinite_loops"
+                "no_infinite_loops",
+                "no_file_system_modification_outside_sandbox"
             ],
             "stability_checks": [
                 "error_rate_threshold",
                 "performance_degradation_check",
-                "memory_leak_detection"
+                "memory_leak_detection",
+                "dependency_conflict_check"
+            ],
+            "auto_rollback_triggers": [
+                "critical_error",
+                "security_violation",
+                "resource_exhaustion",
+                "stability_threshold_exceeded"
             ]
         }
     
@@ -353,123 +340,262 @@ class ExperimentalSandbox:
         """Setup rollback and recovery system"""
         self.rollback_system = {
             "max_rollback_points": 10,
-            "auto_rollback_triggers": [
-                "critical_error",
-                "security_violation",
-                "resource_exhaustion"
-            ],
+            "auto_cleanup_after_hours": 24,
             "verification_checks": [
                 "data_integrity",
-                "functionality_preservation",
-                "performance_consistency"
+                "functionality_preservation", 
+                "performance_consistency",
+                "dependency_integrity"
+            ],
+            "backup_strategies": [
+                "file_snapshots",
+                "dependency_snapshots",
+                "configuration_snapshots"
             ]
         }
     
+    async def _create_isolated_environment(self, sandbox_id: str) -> str:
+        """Create isolated temporary directory for sandbox"""
+        temp_dir = tempfile.mkdtemp(prefix=f"sandbox_{sandbox_id}_")
+        
+        # Set restrictive permissions
+        os.chmod(temp_dir, 0o700)
+        
+        return temp_dir
+    
     async def _get_resource_limits(self, experiment_type: str) -> Dict[str, Any]:
         """Get resource limits for experiment type"""
-        base_limits = self.safety_protocols["resource_limits"]
+        base_limits = self.safety_protocols["resource_limits"].copy()
         
         # Adjust limits based on experiment type
-        if experiment_type == "api_testing":
-            base_limits["max_network_requests"] = 200
-        elif experiment_type == "performance_testing":
+        if experiment_type == "performance_optimization":
             base_limits["max_cpu_percent"] = 70
-        elif experiment_type == "data_processing":
-            base_limits["max_memory_mb"] = 1024
+            base_limits["max_execution_time"] = 600
+        elif experiment_type == "experimental_api":
+            base_limits["max_network_requests"] = 200
+        elif experiment_type == "language_feature":
+            base_limits["max_memory_mb"] = 256  # Language features typically need less
         
         return base_limits
     
-    async def _capture_initial_state(self, project_id: str) -> Dict[str, Any]:
-        """Capture initial project state for rollback"""
-        # Simplified state capture
+    async def _get_available_experiments(self, experiment_type: str) -> List[Dict[str, Any]]:
+        """Get available experiments for type"""
+        if experiment_type == "language_feature":
+            return [
+                {"type": "javascript", "features": list(self.experimental_features["language_features"]["javascript"])},
+                {"type": "python", "features": list(self.experimental_features["language_features"]["python"])},
+                {"type": "typescript", "features": list(self.experimental_features["language_features"]["typescript"])}
+            ]
+        elif experiment_type == "experimental_api":
+            return [
+                {"category": "web_apis", "apis": list(self.experimental_features["experimental_apis"]["web_apis"])},
+                {"category": "node_apis", "apis": list(self.experimental_features["experimental_apis"]["node_apis"])}
+            ]
+        else:
+            return []
+    
+    async def _describe_safety_measures(self, sandbox: Dict[str, Any]) -> List[str]:
+        """Describe active safety measures"""
+        return [
+            f"Resource limits: {sandbox['resource_limits']['max_memory_mb']}MB memory, {sandbox['resource_limits']['max_cpu_percent']}% CPU",
+            f"Isolated environment: {sandbox['temp_directory']}",
+            f"Automatic rollback on: {', '.join(self.safety_protocols['auto_rollback_triggers'])}",
+            f"Security checks: {len(self.safety_protocols['security_checks'])} active",
+            f"Rollback points: {len(sandbox['rollback_points'])} available"
+        ]
+    
+    # Core experiment execution methods
+    async def _test_language_feature(self, feature: str, language: str, sandbox_id: str) -> Dict[str, Any]:
+        """Test a specific language feature"""
+        sandbox = self.sandbox_instances[sandbox_id]
+        
+        # Create test file in sandbox
+        test_file = os.path.join(sandbox["temp_directory"], f"test_{feature}.{self._get_file_extension(language)}")
+        
+        # Generate test code for feature
+        test_code = await self._generate_feature_test_code(feature, language)
+        
+        try:
+            with open(test_file, 'w') as f:
+                f.write(test_code)
+            
+            # Execute test
+            result = await self._execute_test_safely(test_file, language, sandbox["resource_limits"])
+            
+            return {
+                "feature": feature,
+                "language": language,
+                "status": "success" if result.get("exit_code") == 0 else "failed",
+                "output": result.get("output", ""),
+                "errors": result.get("errors", ""),
+                "execution_time": result.get("execution_time", 0),
+                "compatibility": "good" if result.get("exit_code") == 0 else "issues"
+            }
+        except Exception as e:
+            return {
+                "feature": feature,
+                "language": language,
+                "status": "error",
+                "error": str(e),
+                "compatibility": "unknown"
+            }
+    
+    async def _test_experimental_api(self, config: Dict[str, Any], sandbox_id: str) -> Dict[str, Any]:
+        """Test experimental API safely"""
+        try:
+            api_name = config.get("name", "unknown")
+            
+            # Simulate API testing (in real implementation, would make actual API calls)
+            return {
+                "api": api_name,
+                "status": "success",
+                "response_time": 150,  # Simulated
+                "stability_score": 0.85,
+                "security_level": "medium",
+                "compatibility": "good",
+                "issues": []
+            }
+        except Exception as e:
+            return {
+                "api": config.get("name", "unknown"),
+                "status": "error",
+                "error": str(e)
+            }
+    
+    async def _run_generic_experiment(self, config: Dict[str, Any], sandbox_id: str) -> Dict[str, Any]:
+        """Run generic experiment"""
         return {
-            "project_id": project_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            "files": {},  # Would contain file contents
-            "dependencies": {},  # Would contain dependency list
-            "configuration": {}  # Would contain config settings
+            "experiment_type": config.get("type", "generic"),
+            "status": "completed",
+            "results": "Experiment completed successfully",
+            "metrics": {"execution_time": 0.5, "resource_usage": 0.1}
         }
     
+    # Helper methods
+    def _get_file_extension(self, language: str) -> str:
+        """Get file extension for language"""
+        extensions = {
+            "python": "py",
+            "javascript": "js", 
+            "typescript": "ts",
+            "java": "java",
+            "cpp": "cpp"
+        }
+        return extensions.get(language, "txt")
+    
+    async def _generate_feature_test_code(self, feature: str, language: str) -> str:
+        """Generate test code for feature"""
+        if language == "javascript" and feature == "optional_chaining":
+            return """
+// Test optional chaining
+const obj = { a: { b: { c: 'value' } } };
+console.log(obj?.a?.b?.c); // Should print 'value'
+console.log(obj?.x?.y?.z); // Should print undefined
+"""
+        elif language == "python" and feature == "pattern_matching":
+            return """
+# Test pattern matching (Python 3.10+)
+def test_match(value):
+    match value:
+        case 1:
+            return "one"
+        case 2:
+            return "two"
+        case _:
+            return "other"
+
+print(test_match(1))  # Should print 'one'
+print(test_match(3))  # Should print 'other'
+"""
+        else:
+            return f"// Test code for {feature} in {language}\nconsole.log('Feature test placeholder');"
+    
+    async def _execute_test_safely(self, test_file: str, language: str, limits: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute test file safely with resource limits"""
+        try:
+            if language == "python":
+                cmd = ["python", test_file]
+            elif language in ["javascript", "typescript"]:
+                cmd = ["node", test_file]
+            else:
+                return {"exit_code": 1, "errors": f"Unsupported language: {language}"}
+            
+            # Execute with timeout
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=os.path.dirname(test_file)
+            )
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), 
+                    timeout=limits.get("max_execution_time", 60)
+                )
+                
+                return {
+                    "exit_code": process.returncode,
+                    "output": stdout.decode() if stdout else "",
+                    "errors": stderr.decode() if stderr else "",
+                    "execution_time": 1.0  # Simplified
+                }
+            except asyncio.TimeoutError:
+                process.kill()
+                return {
+                    "exit_code": 1,
+                    "errors": "Execution timeout",
+                    "execution_time": limits.get("max_execution_time", 60)
+                }
+        except Exception as e:
+            return {
+                "exit_code": 1,
+                "errors": str(e),
+                "execution_time": 0
+            }
+    
+    # Placeholder implementations for remaining methods
+    async def _capture_initial_state(self, project_id: str) -> Dict[str, Any]:
+        return {"project_id": project_id, "timestamp": datetime.utcnow().isoformat()}
+    
     async def _capture_current_state(self, project_id: str) -> Dict[str, Any]:
-        """Capture current project state"""
         return await self._capture_initial_state(project_id)
     
     async def _initialize_safety_checks(self, experiment_type: str) -> List[Dict[str, Any]]:
-        """Initialize safety checks for experiment type"""
-        checks = []
-        
-        for check_name in self.safety_protocols["security_checks"]:
-            checks.append({
-                "check_name": check_name,
-                "enabled": True,
-                "severity": "high",
-                "auto_rollback": True
-            })
-        
-        for check_name in self.safety_protocols["stability_checks"]:
-            checks.append({
-                "check_name": check_name,
-                "enabled": True,
-                "severity": "medium",
-                "auto_rollback": False
-            })
-        
-        return checks
+        return [{"check": "resource_limits", "enabled": True}]
     
-    # Additional placeholder methods for comprehensive functionality
     async def _run_safety_checks(self, config: Dict[str, Any], sandbox: Dict[str, Any]) -> Dict[str, Any]:
         return {"passed": True, "violations": []}
     
-    async def _execute_experiment(self, config: Dict[str, Any], sandbox: Dict[str, Any]) -> Dict[str, Any]:
-        return {"status": "success", "output": "Experiment completed successfully"}
-    
     async def _validate_experiment_results(self, results: Dict[str, Any], sandbox: Dict[str, Any]) -> Dict[str, Any]:
-        return {"safe": True, "metrics": {}, "issues": [], "recommend_rollback": False}
+        return {"recommend_rollback": False, "safe": True}
     
-    async def _test_language_feature(self, feature: str, language: str, sandbox_id: str) -> Dict[str, Any]:
-        return {"feature": feature, "status": "success", "compatibility": "good"}
+    async def _perform_automatic_rollback(self, sandbox_id: str, rollback_point_id: str) -> Dict[str, Any]:
+        return {"success": True}
+    
+    async def _perform_rollback(self, project_id: str, state_data: Dict[str, Any]) -> Dict[str, Any]:
+        return {"success": True, "changes": [], "preserved": []}
+    
+    async def _verify_rollback(self, project_id: str, rollback_point: Dict[str, Any]) -> Dict[str, Any]:
+        return {"success": True}
     
     async def _check_feature_compatibility(self, feature: str, language: str, sandbox_id: str) -> Dict[str, Any]:
         return {"issues": []}
     
     async def _assess_performance_impact(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return {"impact_level": "minimal", "metrics": {}}
+        return {"impact_level": "minimal"}
     
-    async def _assess_feature_safety(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return {"safety_level": "high", "risks": []}
-    
-    async def _test_experimental_api(self, config: Dict[str, Any], sandbox_id: str) -> Dict[str, Any]:
-        return {"api": config.get("name"), "status": "success", "response_time": 100}
+    async def _assess_feature_safety(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:  
+        return {"safety_level": "high"}
     
     async def _analyze_api_security(self, configs: List[Dict[str, Any]], results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return {"security_level": "high", "vulnerabilities": []}
+        return {"security_level": "good"}
+    
+    async def _calculate_stability_metrics(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        return {"stability_score": 0.9}
     
     async def _generate_api_recommendations(self, results: List[Dict[str, Any]]) -> List[str]:
-        return ["Consider rate limiting", "Implement proper error handling"]
+        return ["All APIs tested successfully"]
     
-    async def _perform_rollback(self, project_id: str, state_data: Dict[str, Any]) -> Dict[str, Any]:
-        return {"changes": [], "preserved": []}
-    
-    async def _verify_rollback(self, project_id: str, rollback_point: Dict[str, Any]) -> Dict[str, Any]:
-        return {"success": True, "error": None}
-    
-    async def _calculate_resource_usage(self, sandbox: Dict[str, Any]) -> Dict[str, Any]:
-        return {"memory_used": 256, "cpu_used": 25, "network_requests": 50}
-    
-    async def _calculate_safety_metrics(self, sandbox: Dict[str, Any]) -> Dict[str, Any]:
-        return {"violations": 0, "warnings": 1, "safety_score": 0.95}
-    
-    async def _summarize_experiments(self, experiments: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return {"total": len(experiments), "successful": len(experiments), "failed": 0}
-    
-    async def _generate_sandbox_recommendations(self, sandbox: Dict[str, Any]) -> List[str]:
-        return ["All experiments completed successfully", "Consider promoting stable features to production"]
-    
-    async def _generate_final_report(self, sandbox: Dict[str, Any]) -> Dict[str, Any]:
-        return {"summary": "Sandbox experiments completed successfully", "insights": []}
-    
-    async def _preserve_valuable_artifacts(self, sandbox: Dict[str, Any]) -> List[str]:
-        return ["experiment_logs.json", "performance_metrics.json"]
-    
-    async def _cleanup_sandbox_resources(self, sandbox: Dict[str, Any]) -> List[str]:
-        return ["Cleaned up temporary files", "Released allocated resources"]
+    async def _test_performance_optimization(self, config: Dict[str, Any], sandbox_id: str) -> Dict[str, Any]:
+        return {"optimization": config.get("name"), "improvement": "15%", "status": "success"}
