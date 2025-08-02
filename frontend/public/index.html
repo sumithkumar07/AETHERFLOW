@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aether AI - Next-Generation AI Development Platform</title>
+    <meta name="description" content="Transform ideas into production-ready applications through conversation, voice commands, and AI collaboration with Aether AI. FREE unlimited AI access via Puter.js." />
+    
+    <!-- Puter.js Script for FREE Unlimited AI Access -->
+    <script src="https://js.puter.com/v2/"></script>
+    
+    <!-- Preconnect to improve performance -->
+    <link rel="preconnect" href="https://js.puter.com" />
+    <link rel="preconnect" href="https://api.puter.com" />
+    
+    <!-- Meta tags for SEO -->
+    <meta property="og:title" content="Aether AI - Next-Generation AI Development Platform" />
+    <meta property="og:description" content="Build applications with voice commands and FREE unlimited AI access. Experience 2025's most advanced development platform." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Aether AI - FREE Unlimited AI Development" />
+    <meta name="twitter:description" content="Transform ideas into code with voice commands and FREE unlimited AI access via Puter.js." />
+    
+    <!-- Structured data for search engines -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Aether AI",
+      "description": "Next-generation AI development platform with FREE unlimited AI access",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Voice-to-code conversion",
+        "FREE unlimited AI access via Puter.js",
+        "Multi-agent AI system",
+        "Real-time collaboration",
+        "AI code review",
+        "Multiple AI models (GPT-4, Claude, Gemini)"
+      ]
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Initialize Puter.js when page loads -->
+    <script>
+      // Check if Puter.js loaded successfully
+      window.addEventListener('load', () => {
+        if (typeof puter !== 'undefined' && puter.ai) {
+          console.log('🎉 Puter.js loaded successfully - FREE unlimited AI access available!');
+          
+          // Dispatch custom event to notify the app
+          window.dispatchEvent(new CustomEvent('puterLoaded', { 
+            detail: { available: true, models: ['gpt-4.1-nano', 'claude-sonnet-4', 'google/gemini-2.5-flash'] }
+          }));
+        } else {
+          console.warn('⚠️ Puter.js failed to load - some features may be limited');
+          
+          // Dispatch event indicating Puter.js is not available
+          window.dispatchEvent(new CustomEvent('puterLoaded', { 
+            detail: { available: false, error: 'Failed to load Puter.js' }
+          }));
+        }
+      });
+      
+      // Add error handling for Puter.js
+      window.addEventListener('error', (event) => {
+        if (event.filename && event.filename.includes('puter')) {
+          console.error('❌ Puter.js error:', event.error);
+        }
+      });
+    </script>
+  </body>
+</html>
