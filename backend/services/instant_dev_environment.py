@@ -416,7 +416,7 @@ class InstantDevEnvironmentService:
                 }, indent=2),
                 "src/App.js": "import React from 'react';\n\nfunction App() {\n  return <div><h1>Hello AI Tempo!</h1></div>;\n}\n\nexport default App;",
                 "src/index.js": "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(<App />);",
-                "public/index.html": "<!DOCTYPE html><html><head><title>AI Tempo Sandbox</title></head><body><div id='root'></div></body></html>"
+                "public/index.html": "<!DOCTYPE html><html><head><title>AI Tempo Sandbox</title></head><body><div id=\"root\"></div></body></html>"
             })
         elif env_type == EnvironmentType.PYTHON:
             files.update({
