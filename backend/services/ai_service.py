@@ -381,11 +381,11 @@ spec:
 3. Implement circuit breakers
 4. Add monitoring and observability""",
 
-            "analyst": f"""📊 **Aether AI Analyst Response**
+            "analyst": """📊 **Aether AI Analyst Response**
 
 Great question! Let me analyze this from a business perspective.
 
-**Analysis of:** {message[:100]}...
+**Analysis of:** """ + message[:100] + """...
 
 **Key Insights:**
 - ROI potential: High ✅
