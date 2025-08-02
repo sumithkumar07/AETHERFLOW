@@ -1,166 +1,138 @@
 {
   "summary": {
-    "total": 22,
-    "passed": 21,
-    "failed": 0,
-    "skipped": 1,
-    "duration": 1.4002530574798584,
-    "timestamp": "2025-08-01T12:39:36.143986"
+    "total": 18,
+    "passed": 9,
+    "failed": 2,
+    "skipped": 7,
+    "duration": 2.6403958797454834,
+    "timestamp": "2025-08-02T07:01:58.691835"
   },
   "results": [
     {
       "test": "Root Health Check",
-      "status": "PASS",
-      "details": "API running: AI Code Studio API",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:34.748084"
+      "status": "FAIL",
+      "details": "Endpoint not accessible",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.158932"
     },
     {
       "test": "Detailed Health Check",
       "status": "PASS",
       "details": "Services: {'database': 'connected', 'ai': 'available', 'websocket': 'active'}",
       "response_code": 200,
-      "timestamp": "2025-08-01T12:39:34.789841"
+      "timestamp": "2025-08-02T07:01:58.169686"
     },
     {
       "test": "User Registration",
       "status": "PASS",
-      "details": "User created: testuser3650@example.com",
+      "details": "User created: testuser3734@example.com",
       "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.084874"
+      "timestamp": "2025-08-02T07:01:58.483221"
     },
     {
       "test": "Demo User Login",
-      "status": "PASS",
-      "details": "Token received for demo@aicodestudio.com",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.374899"
+      "status": "FAIL",
+      "details": "Login failed",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.500418"
     },
     {
-      "test": "Get User Profile",
-      "status": "PASS",
-      "details": "Profile retrieved: demo@aicodestudio.com",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.419842"
+      "test": "AI Chat Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.500482"
     },
     {
-      "test": "AI Chat Message",
-      "status": "PASS",
-      "details": "AI responded with model: gpt-4.1-nano",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.464802"
-    },
-    {
-      "test": "Get Conversations",
-      "status": "PASS",
-      "details": "Found 0 conversations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.511874"
-    },
-    {
-      "test": "Create Project",
-      "status": "PASS",
-      "details": "Project created: Test Project",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.560827"
-    },
-    {
-      "test": "Get Projects",
-      "status": "PASS",
-      "details": "Found 1 projects",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.607826"
+      "test": "Project Management Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.500499"
     },
     {
       "test": "Get Templates",
       "status": "PASS",
       "details": "Found 4 templates",
       "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.650856"
+      "timestamp": "2025-08-02T07:01:58.510380"
     },
     {
       "test": "Get Featured Templates",
       "status": "PASS",
       "details": "Found 3 featured templates",
       "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.693876"
+      "timestamp": "2025-08-02T07:01:58.520853"
     },
     {
       "test": "Get Specific Template",
       "status": "PASS",
       "details": "Template: React Starter Kit",
       "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.736846"
+      "timestamp": "2025-08-02T07:01:58.530918"
     },
     {
-      "test": "Enterprise Integrations",
-      "status": "PASS",
-      "details": "Found 3 integrations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.781797"
+      "test": "Enterprise Features Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.530972"
     },
     {
-      "test": "Compliance Dashboard",
-      "status": "PASS",
-      "details": "Compliance dashboard accessible",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.827812"
+      "test": "Agents System Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.530997"
     },
     {
-      "test": "Automation Dashboard",
-      "status": "PASS",
-      "details": "Automation dashboard accessible",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.872819"
-    },
-    {
-      "test": "Get Agents",
-      "status": "PASS",
-      "details": "Found 2 agents",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.917800"
-    },
-    {
-      "test": "Orchestration Status",
-      "status": "PASS",
-      "details": "Orchestration system accessible",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:35.962835"
-    },
-    {
-      "test": "Get Agent Teams",
-      "status": "PASS",
-      "details": "Found 3 teams",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:36.007849"
-    },
-    {
-      "test": "Get Available Integrations",
-      "status": "PASS",
-      "details": "Found 2 integrations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:36.052797"
-    },
-    {
-      "test": "Get Integration Categories",
-      "status": "PASS",
-      "details": "Found 4 categories",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:36.097799"
-    },
-    {
-      "test": "Get Popular Integrations",
-      "status": "PASS",
-      "details": "Found 3 popular integrations",
-      "response_code": 200,
-      "timestamp": "2025-08-01T12:39:36.142858"
+      "test": "Integrations Marketplace Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.531008"
     },
     {
       "test": "WebSocket Connection",
       "status": "SKIP",
       "details": "websocket-client not installed",
       "response_code": null,
-      "timestamp": "2025-08-01T12:39:36.143795"
+      "timestamp": "2025-08-02T07:01:58.531247"
+    },
+    {
+      "test": "Experimental Sandbox Test",
+      "status": "SKIP",
+      "details": "No authentication token available",
+      "response_code": null,
+      "timestamp": "2025-08-02T07:01:58.531273"
+    },
+    {
+      "test": "Get Supported Diagram Types",
+      "status": "PASS",
+      "details": "Found 5 diagram types",
+      "response_code": 200,
+      "timestamp": "2025-08-02T07:01:58.581714"
+    },
+    {
+      "test": "Get Diagram Examples",
+      "status": "PASS",
+      "details": "Found 2 diagram examples",
+      "response_code": 200,
+      "timestamp": "2025-08-02T07:01:58.591461"
+    },
+    {
+      "test": "Get Community Statistics",
+      "status": "PASS",
+      "details": "Total developers: 15647",
+      "response_code": 200,
+      "timestamp": "2025-08-02T07:01:58.641365"
+    },
+    {
+      "test": "Get Trending Content",
+      "status": "PASS",
+      "details": "Found 2 trending patterns",
+      "response_code": 200,
+      "timestamp": "2025-08-02T07:01:58.691565"
     }
   ]
 }
