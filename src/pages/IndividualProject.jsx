@@ -296,8 +296,36 @@ const IndividualProject = () => {
                 <ModelSelector />
                 <AgentSelector />
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {messages.length} messages
+              <div className="flex items-center space-x-3">
+                {/* Smart Suggestions Toggle */}
+                <button
+                  onClick={() => setShowSmartSuggestions(!showSmartSuggestions)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showSmartSuggestions
+                      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  title="Smart Suggestions"
+                >
+                  <LightBulbIcon className="w-5 h-5" />
+                </button>
+                
+                {/* Adaptive Mode Toggle */}
+                <button
+                  onClick={() => setAdaptiveMode(!adaptiveMode)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    adaptiveMode
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  title="Adaptive Interface"
+                >
+                  <BoltIcon className="w-5 h-5" />
+                </button>
+                
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {messages.length} messages
+                </div>
               </div>
             </div>
           </div>
