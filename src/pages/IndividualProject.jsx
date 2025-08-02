@@ -410,86 +410,132 @@ const IndividualProject = () => {
           </div>
         </div>
 
-        {/* Right Panel - Project Context */}
+        {/* Right Panel - Enhanced Project Context */}
         <div className="w-80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 overflow-y-auto">
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-              Project Context
-            </h2>
+            {/* Tabbed Interface */}
+            <div className="flex flex-wrap gap-1 mb-6 border-b border-gray-200 dark:border-gray-700">
+              {rightPanelItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setRightPanelTab(item.id)}
+                    className={`flex items-center space-x-1 px-3 py-2 text-xs font-medium rounded-t-lg transition-colors ${
+                      rightPanelTab === item.id
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-b-2 border-blue-500'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+                    }`}
+                  >
+                    <Icon className="w-3 h-3" />
+                    <span className="hidden sm:inline">{item.name.split(' ')[0]}</span>
+                  </button>
+                )
+              })}
+            </div>
 
+            {/* Tab Content */}
             <div className="space-y-6">
-              {/* Tech Stack */}
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white mb-3">Tech Stack</h3>
-                <div className="flex flex-wrap gap-2">
-                  {currentProject.tech_stack?.map((tech, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Active Agents */}
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white mb-3">Active Agents</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Developer Agent</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Designer Agent</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Project Metrics */}
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white mb-3">Metrics</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Files</span>
-                    <span className="text-gray-900 dark:text-white">{currentProject.metadata?.files_count || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                    <span className="text-gray-900 dark:text-white">{currentProject.progress || 0}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Last Activity</span>
-                    <span className="text-gray-900 dark:text-white">2h ago</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white mb-3">Recent Activity</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div>
-                      <div className="text-gray-900 dark:text-white">Updated components</div>
-                      <div className="text-gray-500 dark:text-gray-400">2 hours ago</div>
+              {rightPanelTab === 'context' && (
+                <>
+                  {/* Tech Stack */}
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">Tech Stack</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {currentProject.tech_stack?.map((tech, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded"
+                        >
+                          {tech}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                    <div>
-                      <div className="text-gray-900 dark:text-white">Tests passing</div>
-                      <div className="text-gray-500 dark:text-gray-400">4 hours ago</div>
+
+                  {/* Project Metrics */}
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">Metrics</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Files</span>
+                        <span className="text-gray-900 dark:text-white">{currentProject.metadata?.files_count || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                        <span className="text-gray-900 dark:text-white">{currentProject.progress || 0}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Last Activity</span>
+                        <span className="text-gray-900 dark:text-white">2h ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {rightPanelTab === 'agents' && (
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-3">Active Agents</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Developer Agent</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Designer Agent</span>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {rightPanelTab === 'memory' && (
+                <ContextMemoryManager projectId={projectId} />
+              )}
+
+              {rightPanelTab === 'flow' && (
+                <FlowStateOptimizer projectId={projectId} />
+              )}
+
+              {rightPanelTab === 'voice' && (
+                <VoiceCommandProcessor 
+                  projectId={projectId} 
+                  onCommand={handleVoiceCommand}
+                />
+              )}
+
+              {rightPanelTab === 'activity' && (
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-3">Recent Activity</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                      <div>
+                        <div className="text-gray-900 dark:text-white">Updated components</div>
+                        <div className="text-gray-500 dark:text-gray-400">2 hours ago</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div>
+                        <div className="text-gray-900 dark:text-white">Tests passing</div>
+                        <div className="text-gray-500 dark:text-gray-400">4 hours ago</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Smart Suggestions Panel */}
+        <SmartSuggestionsPanel 
+          isOpen={showSmartSuggestions}
+          onToggle={() => setShowSmartSuggestions(!showSmartSuggestions)}
+          projectId={projectId}
+        />
       </div>
     </div>
   )
