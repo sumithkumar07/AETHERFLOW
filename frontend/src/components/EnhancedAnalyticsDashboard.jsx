@@ -4,7 +4,7 @@ import {
   ChartBarIcon,
   UsersIcon,
   RocketLaunchIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
