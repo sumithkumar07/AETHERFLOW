@@ -35,7 +35,10 @@ import RealTimeCollaboration from '../components/RealTimeCollaboration'
 import SmartErrorPrevention from '../components/SmartErrorPrevention'
 import ContextualLearningAssistant from '../components/ContextualLearningAssistant'
 import VoiceCodeReview from '../components/VoiceCodeReview'
-import CollaborationIndicators from '../components/CollaborationIndicators'
+import DatabaseManager from '../components/DatabaseManager'
+import ContainerManager from '../components/ContainerManager'
+import GestureNavigation from '../components/GestureNavigation'
+import EnhancedVoiceToCode from '../components/EnhancedVoiceToCode'
 import toast from 'react-hot-toast'
 
 const IndividualProject = () => {
