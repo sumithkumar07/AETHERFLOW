@@ -838,12 +838,23 @@ class BackendTester:
         
         start_time = time.time()
         
-        # Run all test suites
+        # Run core test suites
         self.test_health_endpoints()
         self.test_authentication_system()
         self.test_ai_chat_integration()
         self.test_project_management()
         self.test_template_system()
+        
+        # Run advanced feature tests (as requested in review)
+        self.test_multi_agent_capabilities()
+        self.test_advanced_ai_features()
+        self.test_enterprise_analytics_performance()
+        self.test_collaboration_workflow_engine()
+        self.test_security_compliance()
+        self.test_advanced_services_integration()
+        self.test_cutting_edge_features()
+        
+        # Run existing tests
         self.test_enterprise_features()
         self.test_agents_system()
         self.test_integrations_marketplace()
