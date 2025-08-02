@@ -39,13 +39,11 @@ msgpack>=1.0.5
 # Enhanced security and monitoring
 python-multipart>=0.0.6
 slowapi>=0.1.9
-python-prometheus-client>=0.17.0
+prometheus-client>=0.17.0
 
-# AI and ML enhancements
-torch>=2.0.0
-transformers>=4.30.0
-sentence-transformers>=2.2.0
+# AI and ML enhancements - lightweight versions for development
+torch>=2.0.0,<2.1.0
+transformers>=4.30.0,<4.32.0
 
 # Enhanced async capabilities
-asyncpg>=0.28.0
 aiofiles>=23.1.0
