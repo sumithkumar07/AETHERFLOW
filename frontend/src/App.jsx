@@ -146,7 +146,12 @@ function AppContent() {
         try {
           console.log('⚡ Initializing real-time services...')
           await realTimeAPI.initializeWebSocket('main-app-client')
-          setRealTimeConnected(true)
+          
+          // Initialize our enhanced real-time integration
+          console.log('🔗 Connecting to all backend services...')
+          const realTimeSuccess = await realTimeIntegration.initialize()
+          
+          setRealTimeConnected(realTimeSuccess)
           console.log('✅ Real-time services connected')
         } catch (error) {
           console.error('⚠️ Real-time services initialization failed:', error)
