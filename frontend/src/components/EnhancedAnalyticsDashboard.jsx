@@ -66,7 +66,7 @@ const EnhancedAnalyticsDashboard = () => {
             trend === 'up' ? 'text-green-600' : 'text-red-600'
           }`}>
             {trend === 'up' ? (
-              <TrendingUpIcon className="w-4 h-4" />
+              <ArrowTrendingUpIcon className="w-4 h-4" />
             ) : (
               <ArrowTrendingDownIcon className="w-4 h-4" />
             )}
