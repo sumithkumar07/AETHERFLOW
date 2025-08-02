@@ -356,6 +356,16 @@ function AppContent() {
               } 
             />
             <Route 
+              path="/workflows" 
+              element={
+                <ProtectedRoute>
+                  <SuspenseWrapper>
+                    <EnhancedWorkflowsPage />
+                  </SuspenseWrapper>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/projects/:projectId" 
               element={
                 <ProtectedRoute>
