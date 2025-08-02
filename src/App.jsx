@@ -17,6 +17,7 @@ const Templates = React.lazy(() => import('./pages/Templates'))
 const Integrations = React.lazy(() => import('./pages/Integrations'))
 const Settings = React.lazy(() => import('./pages/Settings'))
 const Profile = React.lazy(() => import('./pages/Profile'))
+const EnhancedFeaturesDemo = React.lazy(() => import('./components/EnhancedFeaturesDemo'))
 
 // Enhanced Protected Route component with better state management
 const ProtectedRoute = ({ children }) => {
