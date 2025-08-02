@@ -166,6 +166,9 @@ from routes.theme_intelligence import router as theme_intelligence_router
 from routes.project_migration import router as project_migration_router
 from routes.code_quality import router as code_quality_router
 from routes.workspace_optimization import router as workspace_optimization_router
+from routes.experimental_sandbox import router as experimental_sandbox_router
+from routes.visual_programming import router as visual_programming_router
+from routes.community_intelligence import router as community_intelligence_router
 
 app.include_router(search_router, prefix="/api", tags=["Global Search"])
 app.include_router(version_control_router, prefix="/api/version-control", tags=["Version Control"])
