@@ -13,6 +13,12 @@ from routes.projects import router as projects_router
 from routes.ai import router as ai_router
 from routes.templates import router as templates_router
 from routes.integrations import router as integrations_router
+
+# Import enhanced routes
+from routes.enhanced_ai_workflows import router as enhanced_ai_router
+from routes.real_time_collaboration import router as collaboration_router
+from routes.enhanced_project_lifecycle import router as lifecycle_router
+
 from models.database import init_db
 
 # Load environment variables
@@ -72,6 +78,11 @@ app.include_router(projects_router, prefix="/api/projects", tags=["Projects"])
 app.include_router(ai_router, prefix="/api/ai", tags=["AI"])
 app.include_router(templates_router, prefix="/api/templates", tags=["Templates"])
 app.include_router(integrations_router, prefix="/api/integrations", tags=["Integrations"])
+
+# Include enhanced routers
+app.include_router(enhanced_ai_router, prefix="/api/ai/enhanced", tags=["Enhanced AI Workflows"])
+app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Real-time Collaboration"])
+app.include_router(lifecycle_router, prefix="/api/projects", tags=["Enhanced Project Lifecycle"])
 
 @app.get("/")
 async def root():
