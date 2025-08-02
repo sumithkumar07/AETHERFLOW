@@ -143,6 +143,14 @@ const Home = () => {
               </Link>
               
               <Link
+                to="/demo"
+                className="btn-secondary text-lg px-8 py-4 flex items-center space-x-3 backdrop-blur-xl"
+              >
+                <SparklesIcon className="w-5 h-5" />
+                <span>Try Enhanced Features</span>
+              </Link>
+              
+              <Link
                 to="/templates"
                 className="btn-secondary text-lg px-8 py-4 flex items-center space-x-3 backdrop-blur-xl"
               >
