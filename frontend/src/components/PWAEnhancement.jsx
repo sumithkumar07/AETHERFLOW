@@ -7,7 +7,7 @@ import {
   CameraIcon,
   MapPinIcon,
   WifiIcon,
-  BatteryIcon,
+  Battery50Icon,
   CheckCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
