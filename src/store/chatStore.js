@@ -114,16 +114,15 @@ const useChatStore = create((set, get) => ({
   currentConversation: null,
   loading: false,
   error: null,
-  selectedModel: 'gpt-4.1-nano',
+  selectedModel: 'codellama:13b',
   selectedAgent: 'developer',
   
-  // Enhanced AI state
+  // Enhanced AI state for local models
   aiThinking: false,
   modelStats: {
-    'gpt-4.1-nano': { usage: 0, avgResponseTime: 0, successRate: 100 },
-    'claude-sonnet-4': { usage: 0, avgResponseTime: 0, successRate: 100 },
-    'gemini-2.5-flash': { usage: 0, avgResponseTime: 0, successRate: 100 },
-    'gpt-4': { usage: 0, avgResponseTime: 0, successRate: 100 }
+    'codellama:13b': { usage: 0, avgResponseTime: 0, successRate: 100 },
+    'llama3.1:8b': { usage: 0, avgResponseTime: 0, successRate: 100 },
+    'deepseek-coder:6.7b': { usage: 0, avgResponseTime: 0, successRate: 100 }
   },
   
   // Context and conversation history
