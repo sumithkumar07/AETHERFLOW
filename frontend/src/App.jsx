@@ -11,6 +11,8 @@ import InteractiveTour from './components/InteractiveTour'
 import PWAEnhancement from './components/PWAEnhancement'
 import { useAuthStore } from './store/authStore'
 import { useThemeStore } from './store/themeStore'
+import { useChatStore } from './store/chatStore'
+import { useProjectStore } from './store/projectStore'
 
 // NEW: Import Enterprise Architecture Provider
 // import { ArchitectureProvider } from './architecture'
@@ -92,6 +94,8 @@ const SuspenseWrapper = ({ children }) => (
 function AppContent() {
   const { isAuthenticated, isLoading, token, initialize, isInitialized: authInitialized } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
+  const { initializeModelsAndAgents } = useChatStore()
+  const { fetchProjects } = useProjectStore()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
@@ -127,6 +131,26 @@ function AppContent() {
           console.error('⚠️ Auth initialization failed or timed out:', error)
           // Continue anyway to prevent infinite loading
         }
+
+        // Initialize AI models and agents from backend
+        try {
+          console.log('🤖 Initializing AI models and agents...')
+          await initializeModelsAndAgents()
+          console.log('✅ AI models and agents initialized')
+        } catch (error) {
+          console.error('⚠️ AI initialization failed:', error)
+        }
+
+        // Load projects if authenticated
+        if (isAuthenticated) {
+          try {
+            console.log('📁 Loading user projects...')
+            await fetchProjects({ limit: 10 })
+            console.log('✅ Projects loaded')
+          } catch (error) {
+            console.error('⚠️ Projects loading failed:', error)
+          }
+        }
         
         // Check if user needs onboarding
         const hasSeenOnboarding = localStorage.getItem('ai-tempo-onboarding-complete')
@@ -148,7 +172,7 @@ function AppContent() {
     }
     
     initializeApp()
-  }, [initialize, initializeTheme, isAuthenticated])
+  }, [initialize, initializeTheme, initializeModelsAndAgents, fetchProjects, isAuthenticated])
 
   // Apply theme class to document
   useEffect(() => {
@@ -239,7 +263,31 @@ function AppContent() {
 
   // Show loading screen during initial app load
   if (!isInitialized) {
-    return <LoadingStates.FullScreen message="Initializing AI Tempo..." />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl animate-pulse-glow">
+            <LoadingStates.LoadingSpinner size="lg" color="white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Initializing AI Tempo
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Loading advanced AI capabilities...
+          </p>
+          <div className="flex space-x-2 justify-center">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
@@ -491,14 +539,17 @@ function AppContent() {
           className="sr-only"
         />
         
-        {/* Development overlay for debugging */}
+        {/* Development overlay for debugging - Enhanced */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono opacity-50 pointer-events-none">
-            Auth: {isAuthenticated ? '✅' : '❌'} | 
-            Loading: {isLoading ? '⏳' : '✅'} | 
-            App Init: {isInitialized ? '✅' : '⏳'} |
-            Auth Init: {authInitialized ? '✅' : '⏳'} |
-            Token: {token ? '✅' : '❌'}
+          <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-3 rounded-xl font-mono opacity-50 pointer-events-none max-w-xs">
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div>Auth: {isAuthenticated ? '✅' : '❌'}</div>
+              <div>Loading: {isLoading ? '⏳' : '✅'}</div>
+              <div>App Init: {isInitialized ? '✅' : '⏳'}</div>
+              <div>Auth Init: {authInitialized ? '✅' : '⏳'}</div>
+              <div>Token: {token ? '✅' : '❌'}</div>
+              <div>Theme: {theme}</div>
+            </div>
           </div>
         )}
       </div>
