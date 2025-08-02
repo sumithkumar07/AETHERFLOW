@@ -93,13 +93,17 @@ class BackendTester:
         # Test detailed health check
         response = self.make_request("GET", "/api/health")
         if response and response.status_code == 200:
-            data = response.json()
-            if "status" in data and "services" in data:
-                self.log_test("Detailed Health Check", "PASS", 
-                            f"Services: {data.get('services')}", response.status_code)
-            else:
+            try:
+                data = response.json()
+                if "status" in data and "services" in data:
+                    self.log_test("Detailed Health Check", "PASS", 
+                                f"Services: {data.get('services')}", response.status_code)
+                else:
+                    self.log_test("Detailed Health Check", "FAIL", 
+                                "Missing service status information", response.status_code)
+            except:
                 self.log_test("Detailed Health Check", "FAIL", 
-                            "Missing service status information", response.status_code)
+                            f"Non-JSON response: {response.text[:200]}", response.status_code)
         else:
             self.log_test("Detailed Health Check", "FAIL", 
                         "Health endpoint not accessible", response.status_code if response else None)
