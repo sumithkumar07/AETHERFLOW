@@ -15,14 +15,22 @@ import {
   PaintBrushIcon,
   EyeIcon,
   FolderTreeIcon,
-  WrenchScrewdriverIcon
+  WrenchScrewdriverIcon,
+  LightBulbIcon,
+  MicrophoneIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline'
 import { useProjectStore } from '../store/projectStore'
 import { useChatStore } from '../store/chatStore'
+import { useEnhancedProjectStore } from '../store/enhancedProjectStore'
 import LoadingStates from '../components/LoadingStates'
 import ChatMessage from '../components/ChatMessage'
 import ModelSelector from '../components/ModelSelector'
 import AgentSelector from '../components/AgentSelector'
+import SmartSuggestionsPanel from '../components/SmartSuggestionsPanel'
+import ContextMemoryManager from '../components/ContextMemoryManager'
+import VoiceCommandProcessor from '../components/VoiceCommandProcessor'
+import FlowStateOptimizer from '../components/FlowStateOptimizer'
 import toast from 'react-hot-toast'
 
 const IndividualProject = () => {
