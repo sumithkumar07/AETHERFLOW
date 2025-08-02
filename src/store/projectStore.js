@@ -264,28 +264,132 @@ const useProjectStore = create((set, get) => ({
     }
   },
 
-  fetchProjectMetrics: async (projectId) => {
+  // Enhanced AI-Powered Project Actions
+
+  generateProjectFile: async (projectId, fileRequest) => {
     try {
-      // This would integrate with analytics backend
-      const mockMetrics = {
-        filesCount: Math.floor(Math.random() * 50) + 10,
-        linesOfCode: Math.floor(Math.random() * 5000) + 1000,
-        testCoverage: Math.floor(Math.random() * 40) + 60,
-        buildTime: Math.floor(Math.random() * 120) + 30,
-        lastCommit: new Date(Date.now() - Math.random() * 86400000).toISOString()
+      set({ loading: true })
+      const response = await axios.post(`/api/projects/${projectId}/generate-file`, fileRequest)
+      
+      toast.success(`Generated file: ${fileRequest.path}`)
+      
+      // Refresh project files
+      await get().fetchProjectFiles(projectId)
+      
+      set({ loading: false })
+      return { success: true, file: response.data.file }
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to generate file'
+      set({ error: errorMessage, loading: false })
+      toast.error(errorMessage)
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  enhanceProjectWithAI: async (projectId, enhancementRequest) => {
+    try {
+      set({ loading: true })
+      const response = await axios.post(`/api/projects/${projectId}/ai-enhance`, enhancementRequest)
+      
+      toast.success('Project enhanced with AI!')
+      
+      // Refresh project data
+      await get().fetchProject(projectId)
+      await get().fetchProjectFiles(projectId)
+      
+      set({ loading: false })
+      return { success: true, enhancement: response.data }
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to enhance project'
+      set({ error: errorMessage, loading: false })
+      toast.error(errorMessage)
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  getAICodeReview: async (projectId) => {
+    try {
+      set({ loading: true })
+      const response = await axios.post(`/api/projects/${projectId}/code-review`)
+      
+      set({ loading: false })
+      return { success: true, review: response.data }
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to get code review'
+      set({ error: errorMessage, loading: false })
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  applyAIAutoFix: async (projectId, fixRequest) => {
+    try {
+      set({ loading: true })
+      const response = await axios.post(`/api/projects/${projectId}/auto-fix`, fixRequest)
+      
+      if (response.data.code_updated) {
+        toast.success('Auto-fix applied successfully!')
+        await get().fetchProjectFiles(projectId)
+      } else {
+        toast.success('Fix analysis completed')
+      }
+      
+      set({ loading: false })
+      return { success: true, fix: response.data }
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to apply auto-fix'
+      set({ error: errorMessage, loading: false })
+      toast.error(errorMessage)
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  createProjectFromTemplate: async (templateId, projectName) => {
+    try {
+      set({ loading: true, error: null })
+      const response = await axios.post(`/api/templates/${templateId}/use`, {
+        project_name: projectName
+      })
+      
+      const newProject = response.data.project
+      
+      // Enhanced project with computed fields
+      const enhancedProject = {
+        ...newProject,
+        progress: get().calculateProjectProgress(newProject),
+        lastActivityText: 'Created from template',
+        techStackDisplay: newProject.tech_stack?.slice(0, 3) || [],
+        statusColor: get().getStatusColor(newProject.status)
       }
       
       set(state => ({
-        projectMetrics: {
-          ...state.projectMetrics,
-          [projectId]: mockMetrics
-        }
+        projects: [enhancedProject, ...state.projects],
+        loading: false
       }))
       
-      return { success: true, metrics: mockMetrics }
+      toast.success(`Project created from template!`)
+      return { success: true, project: enhancedProject }
     } catch (error) {
-      return { success: false, error: 'Failed to fetch metrics' }
+      const errorMessage = error.response?.data?.detail || 'Failed to create project from template'
+      set({ error: errorMessage, loading: false })
+      toast.error(errorMessage)
+      return { success: false, error: errorMessage }
     }
+  },
+
+  getProjectPreviewUrl: (projectId) => {
+    // This would connect to the preview service
+    return `http://localhost:3001/preview/${projectId}`
+  },
+
+  // Real-time collaboration features
+  connectToProjectRoom: (projectId) => {
+    // This would connect to WebSocket for real-time updates
+    console.log(`Connecting to project room: ${projectId}`)
+  },
+
+  disconnectFromProjectRoom: (projectId) => {
+    // This would disconnect from WebSocket
+    console.log(`Disconnecting from project room: ${projectId}`)
   },
 
   // Utility Functions
