@@ -275,7 +275,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend UI/UX Implementation"
+    - "Experimental Sandbox Service"
+    - "Visual Programming Service" 
+    - "Community Intelligence Service"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
