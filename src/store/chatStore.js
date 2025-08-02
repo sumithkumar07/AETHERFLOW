@@ -48,47 +48,62 @@ const AI_MODELS = {
   }
 }
 
-// Enhanced agent configurations
+// Enhanced agent configurations for local AI models
 const AI_AGENTS = {
   developer: {
     name: 'Developer Agent',
     icon: '💻',
-    description: 'Expert in coding, debugging, and software architecture',
+    description: 'Expert in coding, debugging, and software architecture using CodeLlama',
     capabilities: ['Full-stack development', 'Code review', 'Architecture', 'Debugging'],
     prompt: 'You are an expert software developer with deep knowledge of modern programming languages, frameworks, and best practices.',
-    color: 'text-blue-600 dark:text-blue-400'
+    color: 'text-blue-600 dark:text-blue-400',
+    recommended_model: 'codellama:13b',
+    unlimited: true,
+    local: true
   },
   designer: {
     name: 'Designer Agent',
     icon: '🎨',
-    description: 'UI/UX design specialist with modern design principles',
+    description: 'UI/UX design specialist with modern design principles using LLaMA',
     capabilities: ['UI/UX Design', 'Design Systems', 'User Research', 'Prototyping'],
     prompt: 'You are a senior UI/UX designer with expertise in modern design principles, user experience, and design systems.',
-    color: 'text-purple-600 dark:text-purple-400'
+    color: 'text-purple-600 dark:text-purple-400',
+    recommended_model: 'llama3.1:8b',
+    unlimited: true,
+    local: true
   },
   tester: {
     name: 'QA Agent',
     icon: '🧪',
-    description: 'Quality assurance and testing specialist',
+    description: 'Quality assurance and testing specialist using CodeLlama',
     capabilities: ['Test Strategy', 'Automation', 'Bug Analysis', 'Performance Testing'],
     prompt: 'You are a senior QA engineer specializing in test automation, quality assurance, and comprehensive testing strategies.',
-    color: 'text-green-600 dark:text-green-400'
+    color: 'text-green-600 dark:text-green-400',
+    recommended_model: 'codellama:13b',
+    unlimited: true,
+    local: true
   },
   integrator: {
     name: 'Integration Agent',
     icon: '🔗',
-    description: 'Third-party integration and API specialist',
+    description: 'Third-party integration and API specialist using CodeLlama',
     capabilities: ['API Integration', 'Third-party Services', 'Data Migration', 'System Architecture'],
     prompt: 'You are an integration specialist with expertise in connecting systems, APIs, and third-party services.',
-    color: 'text-orange-600 dark:text-orange-400'
+    color: 'text-orange-600 dark:text-orange-400',
+    recommended_model: 'codellama:13b',
+    unlimited: true,
+    local: true
   },
   analyst: {
     name: 'Business Analyst',
     icon: '📊',
-    description: 'Business requirements and data analysis expert',
+    description: 'Business requirements and data analysis expert using LLaMA',
     capabilities: ['Requirements Analysis', 'Data Analysis', 'Process Optimization', 'Reporting'],
     prompt: 'You are a senior business analyst with expertise in requirements gathering, process optimization, and data-driven insights.',
-    color: 'text-indigo-600 dark:text-indigo-400'
+    color: 'text-indigo-600 dark:text-indigo-400',
+    recommended_model: 'llama3.1:8b',
+    unlimited: true,
+    local: true
   }
 }
 
