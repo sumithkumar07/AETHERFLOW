@@ -14,6 +14,7 @@ import { useThemeStore } from './store/themeStore'
 import { useChatStore } from './store/chatStore'
 import { useProjectStore } from './store/projectStore'
 import realTimeAPI from './services/realTimeAPI'
+import realTimeIntegration from './services/realTimeIntegration'
 
 // Import pages directly instead of lazy loading for debugging
 import Home from './pages/Home'
