@@ -262,7 +262,7 @@ class AIService:
         
         # 2025 enhanced responses based on agent type
         agent_responses = {
-            "developer": f"""🚀 **Aether AI Developer Response**
+            "developer": """🚀 **Aether AI Developer Response**
 
 I'll help you build that! Here's my analysis:
 
@@ -270,7 +270,7 @@ I'll help you build that! Here's my analysis:
 ```python
 # Enhanced 2025 implementation
 async def implement_solution():
-    # Your request: {message[:100]}...
+    # Your request: """ + message[:100] + """...
     # Using advanced AI-powered development patterns
     
     result = await optimize_with_ai()
