@@ -62,6 +62,13 @@ from services.community_intelligence import CommunityIntelligence
 from services.resource_optimizer import ResourceOptimizer
 from services.dependency_intelligence import DependencyIntelligence
 from services.pattern_intelligence import PatternIntelligence
+
+# Import new 5% gap completion services
+from services.video_explanation_service import VideoExplanationService, set_video_explanation_service
+from services.seo_service import SEOService, set_seo_service
+from services.i18n_service import I18nService, set_i18n_service
+from services.agent_marketplace_service import AgentMarketplaceService, set_agent_marketplace_service
+from services.presentation_service import PresentationService, set_presentation_service
 from routes.architectural_intelligence import set_architectural_intelligence_service
 from routes.smart_documentation import set_smart_documentation_service
 from routes.theme_intelligence import set_theme_intelligence_service
