@@ -13,10 +13,12 @@ const useProjectStore = create((set, get) => ({
   fetchProjects: async () => {
     try {
       set({ loading: true, error: null })
-      const response = await axios.get('/projects')
-      set({ projects: response.data, loading: false })
-      return { success: true, projects: response.data }
+      const response = await axios.get('/api/projects/')
+      const projects = response.data.projects || []
+      set({ projects, loading: false })
+      return { success: true, projects }
     } catch (error) {
+      console.error('Projects fetch error:', error)
       const errorMessage = error.response?.data?.detail || 'Failed to fetch projects'
       set({ error: errorMessage, loading: false })
       return { success: false, error: errorMessage }
