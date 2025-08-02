@@ -341,6 +341,30 @@ async def startup_event():
         except Exception as e:
             logger.warning(f"Workspace Intelligence initialization failed: {e}")
         
+        try:
+            # Initialize Experimental Sandbox
+            await experimental_sandbox.initialize()
+            set_experimental_sandbox_service(experimental_sandbox)
+            logger.info("✅ Experimental Sandbox initialized")
+        except Exception as e:
+            logger.warning(f"Experimental Sandbox initialization failed: {e}")
+        
+        try:
+            # Initialize Visual Programming
+            await visual_programming.initialize()
+            set_visual_programming_service(visual_programming)
+            logger.info("✅ Visual Programming initialized")
+        except Exception as e:
+            logger.warning(f"Visual Programming initialization failed: {e}")
+        
+        try:
+            # Initialize Community Intelligence
+            await community_intelligence.initialize()
+            set_community_intelligence_service(community_intelligence)
+            logger.info("✅ Community Intelligence initialized")
+        except Exception as e:
+            logger.warning(f"Community Intelligence initialization failed: {e}")
+        
         logger.info("🚀 AI Tempo Platform - ULTIMATE EDITION initialized with all cutting-edge features!")
         logger.info("🎯 15 Advanced Enhancement Features now active...")
         
