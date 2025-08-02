@@ -52,7 +52,7 @@ const Navigation = () => {
   const authenticatedNavigation = [
     // Main Features
     { name: 'AI Chat Hub', href: '/chat', icon: ChatBubbleLeftRightIcon, category: 'main', badge: 'AI' },
-    { name: 'Projects', href: '/projects', icon: FolderIcon, category: 'main' },
+    { name: 'AI Projects', href: '/projects', icon: FolderIcon, category: 'main', badge: 'ENHANCED' },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, category: 'main' },
     
     // Advanced AI Features
@@ -65,7 +65,7 @@ const Navigation = () => {
     
     // Collaboration & Workflows
     { name: 'Live Collaboration', href: '/collaboration', icon: UsersIcon, category: 'collaboration', badge: 'LIVE' },
-    { name: 'Workflow Engine', href: '/workflows', icon: AdjustmentsHorizontalIcon, category: 'collaboration' },
+    { name: 'Enhanced Workflows', href: '/workflows', icon: AdjustmentsHorizontalIcon, category: 'collaboration', badge: 'AI' },
     
     // Development Tools
     { name: 'Code Quality', href: '/code-quality', icon: BeakerIcon, category: 'development' },
