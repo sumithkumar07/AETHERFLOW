@@ -1,53 +1,15 @@
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { 
-  PlusIcon,
-  FolderIcon,
-  CodeBracketIcon,
-  RocketLaunchIcon,
-  EyeIcon,
-  TrashIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  PlayIcon,
-  Cog6ToothIcon
-} from '@heroicons/react/24/outline'
-import { useProjectStore } from '../store/projectStore'
-import { useAuthStore } from '../store/authStore'
-import toast from 'react-hot-toast'
+import React from 'react'
+import AIProjectManager from '../components/AIProjectManager'
 
 const Projects = () => {
-  const { projects, isLoading, selectProject, deleteProject, deployProject } = useProjectStore()
-  const { isAuthenticated, user } = useAuthStore()
-  const [selectedView, setSelectedView] = useState('grid')
-  const [filterStatus, setFilterStatus] = useState('all')
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
+      <AIProjectManager />
+    </div>
+  )
+}
 
-  const statusConfig = {
-    draft: { color: 'bg-gray-100 text-gray-800', icon: FolderIcon },
-    initializing: { color: 'bg-blue-100 text-blue-800', icon: Cog6ToothIcon },
-    ready: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },
-    building: { color: 'bg-yellow-100 text-yellow-800', icon: PlayIcon },
-    deploying: { color: 'bg-purple-100 text-purple-800', icon: RocketLaunchIcon },
-    deployed: { color: 'bg-emerald-100 text-emerald-800', icon: CheckCircleIcon },
-    error: { color: 'bg-red-100 text-red-800', icon: ExclamationCircleIcon }
-  }
-
-  const filteredProjects = projects.filter(project => {
-    if (filterStatus === 'all') return true
-    return project.status === filterStatus
-  })
-
-  const handleDeleteProject = async (projectId, projectName) => {
-    if (window.confirm(`Are you sure you want to delete "${projectName}"?`)) {
-      try {
-        deleteProject(projectId)
-        toast.success('Project deleted successfully')
-      } catch (error) {
-        toast.error('Failed to delete project')
-      }
-    }
+export default Projects
   }
 
   const handleDeployProject = async (projectId, projectName) => {
