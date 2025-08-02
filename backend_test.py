@@ -593,6 +593,11 @@ class BackendTester:
         self.test_integrations_marketplace()
         self.test_websocket_connection()
         
+        # Test the three new services
+        self.test_experimental_sandbox_service()
+        self.test_visual_programming_service()
+        self.test_community_intelligence_service()
+        
         end_time = time.time()
         duration = end_time - start_time
         
