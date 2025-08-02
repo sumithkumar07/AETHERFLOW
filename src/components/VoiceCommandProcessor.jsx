@@ -1,310 +1,355 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   MicrophoneIcon,
   StopIcon,
   SpeakerWaveIcon,
-  Cog6ToothIcon
+  SpeakerXMarkIcon
 } from '@heroicons/react/24/outline'
-import { useChatStore } from '../store/chatStore'
-import { useProjectStore } from '../store/projectStore'
 import toast from 'react-hot-toast'
 
-const VoiceCommandProcessor = ({ projectId, onCommand }) => {
+const VoiceCommandProcessor = ({ 
+  projectId, 
+  onCommand, 
+  className = '' 
+}) => {
   const [isListening, setIsListening] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [transcript, setTranscript] = useState('')
-  const [voiceEnabled, setVoiceEnabled] = useState(false)
-  const [confidence, setConfidence] = useState(0)
+  const [isSupported, setIsSupported] = useState(false)
+  const [volume, setVolume] = useState(0)
   
-  const { sendMessage } = useChatStore()
-  const { currentProject, updateProject } = useProjectStore()
-  const recognitionRef = useRef(null)
-  const synthRef = useRef(null)
+  const recognition = useRef(null)
+  const volumeAnalyzer = useRef(null)
+  const audioContext = useRef(null)
+
+  // Available voice commands
+  const commands = {
+    navigation: [
+      { pattern: /show (files|file structure|project files)/i, action: 'show_files' },
+      { pattern: /go to (chat|chat hub|projects)/i, action: 'chat_hub' },
+      { pattern: /open (settings|preferences)/i, action: 'open_settings' }
+    ],
+    project: [
+      { pattern: /create (new )?project/i, action: 'create_project' },
+      { pattern: /build (project|app)/i, action: 'build_project' },
+      { pattern: /deploy (project|app)/i, action: 'deploy_project' }
+    ],
+    ai: [
+      { pattern: /switch to (developer|designer|tester|integrator|analyst) agent/i, action: 'switch_agent' },
+      { pattern: /use (gpt|claude|gemini) model/i, action: 'switch_model' },
+      { pattern: /help me with (.+)/i, action: 'ai_help' }
+    ]
+  }
 
   useEffect(() => {
-    // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-      recognitionRef.current = new SpeechRecognition()
-      
-      recognitionRef.current.continuous = true
-      recognitionRef.current.interimResults = true
-      recognitionRef.current.lang = 'en-US'
-      
-      recognitionRef.current.onstart = () => {
+    // Check if Speech Recognition is supported
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    setIsSupported(!!SpeechRecognition)
+
+    if (SpeechRecognition) {
+      recognition.current = new SpeechRecognition()
+      recognition.current.continuous = false
+      recognition.current.interimResults = true
+      recognition.current.lang = 'en-US'
+
+      recognition.current.onstart = () => {
         setIsListening(true)
-        toast.success('Voice recognition started', { icon: '🎤' })
+        startVolumeMonitoring()
+        toast.success('Voice command activated', { icon: '🎤' })
       }
-      
-      recognitionRef.current.onend = () => {
-        setIsListening(false)
-      }
-      
-      recognitionRef.current.onresult = (event) => {
-        let finalTranscript = ''
-        let interimTranscript = ''
-        
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript
-            setConfidence(event.results[i][0].confidence)
-          } else {
-            interimTranscript += event.results[i][0].transcript
-          }
-        }
-        
-        setTranscript(finalTranscript || interimTranscript)
-        
-        if (finalTranscript) {
-          processVoiceCommand(finalTranscript)
+
+      recognition.current.onresult = (event) => {
+        const result = event.results[event.results.length - 1]
+        const transcript = result[0].transcript
+        setTranscript(transcript)
+
+        if (result.isFinal) {
+          processVoiceCommand(transcript)
         }
       }
-      
-      recognitionRef.current.onerror = (event) => {
+
+      recognition.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error)
         setIsListening(false)
-        toast.error('Voice recognition error')
+        setIsProcessing(false)
+        stopVolumeMonitoring()
+        
+        if (event.error === 'not-allowed') {
+          toast.error('Microphone access denied')
+        } else {
+          toast.error('Voice recognition error')
+        }
       }
-      
-      setVoiceEnabled(true)
-    }
 
-    // Initialize speech synthesis
-    if ('speechSynthesis' in window) {
-      synthRef.current = window.speechSynthesis
+      recognition.current.onend = () => {
+        setIsListening(false)
+        setIsProcessing(false)
+        setTranscript('')
+        stopVolumeMonitoring()
+      }
     }
 
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
+      if (recognition.current) {
+        recognition.current.abort()
       }
+      stopVolumeMonitoring()
     }
   }, [])
 
+  const startVolumeMonitoring = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      audioContext.current = new (window.AudioContext || window.webkitAudioContext)()
+      
+      const analyser = audioContext.current.createAnalyser()
+      const microphone = audioContext.current.createMediaStreamSource(stream)
+      const dataArray = new Uint8Array(analyser.frequencyBinCount)
+      
+      analyser.fftSize = 256
+      microphone.connect(analyser)
+      
+      const updateVolume = () => {
+        analyser.getByteFrequencyData(dataArray)
+        const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length
+        setVolume(average)
+        
+        if (isListening) {
+          requestAnimationFrame(updateVolume)
+        }
+      }
+      
+      updateVolume()
+      volumeAnalyzer.current = { stream, analyser, microphone }
+    } catch (error) {
+      console.error('Failed to access microphone:', error)
+    }
+  }
+
+  const stopVolumeMonitoring = () => {
+    if (volumeAnalyzer.current) {
+      volumeAnalyzer.current.stream.getTracks().forEach(track => track.stop())
+      volumeAnalyzer.current = null
+    }
+    if (audioContext.current) {
+      audioContext.current.close()
+      audioContext.current = null
+    }
+    setVolume(0)
+  }
+
   const startListening = () => {
-    if (recognitionRef.current && !isListening) {
+    if (!isSupported) {
+      toast.error('Voice commands not supported in this browser')
+      return
+    }
+
+    if (recognition.current && !isListening) {
       setTranscript('')
-      recognitionRef.current.start()
+      recognition.current.start()
     }
   }
 
   const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop()
+    if (recognition.current && isListening) {
+      recognition.current.stop()
     }
   }
 
-  const processVoiceCommand = async (command) => {
+  const processVoiceCommand = async (transcript) => {
     setIsProcessing(true)
     
     try {
-      const lowerCommand = command.toLowerCase().trim()
-      
-      // Quick commands that don't require AI
-      const quickCommands = await processQuickCommands(lowerCommand)
-      if (quickCommands.handled) {
-        setIsProcessing(false)
-        return
+      const lowerTranscript = transcript.toLowerCase()
+      let commandFound = false
+
+      // Check all command categories
+      for (const [category, categoryCommands] of Object.entries(commands)) {
+        for (const command of categoryCommands) {
+          const match = transcript.match(command.pattern)
+          if (match) {
+            const commandData = {
+              type: category,
+              action: command.action,
+              transcript,
+              match: match[1] || null // Capture group if exists
+            }
+            
+            await onCommand(commandData)
+            toast.success(`Command executed: ${command.action}`, { icon: '✓' })
+            commandFound = true
+            break
+          }
+        }
+        if (commandFound) break
       }
-      
-      // AI-powered commands
-      await processAICommand(command)
-      
+
+      if (!commandFound) {
+        // Fallback: treat as AI query
+        if (onCommand) {
+          await onCommand({
+            type: 'ai_query',
+            action: 'send_message',
+            transcript,
+            message: transcript
+          })
+          toast.success('Voice message sent to AI', { icon: '🤖' })
+        }
+      }
     } catch (error) {
       console.error('Voice command processing error:', error)
       toast.error('Failed to process voice command')
     } finally {
       setIsProcessing(false)
-      setTranscript('')
     }
   }
 
-  const processQuickCommands = async (command) => {
-    // Deploy commands
-    if (command.includes('deploy') && (command.includes('staging') || command.includes('production'))) {
-      const environment = command.includes('production') ? 'production' : 'staging'
-      toast.loading(`Deploying to ${environment}...`)
-      
-      // Simulate deployment
-      setTimeout(() => {
-        toast.success(`Deployed to ${environment}!`)
-        speak(`Successfully deployed to ${environment}`)
-      }, 2000)
-      
-      return { handled: true }
-    }
-    
-    // Test commands
-    if (command.includes('run tests') || command.includes('test the app')) {
-      toast.loading('Running tests...')
-      
-      setTimeout(() => {
-        toast.success('All tests passed!')
-        speak('All tests are passing')
-      }, 1500)
-      
-      return { handled: true }
-    }
-    
-    // Navigation commands
-    if (command.includes('show me') && command.includes('files')) {
-      // Trigger file explorer
-      onCommand?.({ type: 'navigation', action: 'show_files' })
-      speak('Showing project files')
-      return { handled: true }
-    }
-    
-    if (command.includes('go to') && command.includes('chat hub')) {
-      onCommand?.({ type: 'navigation', action: 'chat_hub' })
-      speak('Navigating to chat hub')
-      return { handled: true }
-    }
-    
-    // Project status commands
-    if (command.includes('project status') || command.includes('how is') && command.includes('project')) {
-      const status = currentProject?.status || 'unknown'
-      const progress = currentProject?.progress || 0
-      speak(`Project status is ${status}, ${progress} percent complete`)
-      return { handled: true }
-    }
-    
-    return { handled: false }
-  }
-
-  const processAICommand = async (command) => {
-    // Enhance command with voice context
-    const enhancedCommand = `[Voice Command] ${command}`
-    
-    const result = await sendMessage({
-      content: enhancedCommand,
-      projectId: projectId,
-      model: 'gpt-4.1-nano', // Use fastest model for voice
-      agent: 'developer'
-    })
-    
-    if (result.success) {
-      toast.success('Voice command processed')
-      
-      // Optionally speak the response
-      if (result.message?.content && result.message.content.length < 200) {
-        speak(result.message.content.replace(/[*_`]/g, '')) // Remove markdown
-      }
-    }
-  }
-
-  const speak = (text) => {
-    if (synthRef.current && text) {
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.rate = 0.9
-      utterance.pitch = 1
-      utterance.volume = 0.8
-      
-      synthRef.current.speak(utterance)
-    }
-  }
-
-  const getVoiceCommands = () => [
-    { command: 'Deploy to staging', description: 'Deploy your project to staging environment' },
-    { command: 'Deploy to production', description: 'Deploy your project to production' },
-    { command: 'Run tests', description: 'Execute all project tests' },
-    { command: 'Show me the files', description: 'Open file explorer' },
-    { command: 'Project status', description: 'Get current project status' },
-    { command: 'Help me with...', description: 'Ask AI for assistance' },
-    { command: 'Create a component', description: 'Generate new component' },
-    { command: 'Fix the error', description: 'Debug current issues' }
-  ]
-
-  if (!voiceEnabled) {
+  if (!isSupported) {
     return (
-      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-        <p className="text-sm text-yellow-700 dark:text-yellow-300">
-          Voice commands are not supported in this browser.
+      <div className={`text-center p-4 ${className}`}>
+        <SpeakerXMarkIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Voice commands not supported
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center space-x-2">
+        <MicrophoneIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+          Voice Commands
+        </h3>
+      </div>
+
       {/* Voice Control Interface */}
-      <div className="flex items-center justify-center space-x-4">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={isListening ? stopListening : startListening}
-          disabled={isProcessing}
-          className={`p-4 rounded-full transition-all duration-200 ${
-            isListening
-              ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
-          } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {isListening ? (
-            <StopIcon className="w-6 h-6" />
-          ) : (
-            <MicrophoneIcon className="w-6 h-6" />
-          )}
-        </motion.button>
-        
+      <div className="space-y-4">
+        {/* Main Control Button */}
+        <div className="flex justify-center">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={isListening ? stopListening : startListening}
+            disabled={isProcessing}
+            className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 ${
+              isListening
+                ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg'
+                : isProcessing
+                ? 'bg-yellow-500 text-white cursor-not-allowed'
+                : 'bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg'
+            }`}
+          >
+            {isListening ? (
+              <StopIcon className="w-8 h-8" />
+            ) : isProcessing ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+              />
+            ) : (
+              <MicrophoneIcon className="w-8 h-8" />
+            )}
+
+            {/* Volume visualization */}
+            {isListening && (
+              <motion.div
+                className="absolute inset-0 rounded-full border-4 border-red-300"
+                animate={{ 
+                  scale: 1 + (volume / 255) * 0.5,
+                  opacity: 0.3 + (volume / 255) * 0.7
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              />
+            )}
+          </motion.button>
+        </div>
+
+        {/* Status Text */}
         <div className="text-center">
           <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {isProcessing ? 'Processing...' : isListening ? 'Listening...' : 'Voice Commands'}
+            {isListening 
+              ? 'Listening...' 
+              : isProcessing 
+              ? 'Processing...' 
+              : 'Click to start voice command'
+            }
           </p>
-          {confidence > 0 && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Confidence: {Math.round(confidence * 100)}%
-            </p>
-          )}
         </div>
-      </div>
 
-      {/* Live Transcript */}
-      {transcript && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
-        >
-          <p className="text-sm text-blue-700 dark:text-blue-300">
-            <span className="font-medium">Heard: </span>
-            {transcript}
-          </p>
-        </motion.div>
-      )}
-
-      {/* Voice Commands Help */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
-          <SpeakerWaveIcon className="w-4 h-4 mr-2" />
-          Available Voice Commands
-        </h4>
-        <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-          {getVoiceCommands().map((cmd, index) => (
-            <div
-              key={index}
-              className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700"
+        {/* Live Transcript */}
+        <AnimatePresence>
+          {transcript && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700"
             >
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                "{cmd.command}"
+              <div className="flex items-center space-x-2 mb-2">
+                <SpeakerWaveIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                  Transcript:
+                </span>
+              </div>
+              <p className="text-sm text-purple-800 dark:text-purple-200">
+                "{transcript}"
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                {cmd.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Processing Indicator */}
-      {isProcessing && (
-        <div className="flex items-center justify-center p-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-          <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-            Processing voice command...
+        {/* Command Examples */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            Try these commands:
+          </h4>
+          
+          <div className="space-y-2">
+            {[
+              { category: 'Navigation', commands: ['Show files', 'Go to chat hub'] },
+              { category: 'Project', commands: ['Create new project', 'Build project'] },
+              { category: 'AI', commands: ['Switch to developer agent', 'Help me with authentication'] }
+            ].map((group) => (
+              <div key={group.category} className="text-xs">
+                <span className="font-medium text-gray-600 dark:text-gray-400">
+                  {group.category}:
+                </span>
+                <div className="ml-2 space-y-1">
+                  {group.commands.map((command) => (
+                    <div key={command} className="text-gray-500 dark:text-gray-500">
+                      • "{command}"
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Status Indicator */}
+        <div className="flex items-center justify-center space-x-2 text-xs">
+          <div className={`w-2 h-2 rounded-full ${
+            isListening 
+              ? 'bg-red-500 animate-pulse' 
+              : isProcessing
+              ? 'bg-yellow-500 animate-pulse'
+              : 'bg-green-500'
+          }`} />
+          <span className="text-gray-500 dark:text-gray-400">
+            {isListening 
+              ? 'Active' 
+              : isProcessing 
+              ? 'Processing' 
+              : 'Ready'
+            }
           </span>
         </div>
-      )}
+      </div>
     </div>
   )
 }

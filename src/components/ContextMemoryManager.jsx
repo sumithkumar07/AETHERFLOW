@@ -1,320 +1,290 @@
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  BookmarkIcon,
-  ClockIcon,
-  TagIcon,
-  MagnifyingGlassIcon,
+  DocumentTextIcon,
   TrashIcon,
-  ChatBubbleLeftRightIcon
+  PlusIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  ClockIcon,
+  TagIcon
 } from '@heroicons/react/24/outline'
-import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
-import { useChatStore } from '../store/chatStore'
+import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
-const ContextMemoryManager = ({ projectId }) => {
-  const { messages } = useChatStore()
-  const [bookmarkedMessages, setBookmarkedMessages] = useState([])
-  const [contextThreads, setContextThreads] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedThread, setSelectedThread] = useState(null)
+const ContextMemoryManager = ({ projectId, className = '' }) => {
+  const [memories, setMemories] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+  const [newMemory, setNewMemory] = useState('')
+  const [selectedTags, setSelectedTags] = useState([])
+
+  const availableTags = [
+    'important', 'bug', 'feature', 'idea', 'todo', 
+    'architecture', 'performance', 'security', 'ui-ux'
+  ]
 
   useEffect(() => {
-    loadBookmarkedMessages()
-    generateContextThreads()
-  }, [projectId, messages])
+    loadContextMemories()
+  }, [projectId])
 
-  const loadBookmarkedMessages = () => {
-    const saved = localStorage.getItem(`bookmarks_${projectId}`)
-    if (saved) {
-      setBookmarkedMessages(JSON.parse(saved))
-    }
-  }
-
-  const saveBookmarkedMessages = (bookmarks) => {
-    localStorage.setItem(`bookmarks_${projectId}`, JSON.stringify(bookmarks))
-    setBookmarkedMessages(bookmarks)
-  }
-
-  const generateContextThreads = () => {
-    if (messages.length < 2) return
-
-    const threads = []
-    let currentThread = []
-    let threadTopic = null
-
-    for (let i = 0; i < messages.length; i++) {
-      const message = messages[i]
-      
-      // Analyze message to determine if it starts a new context thread
-      const isNewTopic = analyzeTopicChange(message, messages[i - 1])
-      
-      if (isNewTopic && currentThread.length > 0) {
-        threads.push({
-          id: `thread_${threads.length}`,
-          topic: threadTopic,
-          messages: [...currentThread],
-          timestamp: currentThread[0].timestamp,
-          messageCount: currentThread.length
-        })
-        currentThread = []
-        threadTopic = null
+  const loadContextMemories = async () => {
+    setLoading(true)
+    
+    try {
+      // Simulate loading from localStorage or API
+      const savedMemories = localStorage.getItem(`context_memories_${projectId}`)
+      if (savedMemories) {
+        setMemories(JSON.parse(savedMemories))
+      } else {
+        // Create some demo memories
+        const demoMemories = [
+          {
+            id: 'mem_1',
+            content: 'User wants authentication with social login support (Google, GitHub)',
+            tags: ['important', 'feature', 'todo'],
+            created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+            priority: 'high',
+            status: 'active'
+          },
+          {
+            id: 'mem_2', 
+            content: 'Database schema needs optimization for user queries - consider indexing',
+            tags: ['performance', 'architecture'],
+            created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+            priority: 'medium',
+            status: 'active'
+          },
+          {
+            id: 'mem_3',
+            content: 'UI needs dark mode toggle and better mobile responsiveness',
+            tags: ['ui-ux', 'feature'],
+            created_at: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
+            priority: 'low',
+            status: 'active'
+          }
+        ]
+        setMemories(demoMemories)
+        localStorage.setItem(`context_memories_${projectId}`, JSON.stringify(demoMemories))
       }
-      
-      currentThread.push(message)
-      
-      // Extract topic from first user message in thread
-      if (!threadTopic && message.sender === 'user') {
-        threadTopic = extractTopic(message.content)
-      }
+    } catch (error) {
+      console.error('Failed to load context memories:', error)
+    } finally {
+      setLoading(false)
     }
-    
-    // Add the last thread
-    if (currentThread.length > 0) {
-      threads.push({
-        id: `thread_${threads.length}`,
-        topic: threadTopic || 'General Discussion',
-        messages: [...currentThread],
-        timestamp: currentThread[0].timestamp,
-        messageCount: currentThread.length
-      })
-    }
-
-    setContextThreads(threads.reverse()) // Most recent first
   }
 
-  const analyzeTopicChange = (currentMessage, previousMessage) => {
-    if (!previousMessage || !currentMessage) return false
+  const addMemory = async () => {
+    if (!newMemory.trim()) return
+
+    const memory = {
+      id: `mem_${Date.now()}`,
+      content: newMemory,
+      tags: selectedTags,
+      created_at: new Date().toISOString(),
+      priority: 'medium',
+      status: 'active'
+    }
+
+    const updatedMemories = [memory, ...memories]
+    setMemories(updatedMemories)
+    localStorage.setItem(`context_memories_${projectId}`, JSON.stringify(updatedMemories))
     
-    // Simple topic change detection based on keywords
-    const topicKeywords = [
-      'help me', 'how do i', 'create', 'build', 'implement', 
-      'add', 'setup', 'configure', 'debug', 'fix', 'deploy'
-    ]
-    
-    const currentHasKeywords = topicKeywords.some(keyword => 
-      currentMessage.content.toLowerCase().includes(keyword)
+    setNewMemory('')
+    setSelectedTags([])
+    toast.success('Context memory added')
+  }
+
+  const deleteMemory = async (memoryId) => {
+    const updatedMemories = memories.filter(m => m.id !== memoryId)
+    setMemories(updatedMemories)
+    localStorage.setItem(`context_memories_${projectId}`, JSON.stringify(updatedMemories))
+    toast.success('Memory deleted')
+  }
+
+  const toggleMemoryStatus = async (memoryId) => {
+    const updatedMemories = memories.map(m => 
+      m.id === memoryId 
+        ? { ...m, status: m.status === 'active' ? 'archived' : 'active' }
+        : m
     )
-    
-    const isLongGap = new Date(currentMessage.timestamp) - new Date(previousMessage.timestamp) > 300000 // 5 minutes
-    
-    return currentHasKeywords || isLongGap
+    setMemories(updatedMemories)
+    localStorage.setItem(`context_memories_${projectId}`, JSON.stringify(updatedMemories))
   }
 
-  const extractTopic = (content) => {
-    const firstSentence = content.split('.')[0].split('?')[0]
-    if (firstSentence.length > 50) {
-      return firstSentence.substring(0, 47) + '...'
-    }
-    return firstSentence
+  const toggleTag = (tag) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    )
   }
 
-  const bookmarkMessage = (messageId) => {
-    const message = messages.find(msg => msg.id === messageId)
-    if (!message) return
-
-    const isBookmarked = bookmarkedMessages.some(bm => bm.id === messageId)
-    
-    if (isBookmarked) {
-      const updated = bookmarkedMessages.filter(bm => bm.id !== messageId)
-      saveBookmarkedMessages(updated)
-      toast.success('Bookmark removed')
-    } else {
-      const bookmark = {
-        id: messageId,
-        content: message.content,
-        timestamp: message.timestamp,
-        sender: message.sender,
-        topic: extractTopic(message.content)
-      }
-      saveBookmarkedMessages([...bookmarkedMessages, bookmark])
-      toast.success('Message bookmarked')
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'border-red-500 bg-red-50 dark:bg-red-900/20'
+      case 'medium': return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+      case 'low': return 'border-green-500 bg-green-50 dark:bg-green-900/20'
+      default: return 'border-gray-500 bg-gray-50 dark:bg-gray-800'
     }
   }
 
-  const isMessageBookmarked = (messageId) => {
-    return bookmarkedMessages.some(bm => bm.id === messageId)
-  }
-
-  const removeBookmark = (bookmarkId) => {
-    const updated = bookmarkedMessages.filter(bm => bm.id !== bookmarkId)
-    saveBookmarkedMessages(updated)
-    toast.success('Bookmark removed')
-  }
-
-  const filteredBookmarks = bookmarkedMessages.filter(bookmark =>
-    bookmark.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bookmark.topic.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const jumpToMessage = (messageId) => {
-    const messageElement = document.getElementById(`message-${messageId}`)
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      messageElement.classList.add('highlight-message')
-      setTimeout(() => {
-        messageElement.classList.remove('highlight-message')
-      }, 2000)
+  const getTagColor = (tag) => {
+    const colors = {
+      important: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      bug: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+      feature: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+      idea: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+      todo: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      architecture: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
+      performance: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
+      security: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+      'ui-ux': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300'
     }
+    return colors[tag] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
   }
+
+  const visibleMemories = showAll ? memories : memories.slice(0, 3)
+  const activeMemories = visibleMemories.filter(m => m.status === 'active')
 
   return (
-    <div className="space-y-6">
-      {/* Context Threads */}
-      <div>
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
-          <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
-          Conversation Threads
-        </h3>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {contextThreads.map((thread) => (
-            <motion.button
-              key={thread.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              onClick={() => setSelectedThread(selectedThread === thread.id ? null : thread.id)}
-              className={`w-full p-3 rounded-lg border text-left transition-all duration-200 ${
-                selectedThread === thread.id
-                  ? 'border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/20'
-                  : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+    <div className={`space-y-4 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <DocumentTextIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Context Memory
+          </h3>
+        </div>
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+        >
+          {showAll ? <EyeSlashIcon className="w-3 h-3" /> : <EyeIcon className="w-3 h-3" />}
+          <span>{showAll ? 'Show Less' : 'Show All'}</span>
+        </button>
+      </div>
+
+      {/* Add Memory Form */}
+      <div className="space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <textarea
+          value={newMemory}
+          onChange={(e) => setNewMemory(e.target.value)}
+          placeholder="Add important context or notes..."
+          rows={2}
+          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+        />
+        
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1">
+          {availableTags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => toggleTag(tag)}
+              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                selectedTags.includes(tag)
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">
-                    {thread.topic}
-                  </h4>
-                  <div className="flex items-center mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    <ClockIcon className="w-3 h-3 mr-1" />
-                    <span>{new Date(thread.timestamp).toLocaleTimeString()}</span>
-                    <span className="ml-2">• {thread.messageCount} messages</span>
-                  </div>
-                </div>
-              </div>
-              
-              {selectedThread === thread.id && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"
-                >
-                  <div className="space-y-1">
-                    {thread.messages.slice(-3).map((msg, idx) => (
-                      <div key={idx} className="text-xs">
-                        <span className={msg.sender === 'user' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}>
-                          {msg.sender === 'user' ? 'You: ' : 'AI: '}
-                        </span>
-                        <span className="text-gray-600 dark:text-gray-300">
-                          {msg.content.length > 60 ? msg.content.substring(0, 60) + '...' : msg.content}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </motion.button>
+              {tag}
+            </button>
           ))}
         </div>
+        
+        <button
+          onClick={addMemory}
+          disabled={!newMemory.trim()}
+          className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm rounded-lg transition-colors"
+        >
+          <PlusIcon className="w-4 h-4" />
+          <span>Add to Memory</span>
+        </button>
       </div>
 
-      {/* Bookmarked Messages */}
-      <div>
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
-          <BookmarkIcon className="w-4 h-4 mr-2" />
-          Bookmarked Messages ({bookmarkedMessages.length})
-        </h3>
-        
-        {/* Search */}
-        <div className="relative mb-3">
-          <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search bookmarks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      {/* Memory List */}
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-700 h-16 rounded-lg"></div>
+          ))}
         </div>
-
-        {/* Bookmarks List */}
-        <div className="space-y-2 max-h-64 overflow-y-auto">
-          {filteredBookmarks.length > 0 ? (
-            filteredBookmarks.map((bookmark) => (
+      ) : (
+        <div className="space-y-2">
+          <AnimatePresence>
+            {activeMemories.map((memory, index) => (
               <motion.div
-                key={bookmark.id}
-                initial={{ opacity: 0, y: 5 }}
+                key={memory.id}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ delay: index * 0.05 }}
+                className={`p-3 rounded-lg border-l-4 ${getPriorityColor(memory.priority)} group`}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between space-x-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center mb-1">
-                      <TagIcon className="w-3 h-3 text-yellow-600 dark:text-yellow-400 mr-1" />
-                      <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
-                        {bookmark.topic}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                      {bookmark.content}
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {memory.content}
                     </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(bookmark.timestamp).toLocaleString()}
-                      </span>
-                      <button
-                        onClick={() => jumpToMessage(bookmark.id)}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        Jump to message
-                      </button>
+                    
+                    {/* Tags */}
+                    {memory.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {memory.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className={`px-2 py-0.5 text-xs rounded-full ${getTagColor(tag)}`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Timestamp */}
+                    <div className="flex items-center space-x-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      <ClockIcon className="w-3 h-3" />
+                      <span>{format(new Date(memory.created_at), 'MMM d, HH:mm')}</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeBookmark(bookmark.id)}
-                    className="ml-2 p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                  >
-                    <TrashIcon className="w-3 h-3" />
-                  </button>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => toggleMemoryStatus(memory.id)}
+                      className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors"
+                      title={memory.status === 'active' ? 'Archive' : 'Activate'}
+                    >
+                      {memory.status === 'active' ? (
+                        <EyeSlashIcon className="w-4 h-4" />
+                      ) : (
+                        <EyeIcon className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => deleteMemory(memory.id)}
+                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors"
+                      title="Delete"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
-            ))
-          ) : (
-            <div className="text-center py-6">
-              <BookmarkIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {searchTerm ? 'No bookmarks match your search' : 'No bookmarked messages yet'}
-              </p>
-            </div>
-          )}
+            ))}
+          </AnimatePresence>
         </div>
-      </div>
-    </div>
-  )
-}
-
-// Enhanced ChatMessage component with bookmark functionality
-export const EnhancedChatMessage = ({ message, isUser, onBookmark }) => {
-  const [showActions, setShowActions] = useState(false)
-  
-  return (
-    <div 
-      id={`message-${message.id}`}
-      className="enhanced-message"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      {/* Original ChatMessage content with added bookmark button */}
-      {showActions && !isUser && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          onClick={() => onBookmark(message.id)}
-          className="absolute -right-2 -top-2 p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-md hover:shadow-lg transition-all"
-        >
-          <BookmarkIcon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-        </motion.button>
       )}
+
+      {/* Summary */}
+      <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+        {memories.length === 0 ? (
+          'No context memories yet'
+        ) : (
+          `${activeMemories.length} active memories • ${memories.filter(m => m.status === 'archived').length} archived`
+        )}
+      </div>
     </div>
   )
 }
