@@ -348,12 +348,12 @@ describe('Advanced Feature Tests', () => {
 - Performance benchmarks ✅
 - Security vulnerability scanning ✅""",
 
-            "integrator": f"""🔗 **Aether AI Integration Response**
+            "integrator": """🔗 **Aether AI Integration Response**
 
 I'll architect the perfect integration solution!
 
 **Integration Plan:**
-Your request: {message[:100]}...
+Your request: """ + message[:100] + """...
 
 **Architecture:**
 ```yaml
