@@ -318,7 +318,7 @@ const AdvancedPluginMarketplace = ({ className = '' }) => {
                   </>
                 ) : (
                   <>
-                    <DownloadIcon className="w-4 h-4" />
+                    <ArrowDownTrayIcon className="w-4 h-4" />
                     <span>Install</span>
                   </>
                 )}
