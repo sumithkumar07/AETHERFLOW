@@ -320,12 +320,12 @@ Perfect! I'll create a stunning design for your request.
 - Voice interaction ready ✅
 - Real-time collaborative editing ✅""",
 
-            "tester": f"""🧪 **Aether AI QA Response**
+            "tester": """🧪 **Aether AI QA Response**
 
 Excellent! I'll create comprehensive tests for your functionality.
 
 **Testing Strategy:**
-Your request: {message[:100]}...
+Your request: """ + message[:100] + """...
 
 **Test Implementation:**
 ```javascript
