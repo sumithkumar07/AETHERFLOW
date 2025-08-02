@@ -5,7 +5,7 @@ import {
   UsersIcon,
   RocketLaunchIcon,
   TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   CpuChipIcon,
