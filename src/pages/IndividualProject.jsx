@@ -138,7 +138,10 @@ const IndividualProject = () => {
     { id: 'agents', name: 'Active Agents', icon: UsersIcon },
     { id: 'metrics', name: 'Project Metrics', icon: ChartBarIcon },
     { id: 'integrations', name: 'Integrations', icon: CogIcon },
-    { id: 'activity', name: 'Recent Activity', icon: EyeIcon }
+    { id: 'activity', name: 'Recent Activity', icon: EyeIcon },
+    { id: 'memory', name: 'Context Memory', icon: DocumentTextIcon },
+    { id: 'flow', name: 'Flow State', icon: BoltIcon },
+    { id: 'voice', name: 'Voice Commands', icon: MicrophoneIcon }
   ]
 
   if (projectLoading) {
