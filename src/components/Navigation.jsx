@@ -153,6 +153,72 @@ const Navigation = () => {
                 </Link>
               )
             })}
+
+            {/* Advanced Features Dropdown */}
+            {isAuthenticated && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsAdvancedDropdownOpen(!isAdvancedDropdownOpen)}
+                  className="relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                >
+                  <BeakerIcon className="w-4 h-4" />
+                  <span>Advanced</span>
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform ${isAdvancedDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isAdvancedDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full mt-2 right-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                    >
+                      {advancedFeatures.map((feature) => {
+                        const Icon = feature.icon
+                        return (
+                          <Link
+                            key={feature.name}
+                            to={feature.href}
+                            onClick={() => setIsAdvancedDropdownOpen(false)}
+                            className="flex items-start space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                          >
+                            <Icon className="w-5 h-5 mt-0.5 text-blue-600 dark:text-blue-400" />
+                            <div>
+                              <div className="font-medium">{feature.name}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{feature.description}</div>
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Settings Link */}
+            {isAuthenticated && (
+              <Link
+                to="/settings"
+                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isActivePath('/settings')
+                    ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                }`}
+              >
+                <CogIcon className="w-4 h-4" />
+                <span>Settings</span>
+                {isActivePath('/settings') && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-lg -z-10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </Link>
+            )}
           </div>
 
           {/* User Actions */}
