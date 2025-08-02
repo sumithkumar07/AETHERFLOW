@@ -33,6 +33,20 @@ const Navigation = () => {
   const { theme, toggleTheme } = useThemeStore()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAdvancedDropdownOpen, setIsAdvancedDropdownOpen] = useState(false)
+  
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isAdvancedDropdownOpen && !event.target.closest('.advanced-dropdown')) {
+        setIsAdvancedDropdownOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isAdvancedDropdownOpen])
 
   const handleLogout = async () => {
     await logout()
