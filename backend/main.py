@@ -184,6 +184,7 @@ app.include_router(template_generation_router, prefix="/api/template-generation"
 app.include_router(predictive_ui_router, prefix="/api/predictive-ui", tags=["Predictive User Interface"])
 app.include_router(enhanced_integrations_router, prefix="/api/enhanced-integrations", tags=["Enhanced Integrations"])
 app.include_router(voice_code_review_router, prefix="/api/voice-review", tags=["Voice Code Review"])
+app.include_router(enhanced_features_router, prefix="/api/enhanced", tags=["Enhanced Features"])
 
 # Cutting-Edge Features Routes
 app.include_router(architectural_intelligence_router, prefix="/api/architectural-intelligence", tags=["Architectural Intelligence"])
