@@ -18,11 +18,16 @@ import {
   WrenchScrewdriverIcon,
   LightBulbIcon,
   MicrophoneIcon,
-  BoltIcon
+  BoltIcon,
+  RocketLaunchIcon,
+  BuildingStorefrontIcon,
+  CircleStackIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useProjectStore } from '../store/projectStore'
 import { useChatStore } from '../store/chatStore'
 import { useEnhancedProjectStore } from '../store/enhancedProjectStore'
+import { useAdvancedFeaturesStore } from '../store/advancedFeaturesStore'
 import LoadingStates from '../components/LoadingStates'
 import ChatMessage from '../components/ChatMessage'
 import ModelSelector from '../components/ModelSelector'
@@ -36,23 +41,49 @@ import toast from 'react-hot-toast'
 const IndividualProject = () => {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { currentProject, fetchProject, loading: projectLoading } = useProjectStore()
+  
+  // Core stores
+  const { 
+    currentProject, 
+    fetchProject, 
+    loading: projectLoading,
+    buildProject,
+    deployProject,
+    fetchProjectFiles,
+    projectMetrics,
+    buildLogs,
+    deploymentStatus
+  } = useProjectStore()
+  
   const { 
     messages, 
     loading: chatLoading, 
     sendMessage, 
     fetchMessages,
     selectedModel,
-    selectedAgent
+    selectedAgent,
+    getSmartSuggestions,
+    analyzeCode,
+    generateProjectInsights
   } = useChatStore()
   
-  // Enhanced features state
+  // Enhanced features store
   const { 
     initializeEnhancedFeatures, 
     trackDevelopmentPattern,
     updateContextAwareness,
     getEnhancedProjectData
   } = useEnhancedProjectStore()
+  
+  // Advanced features store
+  const {
+    fetchAnalytics,
+    initializeVoiceInterface,
+    fetchWorkflows,
+    analyzeArchitecture,
+    fetchAdaptiveThemes,
+    analyzePerformance
+  } = useAdvancedFeaturesStore()
   
   const [message, setMessage] = useState('')
   const [activePanel, setActivePanel] = useState('structure')
@@ -62,17 +93,31 @@ const IndividualProject = () => {
   const [showSmartSuggestions, setShowSmartSuggestions] = useState(false)
   const [showVoiceCommands, setShowVoiceCommands] = useState(false)
   const [adaptiveMode, setAdaptiveMode] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
 
+  // Initialize everything when project loads
   useEffect(() => {
     if (projectId) {
+      // Core initialization
       fetchProject(projectId)
       fetchMessages(projectId)
       
-      // Initialize enhanced features
+      // Enhanced features initialization
       initializeEnhancedFeatures(projectId)
       updateContextAwareness('project_workspace', { projectId })
+      
+      // Advanced features initialization
+      fetchAnalytics(projectId)
+      initializeVoiceInterface()
+      fetchWorkflows()
+      analyzeArchitecture(projectId)
+      fetchAdaptiveThemes()
+      analyzePerformance(projectId)
+      
+      // Generate project insights
+      generateProjectInsights(projectId)
     }
-  }, [projectId, fetchProject, fetchMessages, initializeEnhancedFeatures, updateContextAwareness])
+  }, [projectId])
 
   // Track user interactions for flow state analysis
   useEffect(() => {
@@ -111,26 +156,78 @@ const IndividualProject = () => {
     }
   }
 
-  const handleVoiceCommand = (commandData) => {
-    switch (commandData.type) {
-      case 'navigation':
-        if (commandData.action === 'show_files') {
-          setActivePanel('structure')
-        } else if (commandData.action === 'chat_hub') {
-          navigate('/chat')
-        }
+  const handleVoiceCommand = async (commandData) => {
+    switch (commandData.action) {
+      case 'show_files':
+        setActivePanel('structure')
+        await fetchProjectFiles(projectId)
+        break
+      case 'run_tests':
+        setActivePanel('testing')
+        toast.success('Running tests...')
+        break
+      case 'start_build':
+        await handleBuildProject()
+        break
+      case 'deploy':
+        await handleDeployProject()
+        break
+      case 'chat_hub':
+        navigate('/chat')
+        break
+      case 'show_analytics':
+        setRightPanelTab('analytics')
+        setShowAnalytics(true)
         break
       default:
         console.log('Unhandled voice command:', commandData)
     }
   }
 
+  const handleBuildProject = async () => {
+    const result = await buildProject(projectId)
+    if (result.success) {
+      setActivePanel('tools')
+      toast.success('Build started! Check the logs for progress.')
+    }
+  }
+
+  const handleDeployProject = async () => {
+    const result = await deployProject(projectId)
+    if (result.success) {
+      setActivePanel('deployment')
+      toast.success('Deployment started! Check status for updates.')
+    }
+  }
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'analyze_code':
+        if (currentProject?.files?.length > 0) {
+          const firstFile = currentProject.files[0]
+          analyzeCode(firstFile.content, firstFile.language)
+          setRightPanelTab('analysis')
+        }
+        break
+      case 'optimize_performance':
+        analyzePerformance(projectId)
+        setRightPanelTab('performance')
+        break
+      case 'generate_insights':
+        generateProjectInsights(projectId)
+        setRightPanelTab('insights')
+        break
+      default:
+        console.log('Unknown quick action:', action)
+    }
+  }
+
   const leftPanelItems = [
-    { id: 'structure', name: 'Project Structure', icon: FolderTreeIcon },
-    { id: 'tools', name: 'Development Tools', icon: WrenchScrewdriverIcon },
-    { id: 'testing', name: 'Testing Suite', icon: BeakerIcon },
-    { id: 'deployment', name: 'Deployment', icon: CloudArrowUpIcon },
-    { id: 'design', name: 'Design System', icon: PaintBrushIcon }
+    { id: 'structure', name: 'Project Structure', icon: FolderTreeIcon, count: currentProject?.files?.length || 0 },
+    { id: 'tools', name: 'Development Tools', icon: WrenchScrewdriverIcon, count: 4 },
+    { id: 'testing', name: 'Testing Suite', icon: BeakerIcon, count: projectMetrics[projectId]?.testCount || 0 },
+    { id: 'deployment', name: 'Deployment', icon: CloudArrowUpIcon, status: deploymentStatus[projectId] },
+    { id: 'design', name: 'Design System', icon: PaintBrushIcon, count: 3 }
   ]
 
   const rightPanelItems = [
@@ -141,7 +238,10 @@ const IndividualProject = () => {
     { id: 'activity', name: 'Recent Activity', icon: EyeIcon },
     { id: 'memory', name: 'Context Memory', icon: DocumentTextIcon },
     { id: 'flow', name: 'Flow State', icon: BoltIcon },
-    { id: 'voice', name: 'Voice Commands', icon: MicrophoneIcon }
+    { id: 'voice', name: 'Voice Commands', icon: MicrophoneIcon },
+    { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
+    { id: 'workflows', name: 'Workflows', icon: ArrowPathIcon },
+    { id: 'architecture', name: 'Architecture', icon: BuildingStorefrontIcon }
   ]
 
   if (projectLoading) {
@@ -167,27 +267,50 @@ const IndividualProject = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
       <div className="flex h-screen">
-        {/* Left Panel - Project Management */}
+        {/* Left Panel - Enhanced Project Management */}
         <div className="w-80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto">
           <div className="p-6">
+            {/* Project Header */}
             <div className="mb-6">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                 {currentProject.name}
               </h1>
-              <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 text-xs rounded-full ${
-                  currentProject.status === 'active' 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                }`}>
+              <div className="flex items-center space-x-2 mb-3">
+                <span className={`px-2 py-1 text-xs rounded-full ${currentProject.statusColor}`}>
                   {currentProject.status}
                 </span>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {currentProject.progress || 0}% complete
                 </span>
               </div>
+              
+              {/* Quick Actions */}
+              <div className="flex flex-wrap gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleBuildProject}
+                  disabled={deploymentStatus[projectId] === 'building'}
+                  className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center space-x-1"
+                >
+                  <RocketLaunchIcon className="w-3 h-3" />
+                  <span>{deploymentStatus[projectId] === 'building' ? 'Building...' : 'Build'}</span>
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleDeployProject}
+                  disabled={deploymentStatus[projectId] === 'deploying' || currentProject.status !== 'ready'}
+                  className="px-3 py-1.5 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center space-x-1"
+                >
+                  <CloudArrowUpIcon className="w-3 h-3" />
+                  <span>{deploymentStatus[projectId] === 'deploying' ? 'Deploying...' : 'Deploy'}</span>
+                </motion.button>
+              </div>
             </div>
 
+            {/* Navigation Items */}
             <div className="space-y-2">
               {leftPanelItems.map((item) => {
                 const Icon = item.icon
@@ -195,14 +318,28 @@ const IndividualProject = () => {
                   <button
                     key={item.id}
                     onClick={() => setActivePanel(item.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                       activePanel === item.id
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                         : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span>{item.name}</span>
+                    <div className="flex items-center space-x-3">
+                      <Icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </div>
+                    {item.count !== undefined && (
+                      <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        {item.count}
+                      </span>
+                    )}
+                    {item.status && (
+                      <div className={`w-2 h-2 rounded-full ${
+                        item.status === 'deployed' ? 'bg-green-500' :
+                        item.status === 'building' || item.status === 'deploying' ? 'bg-yellow-500 animate-pulse' :
+                        item.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                      }`} />
+                    )}
                   </button>
                 )
               })}
@@ -216,31 +353,48 @@ const IndividualProject = () => {
               
               {activePanel === 'structure' && (
                 <div className="space-y-2 text-sm">
-                  <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                    <FolderTreeIcon className="w-4 h-4" />
-                    <span>src/</span>
-                  </div>
-                  <div className="ml-6 space-y-1">
-                    <div className="text-gray-600 dark:text-gray-400">components/</div>
-                    <div className="text-gray-600 dark:text-gray-400">pages/</div>
-                    <div className="text-gray-600 dark:text-gray-400">utils/</div>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                    <DocumentTextIcon className="w-4 h-4" />
-                    <span>package.json</span>
-                  </div>
+                  {currentProject.files && currentProject.files.length > 0 ? (
+                    currentProject.files.slice(0, 5).map((file, index) => (
+                      <div key={index} className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                        <DocumentTextIcon className="w-4 h-4" />
+                        <span className="font-mono text-xs">{file.path}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <FolderTreeIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-xs text-gray-500 dark:text-gray-500">No files yet</p>
+                    </div>
+                  )}
                 </div>
               )}
 
               {activePanel === 'tools' && (
                 <div className="space-y-3">
-                  <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                  <button 
+                    onClick={() => handleQuickAction('analyze_code')}
+                    className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 w-full text-left"
+                  >
                     <PlayIcon className="w-4 h-4" />
                     <span>Live Preview</span>
                   </button>
-                  <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                  <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 w-full text-left">
                     <CodeBracketIcon className="w-4 h-4" />
                     <span>Code Editor</span>
+                  </button>
+                  <button 
+                    onClick={() => handleQuickAction('optimize_performance')}
+                    className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 w-full text-left"
+                  >
+                    <BoltIcon className="w-4 h-4" />
+                    <span>Performance</span>
+                  </button>
+                  <button 
+                    onClick={() => handleQuickAction('generate_insights')}
+                    className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 w-full text-left"
+                  >
+                    <LightBulbIcon className="w-4 h-4" />
+                    <span>AI Insights</span>
                   </button>
                 </div>
               )}
@@ -249,38 +403,69 @@ const IndividualProject = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Tests Passing</span>
-                    <span className="text-green-600 dark:text-green-400">12/12</span>
+                    <span className="text-green-600 dark:text-green-400">
+                      {projectMetrics[projectId]?.testsPassing || '12'}/
+                      {projectMetrics[projectId]?.totalTests || '12'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Coverage</span>
-                    <span className="text-blue-600 dark:text-blue-400">85%</span>
+                    <span className="text-blue-600 dark:text-blue-400">
+                      {projectMetrics[projectId]?.testCoverage || '85'}%
+                    </span>
                   </div>
+                  <button className="w-full mt-3 px-3 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-medium transition-colors">
+                    Run All Tests
+                  </button>
                 </div>
               )}
 
               {activePanel === 'deployment' && (
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-gray-600 dark:text-gray-400">Production: Live</span>
+                    <div className={`w-2 h-2 rounded-full ${
+                      deploymentStatus[projectId] === 'deployed' ? 'bg-green-500' : 'bg-gray-400'
+                    }`} />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Production: {deploymentStatus[projectId] === 'deployed' ? 'Live' : 'Not deployed'}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-gray-600 dark:text-gray-400">Staging: Building</span>
+                    <div className={`w-2 h-2 rounded-full ${
+                      deploymentStatus[projectId] === 'building' ? 'bg-yellow-500 animate-pulse' : 'bg-gray-400'
+                    }`} />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Build: {deploymentStatus[projectId] === 'building' ? 'In progress' : 'Ready'}
+                    </span>
                   </div>
+                  
+                  {buildLogs.length > 0 && (
+                    <div className="mt-3 p-2 bg-gray-100 dark:bg-gray-900 rounded text-xs font-mono max-h-32 overflow-y-auto">
+                      {buildLogs.slice(-5).map((log, index) => (
+                        <div key={index} className="text-gray-600 dark:text-gray-400">
+                          {log.message}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {activePanel === 'design' && (
                 <div className="space-y-2 text-sm">
-                  <div className="text-gray-600 dark:text-gray-400">Colors</div>
+                  <div className="text-gray-600 dark:text-gray-400">Color Palette</div>
                   <div className="flex space-x-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                    <div className="w-4 h-4 bg-purple-500 rounded"></div>
-                    <div className="w-4 h-4 bg-green-500 rounded"></div>
+                    <div className="w-4 h-4 bg-blue-500 rounded shadow-sm"></div>
+                    <div className="w-4 h-4 bg-purple-500 rounded shadow-sm"></div>
+                    <div className="w-4 h-4 bg-green-500 rounded shadow-sm"></div>
+                    <div className="w-4 h-4 bg-yellow-500 rounded shadow-sm"></div>
                   </div>
                   <div className="text-gray-600 dark:text-gray-400 mt-2">Typography</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Inter, system-ui</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Inter, system-ui, sans-serif</div>
+                  <div className="text-gray-600 dark:text-gray-400 mt-2">Components</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {currentProject.techStackDisplay?.includes('React') ? 'React Components' : 'Web Components'}
+                  </div>
                 </div>
               )}
             </div>
@@ -289,7 +474,7 @@ const IndividualProject = () => {
 
         {/* Center Panel - AI Conversation */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
+          {/* Enhanced Header */}
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -322,6 +507,19 @@ const IndividualProject = () => {
                 >
                   <BoltIcon className="w-5 h-5" />
                 </button>
+
+                {/* Voice Commands Toggle */}
+                <button
+                  onClick={() => setShowVoiceCommands(!showVoiceCommands)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showVoiceCommands
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  title="Voice Commands"
+                >
+                  <MicrophoneIcon className="w-5 h-5" />
+                </button>
                 
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {messages.length} messages
@@ -329,6 +527,13 @@ const IndividualProject = () => {
               </div>
             </div>
           </div>
+
+          {/* Smart Suggestions Panel */}
+          {showSmartSuggestions && (
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 border-b border-yellow-200 dark:border-yellow-800">
+              <SmartSuggestionsPanel suggestions={getSmartSuggestions()} onSuggestionClick={setMessage} />
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -339,14 +544,16 @@ const IndividualProject = () => {
                   Start building with AI
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Ask questions, request features, or get help with your project.
+                  Ask questions, request features, or get help with your {currentProject.name} project.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[
                     "How do I add authentication?",
                     "Create a new component",
-                    "Set up the database",
-                    "Add styling with Tailwind"
+                    "Set up the database connection",
+                    "Add styling with Tailwind",
+                    "Implement error handling",
+                    "Optimize performance"
                   ].map((suggestion, index) => (
                     <button
                       key={index}
@@ -380,14 +587,14 @@ const IndividualProject = () => {
             )}
           </div>
 
-          {/* Message Input */}
+          {/* Enhanced Message Input */}
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 p-4">
             <form onSubmit={handleSendMessage} className="flex space-x-4">
               <div className="flex-1">
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask AI anything about your project..."
+                  placeholder={`Ask ${selectedAgent} agent anything about ${currentProject.name}...`}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   onKeyDown={(e) => {
@@ -413,7 +620,7 @@ const IndividualProject = () => {
         {/* Right Panel - Enhanced Project Context */}
         <div className="w-80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 overflow-y-auto">
           <div className="p-6">
-            {/* Tabbed Interface */}
+            {/* Enhanced Tabbed Interface */}
             <div className="flex flex-wrap gap-1 mb-6 border-b border-gray-200 dark:border-gray-700">
               {rightPanelItems.map((item) => {
                 const Icon = item.icon
@@ -421,7 +628,7 @@ const IndividualProject = () => {
                   <button
                     key={item.id}
                     onClick={() => setRightPanelTab(item.id)}
-                    className={`flex items-center space-x-1 px-3 py-2 text-xs font-medium rounded-t-lg transition-colors ${
+                    className={`flex items-center space-x-1 px-2 py-2 text-xs font-medium rounded-t-lg transition-colors ${
                       rightPanelTab === item.id
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-b-2 border-blue-500'
                         : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
@@ -434,7 +641,7 @@ const IndividualProject = () => {
               })}
             </div>
 
-            {/* Tab Content */}
+            {/* Enhanced Tab Content */}
             <div className="space-y-6">
               {rightPanelTab === 'context' && (
                 <>
@@ -449,25 +656,37 @@ const IndividualProject = () => {
                         >
                           {tech}
                         </span>
-                      ))}
+                      )) || (
+                        <span className="text-sm text-gray-500 dark:text-gray-400">No tech stack defined</span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Project Metrics */}
+                  {/* Enhanced Project Metrics */}
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">Metrics</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-3">Project Metrics</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Files</span>
-                        <span className="text-gray-900 dark:text-white">{currentProject.metadata?.files_count || 0}</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {currentProject.files?.length || projectMetrics[projectId]?.filesCount || 0}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Progress</span>
                         <span className="text-gray-900 dark:text-white">{currentProject.progress || 0}%</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Lines of Code</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {projectMetrics[projectId]?.linesOfCode || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Last Activity</span>
-                        <span className="text-gray-900 dark:text-white">2h ago</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {currentProject.lastActivityText || '2h ago'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -483,8 +702,16 @@ const IndividualProject = () => {
                       <span className="text-sm text-gray-700 dark:text-gray-300">Developer Agent</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className={`w-2 h-2 rounded-full ${
+                        selectedAgent === 'designer' ? 'bg-green-500' : 'bg-yellow-500'
+                      }`}></div>
                       <span className="text-sm text-gray-700 dark:text-gray-300">Designer Agent</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        selectedAgent === 'tester' ? 'bg-green-500' : 'bg-gray-400'
+                      }`}></div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">QA Agent</span>
                     </div>
                   </div>
                 </div>
@@ -509,33 +736,70 @@ const IndividualProject = () => {
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white mb-3">Recent Activity</h3>
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-start space-x-2">
+                    <div className="flex items-start space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
                       <div>
-                        <div className="text-gray-900 dark:text-white">Updated components</div>
-                        <div className="text-gray-500 dark:text-gray-400">2 hours ago</div>
+                        <p className="text-gray-700 dark:text-gray-300">Updated project dependencies</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">2 minutes ago</p>
                       </div>
                     </div>
-                    <div className="flex items-start space-x-2">
+                    <div className="flex items-start space-x-3">
                       <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                       <div>
-                        <div className="text-gray-900 dark:text-white">Tests passing</div>
-                        <div className="text-gray-500 dark:text-gray-400">4 hours ago</div>
+                        <p className="text-gray-700 dark:text-gray-300">Added authentication module</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">15 minutes ago</p>
                       </div>
                     </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-gray-700 dark:text-gray-300">Build completed successfully</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">1 hour ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {rightPanelTab === 'analytics' && showAnalytics && (
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-3">Analytics Dashboard</h3>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-sm font-medium text-blue-900 dark:text-blue-300">Performance Score</div>
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">94</div>
+                      <div className="text-xs text-blue-700 dark:text-blue-400">+5% from last week</div>
+                    </div>
+                    
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-sm font-medium text-green-900 dark:text-green-300">Code Quality</div>
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">A+</div>
+                      <div className="text-xs text-green-700 dark:text-green-400">Excellent</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {rightPanelTab === 'integrations' && (
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-3">Connected Services</h3>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'GitHub', status: 'connected', color: 'green' },
+                      { name: 'MongoDB', status: 'connected', color: 'green' },
+                      { name: 'Vercel', status: 'available', color: 'gray' }
+                    ].map((integration, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{integration.name}</span>
+                        <div className={`w-2 h-2 rounded-full bg-${integration.color}-500`}></div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
         </div>
-
-        {/* Smart Suggestions Panel */}
-        <SmartSuggestionsPanel 
-          isOpen={showSmartSuggestions}
-          onToggle={() => setShowSmartSuggestions(!showSmartSuggestions)}
-          projectId={projectId}
-        />
       </div>
     </div>
   )
