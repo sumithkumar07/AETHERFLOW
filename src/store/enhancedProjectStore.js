@@ -1,365 +1,463 @@
 import { create } from 'zustand'
-import axios from 'axios'
 import toast from 'react-hot-toast'
 
-// Enhanced project store with smart features
 const useEnhancedProjectStore = create((set, get) => ({
-  // Extended state from original projectStore
-  projects: [],
-  currentProject: null,
-  loading: false,
-  error: null,
-  
-  // Enhanced features
-  projectInsights: {},
+  // Enhanced project state
+  enhancedProjects: new Map(),
   developmentPatterns: {},
-  smartSuggestions: [],
-  projectHealth: {},
-  contextAwareness: {
-    currentFocus: null,
-    recentActions: [],
-    timeSpent: {}
-  },
-  
-  // Smart project analysis
-  analyzeProjectHealth: async (projectId) => {
+  contextAwareness: {},
+  flowState: {},
+  loading: false,
+
+  // Initialize enhanced features for a project
+  initializeEnhancedFeatures: async (projectId) => {
+    if (!projectId) return
+
+    const state = get()
+    if (state.enhancedProjects.has(projectId)) return
+
     try {
-      const project = get().projects.find(p => p.id === projectId)
-      if (!project) return
-      
-      const health = {
-        score: 85,
-        issues: [],
-        suggestions: [],
-        metrics: {
-          codeQuality: 90,
-          testCoverage: 75,
-          performance: 80,
-          security: 85,
-          maintainability: 88
+      // Initialize enhanced project data
+      const enhancedData = {
+        id: projectId,
+        initialized: true,
+        contextAwareness: {
+          currentFocus: 'general',
+          workingMemory: [],
+          recentActions: [],
+          userPreferences: {}
+        },
+        developmentPatterns: {
+          codingHours: {},
+          productivePeriods: [],
+          preferences: {},
+          workflowOptimizations: []
+        },
+        flowState: {
+          currentSession: null,
+          sessionHistory: [],
+          focusMetrics: {},
+          productivityScore: 0
+        },
+        smartSuggestions: {
+          suggestions: [],
+          lastUpdated: null,
+          userFeedback: {}
+        },
+        voiceCommands: {
+          enabled: false,
+          customCommands: [],
+          usage: {}
         }
       }
-      
-      // Analyze based on tech stack
-      if (project.tech_stack?.includes('React')) {
-        health.suggestions.push({
-          type: 'performance',
-          title: 'React Optimization',
-          description: 'Consider implementing React.memo for frequently re-rendering components',
-          priority: 'medium',
-          impact: 'performance'
-        })
-      }
-      
-      if (project.tech_stack?.includes('FastAPI')) {
-        health.suggestions.push({
-          type: 'security',
-          title: 'API Security',
-          description: 'Implement rate limiting and input validation',
-          priority: 'high',
-          impact: 'security'
-        })
-      }
-      
-      // Check project age and activity
-      const lastActivity = new Date(project.updated_at)
-      const daysSinceUpdate = Math.floor((Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24))
-      
-      if (daysSinceUpdate > 7) {
-        health.issues.push({
-          type: 'stale',
-          message: 'Project hasn\'t been updated in over a week',
-          severity: 'medium'
-        })
-      }
-      
+
       set(state => ({
-        projectHealth: {
-          ...state.projectHealth,
-          [projectId]: health
-        }
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, enhancedData)
       }))
+
+      toast.success('Enhanced features initialized', { duration: 2000 })
       
-      return health
     } catch (error) {
-      console.error('Failed to analyze project health:', error)
+      console.error('Failed to initialize enhanced features:', error)
+      toast.error('Failed to initialize enhanced features')
     }
   },
-  
+
   // Track development patterns
-  trackDevelopmentPattern: (projectId, action, context = {}) => {
-    const timestamp = Date.now()
+  trackDevelopmentPattern: (projectId, action, data) => {
+    if (!projectId) return
+
+    const state = get()
+    const project = state.enhancedProjects.get(projectId)
     
-    set(state => {
-      const patterns = state.developmentPatterns[projectId] || {
-        sessions: [],
-        commonActions: {},
-        timePatterns: {},
-        flowStates: []
+    if (!project) {
+      get().initializeEnhancedFeatures(projectId)
+      return
+    }
+
+    try {
+      const timestamp = new Date().toISOString()
+      const pattern = {
+        action,
+        data,
+        timestamp,
+        hour: new Date().getHours(),
+        dayOfWeek: new Date().getDay()
       }
-      
-      // Track common actions
-      patterns.commonActions[action] = (patterns.commonActions[action] || 0) + 1
-      
-      // Track time patterns
-      const hour = new Date().getHours()
-      patterns.timePatterns[hour] = (patterns.timePatterns[hour] || 0) + 1
-      
-      // Track flow states
-      if (context.flowState) {
-        patterns.flowStates.push({
-          state: context.flowState,
-          timestamp,
-          duration: context.duration || 0
-        })
-      }
-      
-      return {
+
+      // Update development patterns
+      const updatedProject = {
+        ...project,
         developmentPatterns: {
-          ...state.developmentPatterns,
-          [projectId]: patterns
-        },
-        contextAwareness: {
-          ...state.contextAwareness,
+          ...project.developmentPatterns,
           recentActions: [
-            { action, timestamp, context },
-            ...state.contextAwareness.recentActions.slice(0, 49) // Keep last 50 actions
+            pattern,
+            ...project.developmentPatterns.recentActions.slice(0, 49) // Keep last 50
           ]
         }
       }
-    })
-  },
-  
-  // Generate contextual insights
-  generateProjectInsights: async (projectId) => {
-    try {
-      const project = get().projects.find(p => p.id === projectId)
-      const patterns = get().developmentPatterns[projectId]
-      const health = get().projectHealth[projectId]
-      
-      if (!project) return
-      
-      const insights = {
-        productivity: {
-          score: 85,
-          trend: 'improving',
-          insights: []
-        },
-        recommendations: [],
-        nextSteps: [],
-        timeOptimization: {}
-      }
-      
-      // Productivity insights
-      if (patterns?.timePatterns) {
-        const mostActiveHour = Object.entries(patterns.timePatterns)
-          .sort(([,a], [,b]) => b - a)[0]
-        
-        if (mostActiveHour) {
-          insights.productivity.insights.push(
-            `You're most productive at ${mostActiveHour[0]}:00`
-          )
-        }
-      }
-      
-      // Common action insights
-      if (patterns?.commonActions) {
-        const topAction = Object.entries(patterns.commonActions)
-          .sort(([,a], [,b]) => b - a)[0]
-        
-        if (topAction) {
-          insights.productivity.insights.push(
-            `Your most common action is "${topAction[0]}"`
-          )
-        }
-      }
-      
-      // Recommendations based on project state
-      if (project.progress < 30) {
-        insights.recommendations.push({
-          type: 'planning',
-          title: 'Define Core Features',
-          description: 'Focus on implementing essential features first',
-          priority: 'high'
-        })
-      } else if (project.progress > 70) {
-        insights.recommendations.push({
-          type: 'quality',
-          title: 'Prepare for Production',
-          description: 'Add comprehensive testing and error handling',
-          priority: 'high'
-        })
-      }
-      
-      // Next steps based on tech stack
-      if (project.tech_stack?.includes('React') && project.progress < 50) {
-        insights.nextSteps.push('Set up component architecture')
-        insights.nextSteps.push('Implement routing and navigation')
-      }
-      
+
       set(state => ({
-        projectInsights: {
-          ...state.projectInsights,
-          [projectId]: insights
-        }
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, updatedProject)
       }))
-      
-      return insights
+
+      // Analyze patterns for insights
+      get().analyzePatterns(projectId)
+
     } catch (error) {
-      console.error('Failed to generate insights:', error)
+      console.error('Failed to track development pattern:', error)
     }
   },
-  
-  // Smart suggestions based on context
-  generateSmartSuggestions: async (projectId, context = {}) => {
+
+  // Analyze development patterns for insights
+  analyzePatterns: (projectId) => {
+    const state = get()
+    const project = state.enhancedProjects.get(projectId)
+    if (!project) return
+
     try {
-      const project = get().projects.find(p => p.id === projectId)
-      const patterns = get().developmentPatterns[projectId]
-      const recentActions = get().contextAwareness.recentActions.slice(0, 5)
+      const actions = project.developmentPatterns.recentActions || []
+      if (actions.length < 5) return // Need at least 5 actions for analysis
+
+      // Analyze productive hours
+      const hourlyActivity = actions.reduce((acc, action) => {
+        acc[action.hour] = (acc[action.hour] || 0) + 1
+        return acc
+      }, {})
+
+      const mostProductiveHour = Object.entries(hourlyActivity)
+        .sort(([,a], [,b]) => b - a)[0]
+
+      // Analyze common action patterns
+      const actionTypes = actions.reduce((acc, action) => {
+        acc[action.action] = (acc[action.action] || 0) + 1
+        return acc
+      }, {})
+
+      // Update insights
+      const insights = {
+        mostProductiveHour: mostProductiveHour ? parseInt(mostProductiveHour[0]) : null,
+        commonActions: Object.entries(actionTypes).sort(([,a], [,b]) => b - a).slice(0, 3),
+        totalActions: actions.length,
+        lastAnalyzed: new Date().toISOString()
+      }
+
+      const updatedProject = {
+        ...project,
+        developmentPatterns: {
+          ...project.developmentPatterns,
+          insights
+        }
+      }
+
+      set(state => ({
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, updatedProject)
+      }))
+
+    } catch (error) {
+      console.error('Failed to analyze patterns:', error)
+    }
+  },
+
+  // Update context awareness
+  updateContextAwareness: (projectId, context, data) => {
+    if (!projectId) return
+
+    const state = get()
+    const project = state.enhancedProjects.get(projectId)
+    
+    if (!project) {
+      get().initializeEnhancedFeatures(projectId)
+      return
+    }
+
+    try {
+      const updatedProject = {
+        ...project,
+        contextAwareness: {
+          ...project.contextAwareness,
+          currentFocus: context,
+          lastUpdate: new Date().toISOString(),
+          ...data
+        }
+      }
+
+      set(state => ({
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, updatedProject)
+      }))
+
+    } catch (error) {
+      console.error('Failed to update context awareness:', error)
+    }
+  },
+
+  // Update flow state
+  updateFlowState: (projectId, metrics) => {
+    if (!projectId) return
+
+    const state = get()
+    const project = state.enhancedProjects.get(projectId)
+    
+    if (!project) {
+      get().initializeEnhancedFeatures(projectId)
+      return
+    }
+
+    try {
+      const currentSession = project.flowState.currentSession || {
+        id: `session_${Date.now()}`,
+        startTime: new Date().toISOString(),
+        actions: [],
+        focusScore: 0
+      }
+
+      const updatedSession = {
+        ...currentSession,
+        ...metrics,
+        lastUpdate: new Date().toISOString()
+      }
+
+      const updatedProject = {
+        ...project,
+        flowState: {
+          ...project.flowState,
+          currentSession: updatedSession,
+          lastUpdate: new Date().toISOString()
+        }
+      }
+
+      set(state => ({
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, updatedProject)
+      }))
+
+    } catch (error) {
+      console.error('Failed to update flow state:', error)
+    }
+  },
+
+  // Generate smart suggestions
+  generateSmartSuggestions: async (projectId, context = {}) => {
+    if (!projectId) return []
+
+    const state = get()
+    const project = state.enhancedProjects.get(projectId)
+    
+    if (!project) {
+      await get().initializeEnhancedFeatures(projectId)
+      return []
+    }
+
+    try {
+      // Generate contextual suggestions based on patterns and current state
+      const patterns = project.developmentPatterns || {}
+      const contextAware = project.contextAwareness || {}
       
       const suggestions = []
-      
-      // Based on recent actions
-      const hasErrors = recentActions.some(action => 
-        action.action.includes('error') || action.action.includes('bug')
-      )
-      
-      if (hasErrors) {
-        suggestions.push({
-          id: 'debug_session',
-          type: 'debugging',
-          title: 'Debug Session',
-          description: 'Start a focused debugging session',
-          action: 'Let me help you systematically debug these issues',
-          confidence: 0.9
-        })
-      }
-      
-      // Based on project progress
-      if (project?.progress > 80 && project.status === 'active') {
-        suggestions.push({
-          id: 'deployment_prep',
-          type: 'deployment',
-          title: 'Deployment Preparation',
-          description: 'Your project is nearly complete',
-          action: 'Help me prepare this project for deployment',
-          confidence: 0.85
-        })
-      }
-      
-      // Based on time patterns
-      if (patterns?.timePatterns) {
+
+      // Pattern-based suggestions
+      if (patterns.insights?.mostProductiveHour !== null) {
         const currentHour = new Date().getHours()
-        const activityAtThisHour = patterns.timePatterns[currentHour] || 0
+        const productiveHour = patterns.insights.mostProductiveHour
         
-        if (activityAtThisHour < 2) {
+        if (Math.abs(currentHour - productiveHour) <= 1) {
           suggestions.push({
-            id: 'peak_time_suggestion',
-            type: 'productivity',
+            id: 'productive_time',
+            type: 'timing',
             title: 'Peak Productivity Time',
-            description: 'This isn\'t your usual productive hour',
-            action: 'Should we focus on lighter tasks or take a break?',
-            confidence: 0.7
+            message: `This is typically your most productive hour. Consider tackling complex tasks now.`,
+            priority: 'medium',
+            confidence: 0.8
           })
         }
       }
-      
-      // Based on tech stack gaps
-      if (project?.tech_stack && !project.tech_stack.includes('test')) {
+
+      // Context-based suggestions
+      if (contextAware.currentFocus === 'project_workspace') {
         suggestions.push({
-          id: 'add_testing',
-          type: 'quality',
-          title: 'Add Testing Framework',
-          description: 'Improve code reliability with tests',
-          action: 'Help me set up testing for this project',
-          confidence: 0.8
+          id: 'workspace_focus',
+          type: 'workflow',
+          title: 'Workspace Optimization',
+          message: 'Consider organizing your panels for better workflow.',
+          priority: 'low',
+          confidence: 0.6
         })
       }
-      
-      set({ smartSuggestions: suggestions })
+
+      // Recent activity suggestions
+      const recentActions = patterns.recentActions || []
+      if (recentActions.length > 0) {
+        const lastAction = recentActions[0]
+        if (lastAction.action === 'chat_interaction' && Date.now() - new Date(lastAction.timestamp).getTime() > 300000) {
+          suggestions.push({
+            id: 'continue_work',
+            type: 'workflow',
+            title: 'Continue Previous Work',
+            message: 'You were working on something 5 minutes ago. Want to continue?',
+            priority: 'high',
+            confidence: 0.9
+          })
+        }
+      }
+
+      // Update project with suggestions
+      const updatedProject = {
+        ...project,
+        smartSuggestions: {
+          ...project.smartSuggestions,
+          suggestions,
+          lastUpdated: new Date().toISOString()
+        }
+      }
+
+      set(state => ({
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, updatedProject)
+      }))
+
       return suggestions
-      
+
     } catch (error) {
       console.error('Failed to generate smart suggestions:', error)
       return []
     }
   },
-  
-  // Update context awareness
-  updateContextAwareness: (focus, metadata = {}) => {
-    set(state => ({
-      contextAwareness: {
-        ...state.contextAwareness,
-        currentFocus: focus,
-        timeSpent: {
-          ...state.contextAwareness.timeSpent,
-          [focus]: (state.contextAwareness.timeSpent[focus] || 0) + 1
-        }
-      }
-    }))
-  },
-  
-  // Predictive features
-  predictNextAction: (projectId) => {
-    const patterns = get().developmentPatterns[projectId]
-    const recentActions = get().contextAwareness.recentActions.slice(0, 3)
-    
-    if (!patterns || !recentActions.length) return null
-    
-    // Simple prediction based on common patterns
-    const actionSequences = {}
-    
-    // This would be more sophisticated in a real implementation
-    const lastAction = recentActions[0]?.action
-    const commonActions = patterns.commonActions || {}
-    
-    // Find most likely next action
-    const possibleNext = Object.entries(commonActions)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3)
-      .map(([action]) => action)
-    
-    return {
-      suggestions: possibleNext,
-      confidence: 0.7,
-      reasoning: `Based on your common development patterns`
-    }
-  },
-  
+
   // Get enhanced project data
   getEnhancedProjectData: (projectId) => {
     const state = get()
-    const project = state.projects.find(p => p.id === projectId)
+    return state.enhancedProjects.get(projectId) || null
+  },
+
+  // Get development patterns
+  getDevelopmentPatterns: (projectId) => {
+    const project = get().getEnhancedProjectData(projectId)
+    return project?.developmentPatterns || {}
+  },
+
+  // Get context awareness data
+  getContextAwareness: (projectId) => {
+    const project = get().getEnhancedProjectData(projectId)
+    return project?.contextAwareness || {}
+  },
+
+  // Get flow state data
+  getFlowState: (projectId) => {
+    const project = get().getEnhancedProjectData(projectId)
+    return project?.flowState || {}
+  },
+
+  // Get smart suggestions
+  getSmartSuggestions: (projectId) => {
+    const project = get().getEnhancedProjectData(projectId)
+    return project?.smartSuggestions?.suggestions || []
+  },
+
+  // End current flow session
+  endFlowSession: (projectId) => {
+    if (!projectId) return
+
+    const state = get()
+    const project = state.enhancedProjects.get(projectId)
     
-    if (!project) return null
-    
-    return {
-      ...project,
-      insights: state.projectInsights[projectId],
-      health: state.projectHealth[projectId],
-      patterns: state.developmentPatterns[projectId],
-      suggestions: state.smartSuggestions,
-      contextAwareness: state.contextAwareness
+    if (!project || !project.flowState.currentSession) return
+
+    try {
+      const session = project.flowState.currentSession
+      const endTime = new Date().toISOString()
+      const duration = new Date(endTime).getTime() - new Date(session.startTime).getTime()
+
+      const completedSession = {
+        ...session,
+        endTime,
+        duration,
+        completed: true
+      }
+
+      const updatedProject = {
+        ...project,
+        flowState: {
+          ...project.flowState,
+          currentSession: null,
+          sessionHistory: [
+            completedSession,
+            ...project.flowState.sessionHistory.slice(0, 9) // Keep last 10 sessions
+          ]
+        }
+      }
+
+      set(state => ({
+        enhancedProjects: new Map(state.enhancedProjects).set(projectId, updatedProject)
+      }))
+
+      toast.success(`Flow session completed: ${Math.floor(duration / 60000)} minutes`)
+
+    } catch (error) {
+      console.error('Failed to end flow session:', error)
     }
   },
-  
-  // Initialize enhanced features for a project
-  initializeEnhancedFeatures: async (projectId) => {
-    await Promise.all([
-      get().analyzeProjectHealth(projectId),
-      get().generateProjectInsights(projectId),
-      get().generateSmartSuggestions(projectId)
-    ])
+
+  // Clear enhanced data for project
+  clearEnhancedData: (projectId) => {
+    if (!projectId) return
+
+    set(state => {
+      const newMap = new Map(state.enhancedProjects)
+      newMap.delete(projectId)
+      return { enhancedProjects: newMap }
+    })
   },
-  
-  // Clean up old data
-  cleanupOldData: () => {
-    set(state => ({
-      contextAwareness: {
-        ...state.contextAwareness,
-        recentActions: state.contextAwareness.recentActions.slice(0, 100)
+
+  // Export enhanced data
+  exportEnhancedData: (projectId) => {
+    const project = get().getEnhancedProjectData(projectId)
+    if (!project) return null
+
+    const exportData = {
+      projectId,
+      enhancedData: project,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    }
+
+    const dataStr = JSON.stringify(exportData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `enhanced_project_data_${projectId}_${Date.now()}.json`
+    link.click()
+    
+    URL.revokeObjectURL(url)
+    toast.success('Enhanced project data exported')
+  },
+
+  // Import enhanced data
+  importEnhancedData: (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result)
+          
+          if (data.projectId && data.enhancedData) {
+            set(state => ({
+              enhancedProjects: new Map(state.enhancedProjects).set(data.projectId, data.enhancedData)
+            }))
+            
+            toast.success('Enhanced project data imported')
+            resolve(data)
+          } else {
+            reject(new Error('Invalid data format'))
+          }
+        } catch (error) {
+          reject(error)
+        }
       }
-    }))
+      
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsText(file)
+    })
   }
 }))
 

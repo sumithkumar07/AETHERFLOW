@@ -1,251 +1,198 @@
+#!/usr/bin/env python3
+
 import asyncio
-import bcrypt
-from motor.motor_asyncio import AsyncIOMotorClient
+import sys
 import os
 from datetime import datetime, timedelta
-import uuid
+from motor.motor_asyncio import AsyncIOMotorClient
+from passlib.context import CryptContext
 
-# Database connection
-MONGO_URL = os.getenv('MONGO_URL', 'mongodb://localhost:27017/aicodestudio')
+# Add the current directory to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-async def create_demo_data():
-    """Create demo user and sample data"""
-    client = AsyncIOMotorClient(MONGO_URL)
-    db = client.get_default_database()
-    
+from models.database import init_db, get_database
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+async def create_demo_user():
+    """Create demo user if not exists"""
     try:
+        db = await get_database()
+        
+        # Check if demo user already exists
+        existing_user = await db.users.find_one({"email": "demo@aicodestudio.com"})
+        if existing_user:
+            print("✅ Demo user already exists")
+            return existing_user["_id"]
+        
         # Create demo user
         demo_user = {
-            "id": str(uuid.uuid4()),
-            "email": "demo@aicodestudio.com",
+            "_id": "demo_user_123",
             "name": "Demo User",
-            "hashed_password": bcrypt.hashpw("demo123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
-            "is_active": True,
+            "email": "demo@aicodestudio.com",
+            "hashed_password": pwd_context.hash("demo123"),
+            "avatar": None,
+            "is_premium": True,
+            "projects_count": 3,
             "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-            "profile": {
-                "bio": "Demo user for AI Tempo platform",
-                "avatar": None,
-                "preferences": {
-                    "theme": "light",
-                    "notifications": True
-                }
-            }
+            "updated_at": datetime.utcnow()
         }
         
-        # Insert demo user (replace if exists)
-        await db.users.replace_one(
-            {"email": "demo@aicodestudio.com"}, 
-            demo_user, 
-            upsert=True
-        )
-        print("✅ Demo user created/updated")
+        await db.users.insert_one(demo_user)
+        print("✅ Demo user created successfully")
+        return demo_user["_id"]
         
-        # Create sample projects
-        sample_projects = [
+    except Exception as e:
+        print(f"❌ Demo user creation error: {e}")
+        return None
+
+async def create_demo_projects(user_id):
+    """Create demo projects for the user"""
+    try:
+        db = await get_database()
+        
+        # Check if demo projects already exist
+        existing_projects = await db.projects.find({"user_id": user_id}).to_list(length=None)
+        if existing_projects:
+            print(f"✅ Found {len(existing_projects)} existing demo projects")
+            return
+        
+        demo_projects = [
             {
-                "id": str(uuid.uuid4()),
+                "_id": "demo_project_1",
+                "user_id": user_id,
                 "name": "E-commerce Platform",
-                "description": "Building a modern e-commerce platform with React, FastAPI, and MongoDB. Features include product catalog, shopping cart, user authentication, and payment processing.",
-                "user_id": demo_user["id"],
+                "description": "A modern e-commerce platform with React frontend and FastAPI backend",
+                "type": "full_stack",
                 "status": "active",
-                "tech_stack": ["React", "FastAPI", "MongoDB", "Stripe"],
-                "created_at": datetime.utcnow() - timedelta(days=3),
-                "updated_at": datetime.utcnow() - timedelta(hours=2),
-                "progress": 65,
+                "tech_stack": ["React", "FastAPI", "MongoDB", "Stripe", "Tailwind CSS"],
+                "progress": 75,
                 "metadata": {
                     "files_count": 24,
-                    "last_activity": datetime.utcnow() - timedelta(hours=2)
-                }
+                    "created_from_template": True,
+                    "template_name": "E-commerce Starter",
+                    "estimated_completion": "2 hours"
+                },
+                "created_at": datetime.utcnow() - timedelta(days=5),
+                "updated_at": datetime.utcnow() - timedelta(hours=2)
             },
             {
-                "id": str(uuid.uuid4()),
-                "name": "AI Chat Dashboard",
-                "description": "An intelligent dashboard for managing AI conversations with multiple models. Includes conversation history, model switching, and analytics.",
-                "user_id": demo_user["id"],
+                "_id": "demo_project_2", 
+                "user_id": user_id,
+                "name": "Task Management App",
+                "description": "Collaborative task management with real-time updates",
+                "type": "react_app",
                 "status": "active",
-                "tech_stack": ["React", "Python", "OpenAI", "Anthropic"],
-                "created_at": datetime.utcnow() - timedelta(days=7),
-                "updated_at": datetime.utcnow() - timedelta(days=1),
+                "tech_stack": ["React", "WebSockets", "MongoDB", "Node.js"],
                 "progress": 45,
                 "metadata": {
                     "files_count": 18,
-                    "last_activity": datetime.utcnow() - timedelta(days=1)
-                }
+                    "created_from_template": False,
+                    "priority": "high"
+                },
+                "created_at": datetime.utcnow() - timedelta(days=3),
+                "updated_at": datetime.utcnow() - timedelta(hours=6)
             },
             {
-                "id": str(uuid.uuid4()),
-                "name": "Task Management App",
-                "description": "A collaborative task management application with real-time updates, team management, and progress tracking.",
-                "user_id": demo_user["id"],
-                "status": "completed",
-                "tech_stack": ["React", "Node.js", "Socket.io", "PostgreSQL"],
-                "created_at": datetime.utcnow() - timedelta(days=14),
-                "updated_at": datetime.utcnow() - timedelta(days=5),
-                "progress": 100,
+                "_id": "demo_project_3",
+                "user_id": user_id,
+                "name": "AI Blog Platform",
+                "description": "Blog platform with AI-powered content generation",
+                "type": "full_stack", 
+                "status": "draft",
+                "tech_stack": ["Next.js", "TypeScript", "OpenAI", "PostgreSQL"],
+                "progress": 20,
                 "metadata": {
-                    "files_count": 32,
-                    "last_activity": datetime.utcnow() - timedelta(days=5)
-                }
+                    "files_count": 8,
+                    "created_from_template": True,
+                    "template_name": "Blog Starter",
+                    "ai_integration": True
+                },
+                "created_at": datetime.utcnow() - timedelta(days=1),
+                "updated_at": datetime.utcnow() - timedelta(minutes=30)
             }
         ]
         
-        # Insert sample projects (replace if exists)
-        for project in sample_projects:
-            await db.projects.replace_one(
-                {"name": project["name"], "user_id": demo_user["id"]},
-                project,
-                upsert=True
-            )
-        print("✅ Sample projects created/updated")
-        
-        # Create sample templates
-        sample_templates = [
-            {
-                "id": str(uuid.uuid4()),
-                "name": "React Starter Kit",
-                "description": "Production-ready React template with authentication, routing, and state management",
-                "category": "Web Apps",
-                "difficulty": "Intermediate",
-                "tech_stack": ["React", "TypeScript", "Tailwind CSS", "Zustand"],
-                "featured": True,
-                "downloads": 1250,
-                "rating": 4.9,
-                "author": "AI Tempo Team",
-                "setup_time": "10 minutes",
-                "preview_url": None,
-                "created_at": datetime.utcnow() - timedelta(days=30),
-                "updated_at": datetime.utcnow() - timedelta(days=5)
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "FastAPI Backend",
-                "description": "Complete FastAPI backend with MongoDB, authentication, and API documentation",
-                "category": "APIs",
-                "difficulty": "Advanced",
-                "tech_stack": ["FastAPI", "MongoDB", "JWT", "Docker"],
-                "featured": True,
-                "downloads": 890,
-                "rating": 4.8,
-                "author": "AI Tempo Team",
-                "setup_time": "15 minutes",
-                "preview_url": None,
-                "created_at": datetime.utcnow() - timedelta(days=25),
-                "updated_at": datetime.utcnow() - timedelta(days=3)
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "E-commerce Store",
-                "description": "Full-featured online store with payment integration and admin dashboard",
-                "category": "E-commerce",
-                "difficulty": "Advanced",
-                "tech_stack": ["React", "Node.js", "Stripe", "MongoDB"],
-                "featured": True,
-                "downloads": 2100,
-                "rating": 4.7,
-                "author": "Community",
-                "setup_time": "30 minutes",
-                "preview_url": None,
-                "created_at": datetime.utcnow() - timedelta(days=45),
-                "updated_at": datetime.utcnow() - timedelta(days=1)
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Mobile App Starter",
-                "description": "Cross-platform mobile app template with React Native",
-                "category": "Mobile",
-                "difficulty": "Intermediate",
-                "tech_stack": ["React Native", "Expo", "TypeScript"],
-                "featured": False,
-                "downloads": 650,
-                "rating": 4.6,
-                "author": "Community",
-                "setup_time": "20 minutes",
-                "preview_url": None,
-                "created_at": datetime.utcnow() - timedelta(days=20),
-                "updated_at": datetime.utcnow() - timedelta(days=7)
-            }
-        ]
-        
-        # Insert sample templates
-        for template in sample_templates:
-            await db.templates.replace_one(
-                {"name": template["name"]},
-                template,
-                upsert=True
-            )
-        print("✅ Sample templates created/updated")
-        
-        # Create sample integrations
-        sample_integrations = [
-            {
-                "id": str(uuid.uuid4()),
-                "name": "Stripe",
-                "description": "Accept payments online with Stripe's secure payment processing",
-                "category": "Payments",
-                "provider": "Stripe Inc.",
-                "icon": "💳",
-                "status": "available",
-                "setup_complexity": "easy",
-                "documentation_url": "https://stripe.com/docs",
-                "features": ["Payment Processing", "Subscriptions", "Invoicing", "Analytics"],
-                "pricing": "2.9% + 30¢ per transaction",
-                "rating": 4.8,
-                "installs": 15000,
-                "created_at": datetime.utcnow() - timedelta(days=60),
-                "updated_at": datetime.utcnow() - timedelta(days=10)
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "SendGrid",
-                "description": "Reliable email delivery service for transactional and marketing emails",
-                "category": "Email",
-                "provider": "Twilio SendGrid",
-                "icon": "📧",
-                "status": "available",
-                "setup_complexity": "medium",
-                "documentation_url": "https://docs.sendgrid.com",
-                "features": ["Email API", "Email Templates", "Analytics", "Webhooks"],
-                "pricing": "Free for 100 emails/day",
-                "rating": 4.5,
-                "installs": 8500,
-                "created_at": datetime.utcnow() - timedelta(days=50),
-                "updated_at": datetime.utcnow() - timedelta(days=5)
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "name": "MongoDB Atlas",
-                "description": "Fully managed cloud database service built for modern applications",
-                "category": "Database",
-                "provider": "MongoDB Inc.",
-                "icon": "🍃",
-                "status": "available",
-                "setup_complexity": "easy",
-                "documentation_url": "https://docs.atlas.mongodb.com",
-                "features": ["Global Clusters", "Auto-Scaling", "Backup", "Security"],
-                "pricing": "Free tier available",
-                "rating": 4.7,
-                "installs": 12000,
-                "created_at": datetime.utcnow() - timedelta(days=40),
-                "updated_at": datetime.utcnow() - timedelta(days=8)
-            }
-        ]
-        
-        # Insert sample integrations
-        for integration in sample_integrations:
-            await db.integrations.replace_one(
-                {"name": integration["name"]},
-                integration,
-                upsert=True
-            )
-        print("✅ Sample integrations created/updated")
-        
-        print("🎉 All demo data created successfully!")
+        await db.projects.insert_many(demo_projects)
+        print(f"✅ Created {len(demo_projects)} demo projects")
         
     except Exception as e:
-        print(f"❌ Error creating demo data: {e}")
-    finally:
-        client.close()
+        print(f"❌ Demo projects creation error: {e}")
+
+async def create_demo_conversations(user_id):
+    """Create demo conversations"""
+    try:
+        db = await get_database()
+        
+        # Check if conversations already exist
+        existing_convs = await db.conversations.find({"user_id": user_id}).to_list(length=None)
+        if existing_convs:
+            print(f"✅ Found {len(existing_convs)} existing demo conversations")
+            return
+        
+        demo_conversations = [
+            {
+                "_id": "demo_conv_1",
+                "user_id": user_id,
+                "project_id": "demo_project_1",
+                "title": "E-commerce Setup Discussion",
+                "messages": [
+                    {
+                        "id": "msg_1",
+                        "content": "I need help setting up user authentication for my e-commerce platform",
+                        "sender": "user",
+                        "timestamp": datetime.utcnow() - timedelta(hours=2),
+                        "model": "gpt-4.1-nano",
+                        "agent": "developer"
+                    },
+                    {
+                        "id": "msg_2",
+                        "content": "I'll help you implement secure authentication for your e-commerce platform! Here's a comprehensive approach using FastAPI and JWT tokens...",
+                        "sender": "assistant",
+                        "timestamp": datetime.utcnow() - timedelta(hours=2, minutes=1),
+                        "model": "gpt-4.1-nano",
+                        "agent": "developer"
+                    }
+                ],
+                "created_at": datetime.utcnow() - timedelta(hours=3),
+                "updated_at": datetime.utcnow() - timedelta(hours=2)
+            }
+        ]
+        
+        await db.conversations.insert_many(demo_conversations)
+        print(f"✅ Created {len(demo_conversations)} demo conversations")
+        
+    except Exception as e:
+        print(f"❌ Demo conversations creation error: {e}")
+
+async def main():
+    """Main function to set up all demo data"""
+    print("🚀 Setting up demo data...")
+    
+    try:
+        # Initialize database
+        await init_db()
+        print("✅ Database connected")
+        
+        # Create demo user
+        user_id = await create_demo_user()
+        if not user_id:
+            print("❌ Failed to create demo user")
+            return
+        
+        # Create demo projects
+        await create_demo_projects(user_id)
+        
+        # Create demo conversations
+        await create_demo_conversations(user_id)
+        
+        print("🎉 Demo data setup complete!")
+        print("\n📋 Demo Credentials:")
+        print("Email: demo@aicodestudio.com")
+        print("Password: demo123")
+        
+    except Exception as e:
+        print(f"❌ Setup failed: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(create_demo_data())
+    asyncio.run(main())
