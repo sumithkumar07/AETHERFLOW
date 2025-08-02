@@ -1,14 +1,14 @@
 import { create } from 'zustand'
 import { persist, devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
-import axios from 'axios'
+import { apiService } from '../services/api'
 import toast from 'react-hot-toast'
 
 // AI Models configuration
 const AI_MODELS = {
   'gpt-4.1-nano': {
     name: 'GPT-4.1 Nano',
-    provider: 'Puter.js',
+    provider: 'OpenAI',
     description: 'Fast and efficient for most tasks',
     cost: 'Free',
     capabilities: ['code', 'text', 'analysis'],
@@ -17,7 +17,7 @@ const AI_MODELS = {
   },
   'claude-sonnet-4': {
     name: 'Claude Sonnet 4',
-    provider: 'Puter.js',
+    provider: 'Anthropic',
     description: 'Excellent for complex reasoning',
     cost: 'Free',
     capabilities: ['code', 'text', 'analysis', 'reasoning'],
@@ -26,7 +26,7 @@ const AI_MODELS = {
   },
   'gemini-2.5-flash': {
     name: 'Gemini 2.5 Flash',
-    provider: 'Puter.js',
+    provider: 'Google',
     description: 'Lightning fast responses',
     cost: 'Free',
     capabilities: ['code', 'text', 'multimodal'],
@@ -35,7 +35,7 @@ const AI_MODELS = {
   },
   'gpt-4': {
     name: 'GPT-4',
-    provider: 'Puter.js',
+    provider: 'OpenAI',
     description: 'Most capable model for complex tasks',
     cost: 'Free',
     capabilities: ['code', 'text', 'analysis', 'reasoning'],
@@ -74,19 +74,12 @@ const AGENT_TYPES = {
     capabilities: ['integration', 'apis', 'webhooks', 'services'],
     specialization: 'Third-party integrations and API development'
   },
-  optimizer: {
-    name: 'Optimizer',
-    icon: '⚡',
-    description: 'Performance optimization and scaling',
-    capabilities: ['optimization', 'performance', 'scaling', 'monitoring'],
-    specialization: 'Performance tuning and scalability'
-  },
-  security: {
-    name: 'Security',
-    icon: '🔒',
-    description: 'Security analysis and compliance',
-    capabilities: ['security', 'compliance', 'audit', 'vulnerability'],
-    specialization: 'Security assessment and compliance'
+  analyst: {
+    name: 'Analyst',
+    icon: '📊',
+    description: 'Business analysis and requirements gathering',
+    capabilities: ['analysis', 'requirements', 'optimization', 'reporting'],
+    specialization: 'Business requirements and data analysis'
   }
 }
 
@@ -112,6 +105,31 @@ const useChatStore = create(
           maxContextLength: 50,
           temperature: 0.7,
           maxTokens: 2048
+        },
+        availableModels: [],
+        availableAgents: [],
+
+        // Initialize models and agents from backend
+        initializeModelsAndAgents: async () => {
+          try {
+            const [modelsResponse, agentsResponse] = await Promise.all([
+              apiService.getAIModels(),
+              apiService.getAIAgents()
+            ])
+
+            set((state) => {
+              state.availableModels = modelsResponse
+              state.availableAgents = agentsResponse
+            })
+
+          } catch (error) {
+            console.error('Failed to initialize models and agents:', error)
+            // Use fallback data
+            set((state) => {
+              state.availableModels = Object.values(AI_MODELS)
+              state.availableAgents = Object.values(AGENT_TYPES)
+            })
+          }
         },
 
         // Actions
@@ -163,31 +181,27 @@ const useChatStore = create(
             const recentMessages = conversation.messages
               .slice(-settings.maxContextLength)
               .map(msg => ({
-                role: msg.type === 'user' ? 'user' : 'assistant',
+                sender: msg.type,
                 content: msg.content
               }))
 
-            // Send to AI service
+            // Send to AI service with proper payload structure
             const payload = {
               message: content,
               model: activeModel,
-              agents: activeAgents,
+              agent: activeAgents[0], // Use primary agent
               context: recentMessages,
               project_id: projectId,
-              settings: {
+              conversation_id: conversationId,
+              enhanced_features: {
                 temperature: settings.temperature,
-                max_tokens: settings.maxTokens,
-                stream: options.stream || false
+                max_tokens: settings.maxTokens
               }
             }
 
-            let response
-            if (options.stream) {
-              response = await get().handleStreamingResponse(conversationId, payload)
-            } else {
-              const apiResponse = await axios.post('/ai/chat', payload)
-              response = apiResponse.data.response
-            }
+            // Call the actual backend AI service
+            const apiResponse = await apiService.chatWithAI(payload)
+            const response = apiResponse.response
 
             // Add AI response
             const aiMessage = {
@@ -195,9 +209,12 @@ const useChatStore = create(
               type: 'assistant',
               content: response,
               timestamp: new Date().toISOString(),
-              model: activeModel,
+              model: apiResponse.model_used || activeModel,
               agents: [...activeAgents],
-              usage: apiResponse?.data?.usage || null
+              usage: apiResponse.usage || null,
+              metadata: apiResponse.metadata || {},
+              confidence: apiResponse.confidence || 0.9,
+              suggestions: apiResponse.suggestions || []
             }
 
             set((state) => {
@@ -215,7 +232,7 @@ const useChatStore = create(
             return response
 
           } catch (error) {
-            const errorMessage = error.response?.data?.detail || 'Failed to send message'
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to send message'
             
             set((state) => {
               state.error = errorMessage
@@ -229,101 +246,11 @@ const useChatStore = create(
           }
         },
 
-        handleStreamingResponse: async (conversationId, payload) => {
-          try {
-            set((state) => {
-              state.isStreaming = true
-              state.streamingMessage = {
-                id: Date.now().toString(),
-                type: 'assistant',
-                content: '',
-                timestamp: new Date().toISOString(),
-                model: payload.model,
-                agents: [...payload.agents],
-                streaming: true
-              }
-            })
-
-            const response = await fetch('/api/ai/chat/stream', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${useAuthStore.getState().token}`
-              },
-              body: JSON.stringify(payload)
-            })
-
-            if (!response.ok) {
-              throw new Error('Streaming request failed')
-            }
-
-            const reader = response.body.getReader()
-            const decoder = new TextDecoder()
-            let fullContent = ''
-
-            while (true) {
-              const { done, value } = await reader.read()
-              
-              if (done) break
-
-              const chunk = decoder.decode(value)
-              const lines = chunk.split('\n')
-
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  try {
-                    const data = JSON.parse(line.slice(6))
-                    
-                    if (data.content) {
-                      fullContent += data.content
-                      
-                      set((state) => {
-                        if (state.streamingMessage) {
-                          state.streamingMessage.content = fullContent
-                        }
-                      })
-                    }
-                    
-                    if (data.done) {
-                      // Finalize streaming message
-                      const finalMessage = {
-                        ...get().streamingMessage,
-                        content: fullContent,
-                        streaming: false,
-                        usage: data.usage || null
-                      }
-
-                      set((state) => {
-                        state.conversations[conversationId].messages.push(finalMessage)
-                        state.conversations[conversationId].updated_at = new Date().toISOString()
-                        state.isStreaming = false
-                        state.streamingMessage = null
-                        state.isLoading = false
-                      })
-                      
-                      return fullContent
-                    }
-                  } catch (parseError) {
-                    console.error('Error parsing streaming data:', parseError)
-                  }
-                }
-              }
-            }
-
-            return fullContent
-
-          } catch (error) {
-            set((state) => {
-              state.isStreaming = false
-              state.streamingMessage = null
-              state.error = 'Streaming failed'
-            })
-            throw error
-          }
-        },
-
         setActiveModel: (modelId) => {
-          if (AI_MODELS[modelId]) {
+          const { availableModels } = get()
+          const isValidModel = availableModels.some(model => model.id === modelId) || AI_MODELS[modelId]
+          
+          if (isValidModel) {
             set((state) => {
               state.activeModel = modelId
             })
@@ -331,7 +258,11 @@ const useChatStore = create(
         },
 
         setActiveAgents: (agents) => {
-          const validAgents = agents.filter(agent => AGENT_TYPES[agent])
+          const { availableAgents } = get()
+          const validAgents = agents.filter(agent => 
+            availableAgents.some(a => a.id === agent) || AGENT_TYPES[agent]
+          )
+          
           if (validAgents.length > 0) {
             set((state) => {
               state.activeAgents = validAgents
@@ -340,7 +271,10 @@ const useChatStore = create(
         },
 
         addAgent: (agentType) => {
-          if (AGENT_TYPES[agentType] && !get().activeAgents.includes(agentType)) {
+          const { availableAgents, activeAgents } = get()
+          const isValidAgent = availableAgents.some(a => a.id === agentType) || AGENT_TYPES[agentType]
+          
+          if (isValidAgent && !activeAgents.includes(agentType)) {
             set((state) => {
               state.activeAgents.push(agentType)
             })
@@ -401,7 +335,7 @@ const useChatStore = create(
         deleteConversation: async (conversationId) => {
           try {
             // Delete from server if it exists
-            await axios.delete(`/ai/conversations/${conversationId}`)
+            await apiService.client.delete(`/api/ai/conversations/${conversationId}`)
           } catch (error) {
             console.error('Error deleting conversation from server:', error)
           }
@@ -432,17 +366,11 @@ const useChatStore = create(
         saveConversation: async (conversationId) => {
           try {
             const conversation = get().conversations[conversationId]
-            if (!conversation) return
+            if (!conversation) return false
 
-            await axios.post('/ai/conversations', {
-              id: conversationId,
-              project_id: conversation.projectId,
-              messages: conversation.messages,
-              model: conversation.model,
-              agents: conversation.agents,
-              settings: conversation.settings,
-              created_at: conversation.created_at,
-              updated_at: conversation.updated_at
+            await apiService.createConversation({
+              title: conversation.messages[0]?.content?.substring(0, 50) || 'Untitled',
+              project_id: conversation.projectId
             })
 
             return true
@@ -455,16 +383,53 @@ const useChatStore = create(
         loadConversations: async (projectId = null) => {
           try {
             const params = projectId ? { project_id: projectId } : {}
-            const response = await axios.get('/ai/conversations', { params })
-            const conversations = response.data
+            const response = await apiService.getConversations(params)
+            
+            const conversationsData = response.conversations || []
+            const messages = response.messages || []
 
             set((state) => {
-              conversations.forEach(conversation => {
-                state.conversations[conversation.id] = conversation
+              conversationsData.forEach(conversation => {
+                state.conversations[conversation._id] = {
+                  id: conversation._id,
+                  projectId: conversation.project_id,
+                  messages: conversation.messages || [],
+                  created_at: conversation.created_at,
+                  updated_at: conversation.updated_at,
+                  model: 'gpt-4.1-nano',
+                  agents: ['developer'],
+                  settings: get().settings
+                }
               })
+
+              // If we have messages for a general conversation
+              if (messages.length > 0 && !projectId) {
+                const generalConversation = 'general'
+                if (!state.conversations[generalConversation]) {
+                  state.conversations[generalConversation] = {
+                    id: generalConversation,
+                    projectId: null,
+                    messages: [],
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    model: 'gpt-4.1-nano',
+                    agents: ['developer'],
+                    settings: get().settings
+                  }
+                }
+                
+                state.conversations[generalConversation].messages = messages.map(msg => ({
+                  id: msg.id,
+                  type: msg.sender === 'user' ? 'user' : 'assistant',
+                  content: msg.content,
+                  timestamp: msg.timestamp,
+                  model: msg.model || 'gpt-4.1-nano',
+                  agents: [msg.agent || 'developer']
+                }))
+              }
             })
 
-            return conversations
+            return conversationsData
           } catch (error) {
             console.error('Error loading conversations:', error)
             return []
@@ -539,8 +504,15 @@ const useChatStore = create(
         },
 
         // Utility functions
-        getAvailableModels: () => AI_MODELS,
-        getAvailableAgents: () => AGENT_TYPES,
+        getAvailableModels: () => {
+          const { availableModels } = get()
+          return availableModels.length > 0 ? availableModels : Object.values(AI_MODELS)
+        },
+        
+        getAvailableAgents: () => {
+          const { availableAgents } = get()
+          return availableAgents.length > 0 ? availableAgents : Object.values(AGENT_TYPES)
+        },
         
         clearError: () => {
           set((state) => {
@@ -569,7 +541,7 @@ const useChatStore = create(
           activeAgents: state.activeAgents,
           settings: state.settings
         }),
-        version: 1
+        version: 2
       }
     ),
     {
