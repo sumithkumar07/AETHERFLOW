@@ -12,7 +12,7 @@ export default defineConfig({
     hmr: {
       overlay: false
     },
-    allowedHosts: ['all']
+    allowedHosts: ['0.0.0.0', 'localhost', '.preview.emergentagent.com']
   },
   resolve: {
     alias: {
