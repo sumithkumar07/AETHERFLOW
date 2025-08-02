@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   PuzzlePieceIcon,
   StarIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   CheckCircleIcon,
   ClockIcon,
   FireIcon,
