@@ -11,7 +11,8 @@ const AI_MODELS = {
     capabilities: ['code', 'analysis', 'creative'],
     speed: 'fast',
     quality: 'high',
-    cost: 'free'
+    cost: 'free',
+    icon: '🚀'
   },
   'claude-sonnet-4': {
     name: 'Claude Sonnet 4',
@@ -20,7 +21,8 @@ const AI_MODELS = {
     capabilities: ['code', 'analysis', 'reasoning', 'creative'],
     speed: 'medium',
     quality: 'highest',
-    cost: 'free'
+    cost: 'free',
+    icon: '🧠'
   },
   'gemini-2.5-flash': {
     name: 'Gemini 2.5 Flash',
@@ -29,7 +31,8 @@ const AI_MODELS = {
     capabilities: ['code', 'analysis', 'multimodal'],
     speed: 'fastest',
     quality: 'high',
-    cost: 'free'
+    cost: 'free',
+    icon: '⚡'
   },
   'gpt-4': {
     name: 'GPT-4',
@@ -38,7 +41,8 @@ const AI_MODELS = {
     capabilities: ['code', 'analysis', 'creative', 'reasoning'],
     speed: 'medium',
     quality: 'highest',
-    cost: 'free'
+    cost: 'free',
+    icon: '🔥'
   }
 }
 
@@ -49,35 +53,40 @@ const AI_AGENTS = {
     icon: '💻',
     description: 'Expert in coding, debugging, and software architecture',
     capabilities: ['Full-stack development', 'Code review', 'Architecture', 'Debugging'],
-    prompt: 'You are an expert software developer with deep knowledge of modern programming languages, frameworks, and best practices.'
+    prompt: 'You are an expert software developer with deep knowledge of modern programming languages, frameworks, and best practices.',
+    color: 'text-blue-600 dark:text-blue-400'
   },
   designer: {
     name: 'Designer Agent',
     icon: '🎨',
     description: 'UI/UX design specialist with modern design principles',
     capabilities: ['UI/UX Design', 'Design Systems', 'User Research', 'Prototyping'],
-    prompt: 'You are a senior UI/UX designer with expertise in modern design principles, user experience, and design systems.'
+    prompt: 'You are a senior UI/UX designer with expertise in modern design principles, user experience, and design systems.',
+    color: 'text-purple-600 dark:text-purple-400'
   },
   tester: {
     name: 'QA Agent',
     icon: '🧪',
     description: 'Quality assurance and testing specialist',
     capabilities: ['Test Strategy', 'Automation', 'Bug Analysis', 'Performance Testing'],
-    prompt: 'You are a senior QA engineer specializing in test automation, quality assurance, and comprehensive testing strategies.'
+    prompt: 'You are a senior QA engineer specializing in test automation, quality assurance, and comprehensive testing strategies.',
+    color: 'text-green-600 dark:text-green-400'
   },
   integrator: {
     name: 'Integration Agent',
     icon: '🔗',
     description: 'Third-party integration and API specialist',
     capabilities: ['API Integration', 'Third-party Services', 'Data Migration', 'System Architecture'],
-    prompt: 'You are an integration specialist with expertise in connecting systems, APIs, and third-party services.'
+    prompt: 'You are an integration specialist with expertise in connecting systems, APIs, and third-party services.',
+    color: 'text-orange-600 dark:text-orange-400'
   },
   analyst: {
     name: 'Business Analyst',
     icon: '📊',
     description: 'Business requirements and data analysis expert',
     capabilities: ['Requirements Analysis', 'Data Analysis', 'Process Optimization', 'Reporting'],
-    prompt: 'You are a senior business analyst with expertise in requirements gathering, process optimization, and data-driven insights.'
+    prompt: 'You are a senior business analyst with expertise in requirements gathering, process optimization, and data-driven insights.',
+    color: 'text-indigo-600 dark:text-indigo-400'
   }
 }
 
@@ -94,10 +103,10 @@ const useChatStore = create((set, get) => ({
   // Enhanced AI state
   aiThinking: false,
   modelStats: {
-    'gpt-4.1-nano': { usage: 0, avgResponseTime: 0 },
-    'claude-sonnet-4': { usage: 0, avgResponseTime: 0 },
-    'gemini-2.5-flash': { usage: 0, avgResponseTime: 0 },
-    'gpt-4': { usage: 0, avgResponseTime: 0 }
+    'gpt-4.1-nano': { usage: 0, avgResponseTime: 0, successRate: 100 },
+    'claude-sonnet-4': { usage: 0, avgResponseTime: 0, successRate: 100 },
+    'gemini-2.5-flash': { usage: 0, avgResponseTime: 0, successRate: 100 },
+    'gpt-4': { usage: 0, avgResponseTime: 0, successRate: 100 }
   },
   
   // Context and conversation history
@@ -107,6 +116,11 @@ const useChatStore = create((set, get) => ({
   // Real-time typing indicators
   isAITyping: false,
   typingTimeout: null,
+  
+  // Advanced features
+  smartSuggestions: [],
+  codeAnalysisResults: null,
+  projectInsights: null,
 
   // Enhanced Actions
   sendMessage: async (messageData) => {
@@ -131,7 +145,8 @@ const useChatStore = create((set, get) => ({
         metadata: {
           wordCount: messageData.content.split(' ').length,
           hasCode: messageData.content.includes('```'),
-          sentiment: 'neutral'
+          sentiment: 'neutral',
+          codeBlocks: get().extractCodeBlocks(messageData.content)
         }
       }
       
@@ -152,11 +167,13 @@ const useChatStore = create((set, get) => ({
         enhanced_features: {
           code_analysis: true,
           context_awareness: true,
-          follow_up_suggestions: true
+          follow_up_suggestions: true,
+          smart_completions: true,
+          project_context: messageData.projectId ? true : false
         }
       }
       
-      const response = await axios.post('/ai/chat', requestPayload)
+      const response = await axios.post('/api/ai/chat', requestPayload)
       const responseTime = Date.now() - startTime
       
       // Enhanced AI message with metadata
@@ -173,7 +190,8 @@ const useChatStore = create((set, get) => ({
           hasCode: response.data.response.includes('```'),
           confidence: response.data.confidence || 0.95,
           suggestions: response.data.suggestions || [],
-          usage: response.data.usage || {}
+          usage: response.data.usage || {},
+          codeBlocks: get().extractCodeBlocks(response.data.response)
         }
       }
       
@@ -185,20 +203,22 @@ const useChatStore = create((set, get) => ({
         loading: false,
         aiThinking: false,
         isAITyping: false,
+        smartSuggestions: response.data.suggestions || [],
         modelStats: {
           ...state.modelStats,
           [currentModel]: {
             usage: state.modelStats[currentModel].usage + 1,
-            avgResponseTime: (state.modelStats[currentModel].avgResponseTime + responseTime) / 2
+            avgResponseTime: (state.modelStats[currentModel].avgResponseTime + responseTime) / 2,
+            successRate: Math.min(100, state.modelStats[currentModel].successRate + 0.5)
           }
         }
       }))
       
-      // Success feedback
+      // Success feedback with enhanced information
       if (responseTime < 3000) {
-        toast.success(`AI responded in ${(responseTime / 1000).toFixed(1)}s`, {
+        toast.success(`${AI_MODELS[currentModel].name} responded in ${(responseTime / 1000).toFixed(1)}s`, {
           duration: 2000,
-          icon: '⚡'
+          icon: AI_MODELS[currentModel].icon
         })
       }
       
@@ -207,12 +227,21 @@ const useChatStore = create((set, get) => ({
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to send message'
       
-      set({ 
+      // Update model failure stats
+      const currentModel = messageData.model || get().selectedModel
+      set(state => ({ 
         error: errorMessage, 
         loading: false,
         aiThinking: false,
-        isAITyping: false
-      })
+        isAITyping: false,
+        modelStats: {
+          ...state.modelStats,
+          [currentModel]: {
+            ...state.modelStats[currentModel],
+            successRate: Math.max(0, state.modelStats[currentModel].successRate - 2)
+          }
+        }
+      }))
       
       // Enhanced error handling with user-friendly messages
       let userFriendlyError = errorMessage
@@ -221,10 +250,13 @@ const useChatStore = create((set, get) => ({
       } else if (error.response?.status >= 500) {
         userFriendlyError = 'AI service is temporarily unavailable. Switching to backup model...'
         // Auto-retry with different model
-        get().autoRetryWithFallbackModel(messageData)
+        setTimeout(() => get().autoRetryWithFallbackModel(messageData), 2000)
       }
       
-      toast.error(userFriendlyError)
+      toast.error(userFriendlyError, {
+        duration: 5000,
+        icon: '⚠️'
+      })
       return { success: false, error: errorMessage }
     }
   },
@@ -232,18 +264,21 @@ const useChatStore = create((set, get) => ({
   // Auto-retry with fallback model
   autoRetryWithFallbackModel: async (messageData) => {
     const currentModel = messageData.model || get().selectedModel
-    const fallbackModels = Object.keys(AI_MODELS).filter(model => model !== currentModel)
+    const modelStats = get().modelStats
     
-    if (fallbackModels.length > 0) {
-      const fallbackModel = fallbackModels[0]
+    // Sort models by success rate and response time
+    const availableModels = Object.entries(modelStats)
+      .filter(([model]) => model !== currentModel)
+      .sort(([,a], [,b]) => (b.successRate - a.successRate) || (a.avgResponseTime - b.avgResponseTime))
+    
+    if (availableModels.length > 0) {
+      const fallbackModel = availableModels[0][0]
       toast.loading(`Retrying with ${AI_MODELS[fallbackModel].name}...`, { duration: 3000 })
       
-      setTimeout(() => {
-        get().sendMessage({
-          ...messageData,
-          model: fallbackModel
-        })
-      }, 1500)
+      return await get().sendMessage({
+        ...messageData,
+        model: fallbackModel
+      })
     }
   },
 
@@ -251,7 +286,7 @@ const useChatStore = create((set, get) => ({
   fetchMessages: async (projectId) => {
     try {
       set({ loading: true, error: null })
-      const response = await axios.get(`/ai/conversations?project_id=${projectId}`)
+      const response = await axios.get(`/api/ai/conversations?project_id=${projectId}`)
       
       const messages = response.data.messages || []
       const conversations = response.data.conversations || []
@@ -262,6 +297,7 @@ const useChatStore = create((set, get) => ({
         metadata: {
           wordCount: msg.content?.split(' ').length || 0,
           hasCode: msg.content?.includes('```') || false,
+          codeBlocks: get().extractCodeBlocks(msg.content || ''),
           ...msg.metadata
         }
       }))
@@ -273,7 +309,7 @@ const useChatStore = create((set, get) => ({
         loading: false 
       })
       
-      return { success: true }
+      return { success: true, messages: enhancedMessages, conversations }
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to fetch messages'
       set({ error: errorMessage, loading: false })
@@ -288,7 +324,7 @@ const useChatStore = create((set, get) => ({
       set({ selectedModel: model })
       toast.success(`Switched to ${modelInfo.name}`, {
         duration: 2000,
-        icon: '🤖'
+        icon: modelInfo.icon
       })
     }
   },
@@ -303,6 +339,114 @@ const useChatStore = create((set, get) => ({
         icon: agentInfo.icon
       })
     }
+  },
+
+  // Get smart suggestions based on context
+  getSmartSuggestions: () => {
+    const state = get()
+    const lastMessage = state.messages[state.messages.length - 1]
+    
+    if (!lastMessage || lastMessage.sender !== 'assistant') {
+      return []
+    }
+    
+    const suggestions = state.smartSuggestions
+    if (suggestions && suggestions.length > 0) {
+      return suggestions
+    }
+    
+    // Fallback suggestions based on content
+    const content = lastMessage.content.toLowerCase()
+    const contextualSuggestions = []
+    
+    if (content.includes('error') || content.includes('bug')) {
+      contextualSuggestions.push(
+        "How can I debug this issue?",
+        "What are common causes of this error?",
+        "Can you help me fix this?"
+      )
+    } else if (content.includes('code') || content.includes('function')) {
+      contextualSuggestions.push(
+        "Can you explain this code?",
+        "How can I optimize this?",
+        "What are best practices here?"
+      )
+    } else {
+      contextualSuggestions.push(
+        "Can you provide more details?",
+        "What's the next step?",
+        "Any alternatives to consider?"
+      )
+    }
+    
+    return contextualSuggestions.slice(0, 3)
+  },
+
+  // Code analysis functionality
+  analyzeCode: async (code, language) => {
+    try {
+      // This would integrate with code analysis backend service
+      const mockAnalysis = {
+        complexity: Math.floor(Math.random() * 10) + 1,
+        issues: Math.floor(Math.random() * 5),
+        suggestions: [
+          "Consider using async/await for better readability",
+          "Add error handling for API calls",
+          "Extract reusable functions"
+        ],
+        performance: Math.floor(Math.random() * 30) + 70,
+        security: Math.floor(Math.random() * 20) + 80
+      }
+      
+      set({ codeAnalysisResults: mockAnalysis })
+      
+      return { success: true, analysis: mockAnalysis }
+    } catch (error) {
+      return { success: false, error: 'Code analysis failed' }
+    }
+  },
+
+  // Project insights
+  generateProjectInsights: async (projectId) => {
+    try {
+      // This would integrate with analytics backend
+      const mockInsights = {
+        codeQuality: Math.floor(Math.random() * 30) + 70,
+        testCoverage: Math.floor(Math.random() * 40) + 60,
+        performance: Math.floor(Math.random() * 25) + 75,
+        recommendations: [
+          "Add more unit tests to improve coverage",
+          "Consider implementing caching for better performance",
+          "Review error handling across the application"
+        ],
+        trends: {
+          activity: Array.from({ length: 7 }, () => Math.floor(Math.random() * 100)),
+          quality: Array.from({ length: 7 }, () => Math.floor(Math.random() * 20) + 80)
+        }
+      }
+      
+      set({ projectInsights: mockInsights })
+      
+      return { success: true, insights: mockInsights }
+    } catch (error) {
+      return { success: false, error: 'Failed to generate insights' }
+    }
+  },
+
+  // Utility Functions
+  extractCodeBlocks: (content) => {
+    const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g
+    const blocks = []
+    let match
+    
+    while ((match = codeBlockRegex.exec(content)) !== null) {
+      blocks.push({
+        language: match[1] || 'text',
+        code: match[2].trim()
+      })
+    }
+    
+    return blocks
   },
 
   // Get model information
@@ -339,7 +483,7 @@ const useChatStore = create((set, get) => ({
   // Enhanced conversation management
   createConversation: async (projectId, title) => {
     try {
-      const response = await axios.post('/ai/conversations', {
+      const response = await axios.post('/api/ai/conversations', {
         project_id: projectId,
         title: title || `Conversation ${Date.now()}`
       })
@@ -362,7 +506,7 @@ const useChatStore = create((set, get) => ({
   switchConversation: async (conversationId) => {
     try {
       set({ loading: true })
-      const response = await axios.get(`/ai/conversations/${conversationId}`)
+      const response = await axios.get(`/api/ai/conversations/${conversationId}`)
       
       const conversation = response.data
       const messages = conversation.messages || []
@@ -380,11 +524,6 @@ const useChatStore = create((set, get) => ({
       set({ error: errorMessage, loading: false })
       return { success: false, error: errorMessage }
     }
-  },
-
-  // Clear conversation context
-  clearConversationContext: () => {
-    set({ conversationContext: [] })
   },
 
   // Enhanced message management
@@ -439,7 +578,9 @@ const useChatStore = create((set, get) => ({
       metadata: {
         exportedAt: new Date().toISOString(),
         messageCount: state.messages.length,
-        modelStats: state.modelStats
+        modelStats: state.modelStats,
+        selectedModel: state.selectedModel,
+        selectedAgent: state.selectedAgent
       }
     }
     
@@ -451,7 +592,7 @@ const useChatStore = create((set, get) => ({
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `conversation_${Date.now()}.${format}`
+    link.download = `ai_tempo_conversation_${Date.now()}.${format}`
     link.click()
     
     toast.success(`Conversation exported as ${format.toUpperCase()}`)
@@ -462,7 +603,9 @@ const useChatStore = create((set, get) => ({
     set({ 
       messages: [], 
       currentConversation: null,
-      conversationContext: []
+      conversationContext: [],
+      smartSuggestions: [],
+      codeAnalysisResults: null
     })
     toast.success('Conversation cleared')
   },
@@ -479,6 +622,11 @@ const useChatStore = create((set, get) => ({
       isAITyping: false,
       loading: false
     })
+  },
+
+  // Clear conversation context
+  clearConversationContext: () => {
+    set({ conversationContext: [] })
   }
 }))
 
