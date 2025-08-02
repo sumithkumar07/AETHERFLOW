@@ -604,8 +604,6 @@ How can I help analyze your project requirements? I can assist with:
 - Process optimization
 - Data analysis and reporting
 - Performance metrics definition"""
-        
-        return response
     
     def _generate_suggestions(self, message: str, agent: str) -> List[str]:
         """Generate contextual suggestions"""
