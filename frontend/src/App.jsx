@@ -107,11 +107,26 @@ function AppContent() {
       initializationAttempted.current = true
       
       try {
+        console.log('🚀 Starting app initialization...')
+        
         // Initialize theme first (synchronous)
         initializeTheme()
+        console.log('✅ Theme initialized')
         
-        // Initialize auth store
-        await initialize()
+        // Initialize auth store with timeout
+        console.log('🔑 Starting auth initialization...')
+        const authInitPromise = initialize()
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth init timeout')), 15000)
+        )
+        
+        try {
+          await Promise.race([authInitPromise, timeoutPromise])
+          console.log('✅ Auth initialization completed')
+        } catch (error) {
+          console.error('⚠️ Auth initialization failed or timed out:', error)
+          // Continue anyway to prevent infinite loading
+        }
         
         // Check if user needs onboarding
         const hasSeenOnboarding = localStorage.getItem('ai-tempo-onboarding-complete')
@@ -122,11 +137,12 @@ function AppContent() {
         // Register service worker for PWA
         registerServiceWorker()
         
-        // Mark as initialized
+        // Mark as initialized regardless of auth status
+        console.log('✅ App initialization complete')
         setIsInitialized(true)
         
       } catch (error) {
-        console.error('App initialization error:', error)
+        console.error('❌ App initialization error:', error)
         setIsInitialized(true) // Initialize anyway to prevent infinite loading
       }
     }
