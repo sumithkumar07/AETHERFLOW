@@ -161,6 +161,7 @@ from routes.template_generation import router as template_generation_router
 from routes.predictive_ui import router as predictive_ui_router
 from routes.enhanced_integrations import router as enhanced_integrations_router
 from routes.voice_code_review import router as voice_code_review_router
+from routes.enhanced_features import router as enhanced_features_router
 
 # Include routers - Cutting-Edge Features (Phase 1-5)
 from routes.architectural_intelligence import router as architectural_intelligence_router
