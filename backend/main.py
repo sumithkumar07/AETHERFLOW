@@ -60,12 +60,17 @@ from services.experimental_sandbox import ExperimentalSandbox
 from services.visual_programming import VisualProgramming
 from services.community_intelligence import CommunityIntelligence
 from services.resource_optimizer import ResourceOptimizer
+from services.dependency_intelligence import DependencyIntelligence
+from services.pattern_intelligence import PatternIntelligence
 from routes.architectural_intelligence import set_architectural_intelligence_service
 from routes.smart_documentation import set_smart_documentation_service
 from routes.theme_intelligence import set_theme_intelligence_service
 from routes.project_migration import set_project_migrator_service
 from routes.code_quality import set_code_quality_engine
 from routes.workspace_optimization import set_workspace_intelligence
+from routes.experimental_sandbox import set_experimental_sandbox_service
+from routes.visual_programming import set_visual_programming_service
+from routes.community_intelligence import set_community_intelligence_service
 
 # Load environment variables
 load_dotenv()
