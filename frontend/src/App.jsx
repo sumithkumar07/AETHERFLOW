@@ -410,6 +410,9 @@ function AppContent() {
           onSkip={handleTourSkip}
         />
         
+        {/* PWA Enhancement */}
+        <PWAEnhancement />
+        
         {/* Enhanced toast notifications with better styling */}
         <Toaster 
           position="top-right"
