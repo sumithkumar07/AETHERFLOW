@@ -10,7 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.REACT_AP
 axios.defaults.baseURL = `${BACKEND_URL}/api`
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-// Simplified and robust auth store
+// Enhanced and robust auth store for Aether AI
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -19,8 +19,8 @@ const useAuthStore = create(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
-      isLoading: false, // Start false - will be set to true only during actual operations
-      isInitialized: false, // Add initialization state
+      isLoading: false,
+      isInitialized: false,
       error: null,
       loginAttempts: 0,
       lastLoginAttempt: null,
@@ -47,7 +47,7 @@ const useAuthStore = create(
             lastLoginAttempt: null
           })
           
-          toast.success(`Welcome back, ${user.name}!`)
+          toast.success(`Welcome back to Aether AI, ${user.name}!`)
           return { success: true, user }
           
         } catch (error) {
@@ -85,7 +85,7 @@ const useAuthStore = create(
             error: null
           })
           
-          toast.success(`Welcome to AI Tempo, ${user.name}!`)
+          toast.success(`Welcome to Aether AI, ${user.name}! 🚀`)
           return { success: true, user }
           
         } catch (error) {
@@ -126,7 +126,7 @@ const useAuthStore = create(
             lastLoginAttempt: null
           })
           
-          toast.success('Logged out successfully')
+          toast.success('Logged out from Aether AI successfully')
         }
       },
 
@@ -134,7 +134,7 @@ const useAuthStore = create(
       initialize: async () => {
         try {
           const { token } = get()
-          console.log('Initializing auth store, token exists:', !!token)
+          console.log('🔑 Initializing Aether AI auth, token exists:', !!token)
           
           // If no token exists, we're not authenticated
           if (!token) {
@@ -150,7 +150,7 @@ const useAuthStore = create(
           }
           
           // If we have a token, validate it silently with timeout
-          console.log('Token found, validating silently...')
+          console.log('Token found, validating with Aether AI...')
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Auth validation timeout')), 10000)
           )
@@ -160,7 +160,7 @@ const useAuthStore = create(
           let isValid = false
           try {
             isValid = await Promise.race([validationPromise, timeoutPromise])
-            console.log('Token validation result:', isValid)
+            console.log('Aether AI token validation result:', isValid)
           } catch (error) {
             console.error('Token validation failed or timed out:', error)
             // Clear invalid token
@@ -179,10 +179,10 @@ const useAuthStore = create(
             isInitialized: true
           })
           
-          console.log('Auth initialization complete, authenticated:', isValid)
+          console.log('✅ Aether AI auth initialization complete, authenticated:', isValid)
           return isValid
         } catch (error) {
-          console.error('Auth initialization error:', error)
+          console.error('Aether AI auth initialization error:', error)
           set({
             user: null,
             isAuthenticated: false,
@@ -294,7 +294,6 @@ const useAuthStore = create(
           console.error('Silent auth check failed:', error)
           
           // Only clear auth state if it's a clear authentication failure
-          // Don't clear state for network errors or temporary issues
           if (error.response?.status === 401 && !get().isAuthenticated) {
             // Try to refresh token if available
             if (get().refreshToken) {
@@ -471,7 +470,7 @@ const useAuthStore = create(
         }
       },
 
-      // Demo login for testing
+      // Enhanced demo login for Aether AI
       demoLogin: async () => {
         return get().login({
           email: 'demo@aicodestudio.com',
@@ -504,7 +503,7 @@ const useAuthStore = create(
       }
     }),
     {
-      name: 'ai-tempo-auth',
+      name: 'aether-ai-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
@@ -514,10 +513,10 @@ const useAuthStore = create(
         loginAttempts: state.loginAttempts,
         lastLoginAttempt: state.lastLoginAttempt
       }),
-      version: 3,
+      version: 4,
       migrate: (persistedState, version) => {
         // Handle migration from older versions
-        if (version < 3) {
+        if (version < 4) {
           return {
             ...persistedState,
             refreshToken: persistedState.refreshToken || null,
@@ -531,7 +530,7 @@ const useAuthStore = create(
   )
 )
 
-// Axios interceptors for automatic token refresh
+// Enhanced Axios interceptors for automatic token refresh
 let isRefreshing = false
 let refreshSubscribers = []
 
