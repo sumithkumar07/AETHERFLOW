@@ -75,13 +75,17 @@ class BackendTester:
         # Test root endpoint
         response = self.make_request("GET", "/")
         if response and response.status_code == 200:
-            data = response.json()
-            if "message" in data and "status" in data:
-                self.log_test("Root Health Check", "PASS", 
-                            f"API running: {data.get('message')}", response.status_code)
-            else:
+            try:
+                data = response.json()
+                if "message" in data and "status" in data:
+                    self.log_test("Root Health Check", "PASS", 
+                                f"API running: {data.get('message')}", response.status_code)
+                else:
+                    self.log_test("Root Health Check", "FAIL", 
+                                "Missing required fields in response", response.status_code)
+            except:
                 self.log_test("Root Health Check", "FAIL", 
-                            "Missing required fields in response", response.status_code)
+                            f"Non-JSON response: {response.text[:200]}", response.status_code)
         else:
             self.log_test("Root Health Check", "FAIL", 
                         "Endpoint not accessible", response.status_code if response else None)
