@@ -130,7 +130,12 @@ const ModelSelector = ({ className = '' }) => {
                             </span>
                             {model.cost === 'free' && (
                               <span className="px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
-                                FREE
+                                LOCAL
+                              </span>
+                            )}
+                            {model.unlimited && (
+                              <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
+                                UNLIMITED
                               </span>
                             )}
                           </div>
