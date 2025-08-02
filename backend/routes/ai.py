@@ -1,270 +1,118 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
-from typing import Dict, Any, Optional, List
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
 from datetime import datetime
-import json
+import uuid
 import logging
-import asyncio
-import httpx
 
 from models.user import User
-from models.conversation import Conversation, Message, MessageRole
 from models.database import get_database
 from routes.auth import get_current_user
 from services.ai_service import AIService
-from services.enhanced_ai_service import EnhancedAIService
 
 router = APIRouter()
 ai_service = AIService()
-enhanced_ai_service = EnhancedAIService()
 logger = logging.getLogger(__name__)
 
-# Available AI models
-AVAILABLE_MODELS = {
-    "gpt-4.1-nano": {
-        "name": "GPT-4.1 Nano",
-        "provider": "Puter.js",
-        "description": "Fast and efficient for quick tasks",
-        "max_tokens": 4096,
-        "cost": "Free",
-        "capabilities": ["text", "code", "analysis"]
-    },
-    "claude-sonnet-4": {
-        "name": "Claude Sonnet 4",
-        "provider": "Puter.js", 
-        "description": "Great for creative and analytical tasks",
-        "max_tokens": 8192,
-        "cost": "Free",
-        "capabilities": ["text", "code", "analysis", "creative"]
-    },
-    "gemini-2.5-flash": {
-        "name": "Gemini 2.5 Flash",
-        "provider": "Puter.js",
-        "description": "Lightning fast responses",
-        "max_tokens": 2048,
-        "cost": "Free",
-        "capabilities": ["text", "code", "fast-response"]
-    }
-}
+class ChatMessage(BaseModel):
+    message: str
+    model: Optional[str] = "gpt-4.1-nano"
+    agent: Optional[str] = "developer"
+    project_id: Optional[str] = None
+    conversation_id: Optional[str] = None
+    context: Optional[List[Dict]] = []
+    agent_prompt: Optional[str] = None
+    enhanced_features: Optional[Dict] = {}
 
-@router.get("/models")
-async def get_available_models():
-    """Get list of available AI models"""
-    return {
-        "models": AVAILABLE_MODELS,
-        "default": "gpt-4.1-nano"
-    }
-
-@router.post("/generate-project")
-async def generate_project_code(
-    request: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
-):
-    """Enhanced AI endpoint that generates actual project files and structure"""
-    try:
-        message = request.get("message", "")
-        project_id = request.get("project_id")
-        model = request.get("model", "gpt-4.1-nano")
-        
-        if not message:
-            raise HTTPException(status_code=400, detail="Message is required")
-        
-        # Enhanced prompt for code generation
-        enhanced_prompt = f"""
-        You are an expert full-stack developer. Generate a complete, working project based on this request: "{message}"
-
-        Please provide:
-        1. Complete file structure with all necessary files
-        2. Full code implementation for each file
-        3. Package.json with all required dependencies
-        4. Clear setup and run instructions
-        5. Professional code with comments and best practices
-
-        Format your response as structured JSON with this exact format:
-        {{
-            "project_name": "descriptive-project-name",
-            "description": "Brief description of the project",
-            "files": [
-                {{
-                    "path": "relative/file/path.ext",
-                    "content": "complete file content here"
-                }}
-            ],
-            "dependencies": {{
-                "production": {{}},
-                "development": {{}}
-            }},
-            "setup_instructions": [
-                "step 1",
-                "step 2"
-            ],
-            "run_commands": [
-                "npm install",
-                "npm start"
-            ]
-        }}
-
-        Make sure the project is fully functional and production-ready.
-        """
-        
-        # Get AI response with enhanced prompt
-        ai_response = await ai_service.chat_with_ai(
-            message=enhanced_prompt,
-            model=model,
-            user_id=current_user.id,
-            max_tokens=6000,
-            temperature=0.1  # Lower temperature for more consistent code generation
-        )
-        
-        # Try to parse the structured response
-        try:
-            # Extract JSON from AI response if it's wrapped in text
-            response_text = ai_response.get("response", "")
-            if "```json" in response_text:
-                json_start = response_text.find("```json") + 7
-                json_end = response_text.find("```", json_start)
-                json_content = response_text[json_start:json_end].strip()
-            else:
-                json_content = response_text
-                
-            project_data = json.loads(json_content)
-            
-            # Validate required fields
-            required_fields = ["project_name", "description", "files"]
-            for field in required_fields:
-                if field not in project_data:
-                    raise ValueError(f"Missing required field: {field}")
-                    
-            # Store project files in database if project_id provided
-            if project_id:
-                db = await get_database()
-                await db.projects.update_one(
-                    {"id": project_id, "user_id": current_user.id},
-                    {"$set": {
-                        "files": project_data.get("files", []),
-                        "dependencies": project_data.get("dependencies", {}),
-                        "setup_instructions": project_data.get("setup_instructions", []),
-                        "run_commands": project_data.get("run_commands", []),
-                        "updated_at": datetime.now().isoformat()
-                    }}
-                )
-            
-            return {
-                "success": True,
-                "project_data": project_data,
-                "ai_response": ai_response,
-                "model": model,
-                "timestamp": datetime.now().isoformat()
-            }
-            
-        except (json.JSONDecodeError, ValueError) as e:
-            # Fallback to regular chat response if JSON parsing fails
-            logger.warning(f"Failed to parse structured response: {e}")
-            return {
-                "success": False,
-                "fallback_response": ai_response.get("response", ""),
-                "error": "Could not generate structured project files",
-                "model": model,
-                "timestamp": datetime.now().isoformat()
-            }
-            
-    except Exception as e:
-        logger.error(f"Error in generate_project_code: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error generating project: {str(e)}")
+class ConversationCreate(BaseModel):
+    title: str
+    project_id: Optional[str] = None
 
 @router.post("/chat")
 async def chat_with_ai(
-    request: Dict[str, Any],
+    message_data: ChatMessage,
     current_user: User = Depends(get_current_user)
 ):
-    """Send a message to AI and get response"""
+    """Chat with AI agent"""
     try:
-        message = request.get("message", "")
-        model = request.get("model", "gpt-4.1-nano")
-        conversation_id = request.get("conversation_id")
-        project_id = request.get("project_id")
-        agents = request.get("agents", ["developer"])
-        temperature = request.get("temperature", 0.7)
-        max_tokens = request.get("max_tokens", 2048)
+        logger.info(f"Processing AI chat request from user {current_user.id}")
         
-        if not message.strip():
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
+        # Generate unique message ID
+        message_id = f"msg_{uuid.uuid4().hex[:12]}"
         
-        if model not in AVAILABLE_MODELS:
-            model = "gpt-4.1-nano"
+        # Process with AI service
+        ai_response = await ai_service.process_message(
+            message=message_data.message,
+            model=message_data.model,
+            agent=message_data.agent,
+            context=message_data.context,
+            user_id=str(current_user.id),
+            project_id=message_data.project_id
+        )
         
-        # Enhanced prompt with agent context
-        enhanced_prompt = await build_enhanced_prompt(message, agents, project_id, current_user)
-        
-        # Try multiple AI services
-        response = await get_ai_response(enhanced_prompt, model, temperature, max_tokens)
-        
-        # Store conversation in database
-        if conversation_id:
-            await store_conversation_message(
-                conversation_id, 
-                current_user.id, 
-                message, 
-                response, 
-                model,
-                agents,
-                project_id
-            )
-        
-        logger.info(f"AI chat completed for user {current_user.id}, model: {model}")
-        
-        return {
-            "response": response,
-            "model": model,
-            "tokens_used": estimate_tokens(message + response),
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"AI chat error: {e}")
-        raise HTTPException(status_code=500, detail="AI service temporarily unavailable")
-
-@router.post("/conversation")
-async def create_conversation(
-    request: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
-):
-    """Create a new conversation"""
-    try:
+        # Save conversation to database
         db = await get_database()
         
         conversation_data = {
-            "_id": f"conv_{int(datetime.utcnow().timestamp() * 1000)}",
+            "_id": f"conv_{uuid.uuid4().hex[:12]}",
             "user_id": str(current_user.id),
-            "title": request.get("title", "New Chat"),
-            "project_id": request.get("project_id"),
-            "messages": [],
-            "model": request.get("model", "gpt-4.1-nano"),
-            "agents": request.get("agents", ["developer"]),
+            "project_id": message_data.project_id,
+            "messages": [
+                {
+                    "id": f"user_{message_id}",
+                    "content": message_data.message,
+                    "sender": "user",
+                    "timestamp": datetime.utcnow(),
+                    "model": message_data.model,
+                    "agent": message_data.agent
+                },
+                {
+                    "id": f"ai_{message_id}",
+                    "content": ai_response["response"],
+                    "sender": "assistant",
+                    "timestamp": datetime.utcnow(),
+                    "model": ai_response.get("model_used", message_data.model),
+                    "agent": message_data.agent,
+                    "metadata": ai_response.get("metadata", {})
+                }
+            ],
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         }
         
-        await db.conversations.insert_one(conversation_data)
+        # Insert or update conversation
+        if message_data.conversation_id:
+            await db.conversations.update_one(
+                {"_id": message_data.conversation_id, "user_id": str(current_user.id)},
+                {
+                    "$push": {"messages": conversation_data["messages"]},
+                    "$set": {"updated_at": datetime.utcnow()}
+                }
+            )
+        else:
+            await db.conversations.insert_one(conversation_data)
         
         return {
-            "conversation": conversation_data,
-            "message": "Conversation created successfully"
+            "response": ai_response["response"],
+            "model_used": ai_response.get("model_used", message_data.model),
+            "agent": message_data.agent,
+            "confidence": ai_response.get("confidence", 0.95),
+            "suggestions": ai_response.get("suggestions", []),
+            "usage": ai_response.get("usage", {}),
+            "conversation_id": conversation_data["_id"]
         }
         
     except Exception as e:
-        logger.error(f"Conversation creation error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create conversation")
+        logger.error(f"AI chat error: {e}")
+        raise HTTPException(status_code=500, detail="AI service error")
 
 @router.get("/conversations")
 async def get_conversations(
     current_user: User = Depends(get_current_user),
-    limit: int = 20,
-    offset: int = 0,
-    project_id: Optional[str] = None
+    project_id: Optional[str] = None,
+    limit: int = 20
 ):
-    """Get user's conversations"""
+    """Get user conversations"""
     try:
         db = await get_database()
         
@@ -272,36 +120,36 @@ async def get_conversations(
         if project_id:
             query["project_id"] = project_id
         
-        conversations = await db.conversations.find(query)\
-            .sort("updated_at", -1)\
-            .skip(offset)\
-            .limit(limit)\
-            .to_list(length=limit)
+        conversations_cursor = db.conversations.find(query).sort("updated_at", -1).limit(limit)
+        conversations = await conversations_cursor.to_list(length=limit)
         
-        # Convert _id to id for consistency
-        for conv in conversations:
-            conv["id"] = str(conv["_id"])
-            conv["_id"] = str(conv["_id"])
-        
-        total = await db.conversations.count_documents(query)
+        # Get messages from latest conversation for immediate display
+        messages = []
+        if conversations and not project_id:
+            latest_conversation = conversations[0]
+            messages = latest_conversation.get("messages", [])
+        elif project_id:
+            # Get all messages for this project
+            project_conversations = [conv for conv in conversations if conv.get("project_id") == project_id]
+            if project_conversations:
+                messages = project_conversations[0].get("messages", [])
         
         return {
             "conversations": conversations,
-            "total": total,
-            "limit": limit,
-            "offset": offset
+            "messages": messages,
+            "total": len(conversations)
         }
         
     except Exception as e:
         logger.error(f"Conversations fetch error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch conversations")
 
-@router.get("/conversation/{conversation_id}")
+@router.get("/conversations/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
     current_user: User = Depends(get_current_user)
 ):
-    """Get a specific conversation"""
+    """Get specific conversation"""
     try:
         db = await get_database()
         
@@ -313,10 +161,7 @@ async def get_conversation(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        conversation["id"] = str(conversation["_id"])
-        conversation["_id"] = str(conversation["_id"])
-        
-        return {"conversation": conversation}
+        return conversation
         
     except HTTPException:
         raise
@@ -324,164 +169,110 @@ async def get_conversation(
         logger.error(f"Conversation fetch error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch conversation")
 
-@router.delete("/conversation/{conversation_id}")
-async def delete_conversation(
-    conversation_id: str,
+@router.post("/conversations")
+async def create_conversation(
+    conversation_data: ConversationCreate,
     current_user: User = Depends(get_current_user)
 ):
-    """Delete a conversation"""
+    """Create new conversation"""
     try:
         db = await get_database()
         
-        result = await db.conversations.delete_one({
-            "_id": conversation_id,
-            "user_id": str(current_user.id)
-        })
+        conversation = {
+            "_id": f"conv_{uuid.uuid4().hex[:12]}",
+            "user_id": str(current_user.id),
+            "project_id": conversation_data.project_id,
+            "title": conversation_data.title,
+            "messages": [],
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
         
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Conversation not found")
+        await db.conversations.insert_one(conversation)
         
-        return {"message": "Conversation deleted successfully"}
+        return conversation
         
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.error(f"Conversation deletion error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to delete conversation")
+        logger.error(f"Conversation creation error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create conversation")
 
-# Helper functions
-async def build_enhanced_prompt(message: str, agents: List[str], project_id: Optional[str], user: User) -> str:
-    """Build enhanced prompt with agent and project context"""
-    prompt_parts = []
-    
-    # Add agent context
-    agent_prompts = {
-        "developer": "You are an expert software developer. Focus on clean, efficient code, best practices, and technical architecture.",
-        "designer": "You are a skilled UI/UX designer. Focus on user experience, aesthetics, accessibility, and design systems.",
-        "tester": "You are a QA expert. Focus on testing strategies, quality assurance, bug detection, and test automation.",
-        "integrator": "You are an integration specialist. Focus on API connections, third-party services, and system integrations."
-    }
-    
-    active_agents = [agent_prompts.get(agent, "") for agent in agents if agent in agent_prompts]
-    if active_agents:
-        prompt_parts.append("Agent Context:\n" + "\n".join(active_agents))
-    
-    # Add project context if available
-    if project_id:
-        try:
-            db = await get_database()
-            project = await db.projects.find_one({
-                "_id": project_id,
-                "user_id": str(user.id)
-            })
-            if project:
-                context = f"Project: {project.get('name', 'Untitled')}\n"
-                context += f"Description: {project.get('description', 'No description')}\n"
-                if project.get('tech_stack'):
-                    context += f"Tech Stack: {', '.join(project['tech_stack'])}\n"
-                prompt_parts.append(f"Project Context:\n{context}")
-        except Exception as e:
-            logger.warning(f"Failed to fetch project context: {e}")
-    
-    # Add user message
-    prompt_parts.append(f"User Request: {message}")
-    
-    return "\n\n".join(prompt_parts)
-
-async def get_ai_response(prompt: str, model: str, temperature: float, max_tokens: int) -> str:
-    """Get AI response with fallback mechanisms"""
-    
-    # Try enhanced AI service first
-    try:
-        response = await enhanced_ai_service.process_message(prompt, {
-            "model": model,
-            "temperature": temperature,
-            "max_tokens": max_tokens
-        })
-        if response and response.strip():
-            return response
-    except Exception as e:
-        logger.warning(f"Enhanced AI service failed: {e}")
-    
-    # Try basic AI service
-    try:
-        response = await ai_service.process_message(prompt, {
-            "model": model,
-            "temperature": temperature,
-            "max_tokens": max_tokens
-        })
-        if response and response.strip():
-            return response
-    except Exception as e:
-        logger.warning(f"Basic AI service failed: {e}")
-    
-    # Try direct Puter.js call (if available)
-    try:
-        async with httpx.AsyncClient() as client:
-            # This would be replaced with actual Puter.js API call
-            # For now, return a fallback response
-            pass
-    except Exception as e:
-        logger.warning(f"Direct API call failed: {e}")
-    
-    # Fallback response
-    return generate_fallback_response(prompt, model)
-
-def generate_fallback_response(prompt: str, model: str) -> str:
-    """Generate a fallback response when AI services are unavailable"""
-    responses = [
-        f"I understand you're asking about: '{prompt[:100]}...'. I'm experiencing connectivity issues right now, but I'd be happy to help you once the connection is restored.",
-        f"That's an interesting request. Let me think about the best approach to help you with this.",
-        f"I see you're working on something important. This is definitely something I can assist you with once our AI services are fully operational.",
-        f"Thank you for your message. I'm currently experiencing some technical difficulties, but I'll be back to full functionality shortly."
-    ]
-    
-    import random
-    return random.choice(responses)
-
-async def store_conversation_message(
-    conversation_id: str,
-    user_id: str,
-    user_message: str,
-    ai_response: str,
-    model: str,
-    agents: List[str],
-    project_id: Optional[str]
-):
-    """Store conversation messages in database"""
-    try:
-        db = await get_database()
-        
-        messages = [
+@router.get("/models")
+async def get_available_models():
+    """Get available AI models"""
+    return {
+        "models": [
             {
-                "id": f"msg_{int(datetime.utcnow().timestamp() * 1000)}",
-                "role": "user",
-                "content": user_message,
-                "timestamp": datetime.utcnow()
+                "id": "gpt-4.1-nano",
+                "name": "GPT-4.1 Nano",
+                "provider": "OpenAI",
+                "description": "Fastest and most efficient GPT-4 model",
+                "capabilities": ["code", "analysis", "creative"],
+                "speed": "fast",
+                "quality": "high",
+                "cost": "free"
             },
             {
-                "id": f"msg_{int(datetime.utcnow().timestamp() * 1000) + 1}",
-                "role": "assistant",
-                "content": ai_response,
-                "model": model,
-                "agents": agents,
-                "timestamp": datetime.utcnow()
+                "id": "claude-sonnet-4",
+                "name": "Claude Sonnet 4",
+                "provider": "Anthropic",
+                "description": "Advanced reasoning and code understanding",
+                "capabilities": ["code", "analysis", "reasoning", "creative"],
+                "speed": "medium",
+                "quality": "highest",
+                "cost": "free"
+            },
+            {
+                "id": "gemini-2.5-flash",
+                "name": "Gemini 2.5 Flash",
+                "provider": "Google",
+                "description": "Lightning-fast responses with multimodal support",
+                "capabilities": ["code", "analysis", "multimodal"],
+                "speed": "fastest",
+                "quality": "high",
+                "cost": "free"
             }
         ]
-        
-        await db.conversations.update_one(
-            {"_id": conversation_id, "user_id": user_id},
-            {
-                "$push": {"messages": {"$each": messages}},
-                "$set": {"updated_at": datetime.utcnow()}
-            },
-            upsert=True
-        )
-        
-    except Exception as e:
-        logger.error(f"Failed to store conversation: {e}")
+    }
 
-def estimate_tokens(text: str) -> int:
-    """Rough estimation of token count"""
-    # Simple approximation: ~4 characters per token
-    return len(text) // 4
+@router.get("/agents")
+async def get_available_agents():
+    """Get available AI agents"""
+    return {
+        "agents": [
+            {
+                "id": "developer",
+                "name": "Developer Agent",
+                "icon": "💻",
+                "description": "Expert in coding, debugging, and software architecture",
+                "capabilities": ["Full-stack development", "Code review", "Architecture", "Debugging"]
+            },
+            {
+                "id": "designer",
+                "name": "Designer Agent", 
+                "icon": "🎨",
+                "description": "UI/UX design specialist with modern design principles",
+                "capabilities": ["UI/UX Design", "Design Systems", "User Research", "Prototyping"]
+            },
+            {
+                "id": "tester",
+                "name": "QA Agent",
+                "icon": "🧪", 
+                "description": "Quality assurance and testing specialist",
+                "capabilities": ["Test Strategy", "Automation", "Bug Analysis", "Performance Testing"]
+            },
+            {
+                "id": "integrator",
+                "name": "Integration Agent",
+                "icon": "🔗",
+                "description": "Third-party integration and API specialist", 
+                "capabilities": ["API Integration", "Third-party Services", "Data Migration", "System Architecture"]
+            },
+            {
+                "id": "analyst",
+                "name": "Business Analyst",
+                "icon": "📊",
+                "description": "Business requirements and data analysis expert",
+                "capabilities": ["Requirements Analysis", "Data Analysis", "Process Optimization", "Reporting"]
+            }
+        ]
+    }
