@@ -117,6 +117,7 @@ function App() {
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
               <Route path="/templates" element={<PublicRoute><Templates /></PublicRoute>} />
+              <Route path="/demo" element={<PublicRoute><EnhancedFeaturesDemo /></PublicRoute>} />
               
               {/* Protected routes */}
               <Route path="/chat" element={<ProtectedRoute><ChatHub /></ProtectedRoute>} />
