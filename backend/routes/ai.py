@@ -54,6 +54,123 @@ async def get_available_models():
         "default": "gpt-4.1-nano"
     }
 
+@router.post("/generate-project")
+async def generate_project_code(
+    request: Dict[str, Any],
+    current_user: User = Depends(get_current_user)
+):
+    """Enhanced AI endpoint that generates actual project files and structure"""
+    try:
+        message = request.get("message", "")
+        project_id = request.get("project_id")
+        model = request.get("model", "gpt-4.1-nano")
+        
+        if not message:
+            raise HTTPException(status_code=400, detail="Message is required")
+        
+        # Enhanced prompt for code generation
+        enhanced_prompt = f"""
+        You are an expert full-stack developer. Generate a complete, working project based on this request: "{message}"
+
+        Please provide:
+        1. Complete file structure with all necessary files
+        2. Full code implementation for each file
+        3. Package.json with all required dependencies
+        4. Clear setup and run instructions
+        5. Professional code with comments and best practices
+
+        Format your response as structured JSON with this exact format:
+        {{
+            "project_name": "descriptive-project-name",
+            "description": "Brief description of the project",
+            "files": [
+                {{
+                    "path": "relative/file/path.ext",
+                    "content": "complete file content here"
+                }}
+            ],
+            "dependencies": {{
+                "production": {{}},
+                "development": {{}}
+            }},
+            "setup_instructions": [
+                "step 1",
+                "step 2"
+            ],
+            "run_commands": [
+                "npm install",
+                "npm start"
+            ]
+        }}
+
+        Make sure the project is fully functional and production-ready.
+        """
+        
+        # Get AI response with enhanced prompt
+        ai_response = await ai_service.chat_with_ai(
+            message=enhanced_prompt,
+            model=model,
+            user_id=current_user.id,
+            max_tokens=6000,
+            temperature=0.1  # Lower temperature for more consistent code generation
+        )
+        
+        # Try to parse the structured response
+        try:
+            # Extract JSON from AI response if it's wrapped in text
+            response_text = ai_response.get("response", "")
+            if "```json" in response_text:
+                json_start = response_text.find("```json") + 7
+                json_end = response_text.find("```", json_start)
+                json_content = response_text[json_start:json_end].strip()
+            else:
+                json_content = response_text
+                
+            project_data = json.loads(json_content)
+            
+            # Validate required fields
+            required_fields = ["project_name", "description", "files"]
+            for field in required_fields:
+                if field not in project_data:
+                    raise ValueError(f"Missing required field: {field}")
+                    
+            # Store project files in database if project_id provided
+            if project_id:
+                db = await get_database()
+                await db.projects.update_one(
+                    {"id": project_id, "user_id": current_user.id},
+                    {"$set": {
+                        "files": project_data.get("files", []),
+                        "dependencies": project_data.get("dependencies", {}),
+                        "setup_instructions": project_data.get("setup_instructions", []),
+                        "run_commands": project_data.get("run_commands", []),
+                        "updated_at": datetime.now().isoformat()
+                    }}
+                )
+            
+            return {
+                "success": True,
+                "project_data": project_data,
+                "ai_response": ai_response,
+                "model": model,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except (json.JSONDecodeError, ValueError) as e:
+            # Fallback to regular chat response if JSON parsing fails
+            logger.warning(f"Failed to parse structured response: {e}")
+            return {
+                "success": False,
+                "fallback_response": ai_response.get("response", ""),
+                "error": "Could not generate structured project files",
+                "model": model,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in generate_project_code: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating project: {str(e)}")
+
 @router.post("/chat")
 async def chat_with_ai(
     request: Dict[str, Any],
