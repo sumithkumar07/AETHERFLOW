@@ -130,12 +130,59 @@ const useAuthStore = create(
         }
       },
 
-      // Initialize auth store
+      // Initialize auth store with timeout and error handling
       initialize: async () => {
-        const { token } = get()
-        
-        // If no token exists, we're not authenticated
-        if (!token) {
+        try {
+          const { token } = get()
+          console.log('Initializing auth store, token exists:', !!token)
+          
+          // If no token exists, we're not authenticated
+          if (!token) {
+            set({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null,
+              isInitialized: true
+            })
+            console.log('No token found, initialization complete (unauthenticated)')
+            return false
+          }
+          
+          // If we have a token, validate it silently with timeout
+          console.log('Token found, validating silently...')
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Auth validation timeout')), 10000)
+          )
+          
+          const validationPromise = get().checkAuthSilent()
+          
+          let isValid = false
+          try {
+            isValid = await Promise.race([validationPromise, timeoutPromise])
+            console.log('Token validation result:', isValid)
+          } catch (error) {
+            console.error('Token validation failed or timed out:', error)
+            // Clear invalid token
+            set({
+              user: null,
+              token: null,
+              refreshToken: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null
+            })
+          }
+          
+          set({
+            ...get(),
+            isInitialized: true
+          })
+          
+          console.log('Auth initialization complete, authenticated:', isValid)
+          return isValid
+        } catch (error) {
+          console.error('Auth initialization error:', error)
           set({
             user: null,
             isAuthenticated: false,
@@ -145,16 +192,6 @@ const useAuthStore = create(
           })
           return false
         }
-        
-        // If we have a token, validate it silently
-        const isValid = await get().checkAuthSilent()
-        
-        set({
-          ...get(),
-          isInitialized: true
-        })
-        
-        return isValid
       },
 
       // Simplified auth check - no complex initialization
