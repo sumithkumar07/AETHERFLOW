@@ -174,7 +174,12 @@ from routes.code_quality import router as code_quality_router
 from routes.workspace_optimization import router as workspace_optimization_router
 from routes.experimental_sandbox import router as experimental_sandbox_router
 from routes.visual_programming import router as visual_programming_router
-from routes.community_intelligence import router as community_intelligence_router
+# Import new API routes  
+from routes.video_explanations import router as video_explanations_router
+from routes.seo import router as seo_router
+from routes.i18n import router as i18n_router
+from routes.agent_marketplace import router as agent_marketplace_router
+from routes.presentations import router as presentations_router
 
 app.include_router(enhanced_features_router, prefix="/api/enhanced", tags=["Enhanced Features"])
 
@@ -187,7 +192,13 @@ app.include_router(code_quality_router, prefix="/api/code-quality", tags=["Code 
 app.include_router(workspace_optimization_router, prefix="/api/workspace-optimization", tags=["Workspace Intelligence"])
 app.include_router(experimental_sandbox_router, prefix="/api/experimental-sandbox", tags=["Experimental Sandbox"])
 app.include_router(visual_programming_router, prefix="/api/visual-programming", tags=["Visual Programming"])
-app.include_router(community_intelligence_router, prefix="/api/community-intelligence", tags=["Community Intelligence"])
+
+# Include new API routes
+app.include_router(video_explanations_router, prefix="/api/video-explanations", tags=["Video Explanations"])
+app.include_router(seo_router, prefix="/api/seo", tags=["SEO"])
+app.include_router(i18n_router, prefix="/api/i18n", tags=["Internationalization"])
+app.include_router(agent_marketplace_router, prefix="/api/agent-marketplace", tags=["Agent Marketplace"])
+app.include_router(presentations_router, prefix="/api/presentations", tags=["Presentations"])
 
 @app.on_event("startup")
 async def startup_event():
