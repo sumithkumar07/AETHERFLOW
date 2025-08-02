@@ -436,7 +436,255 @@ class BackendTester:
             self.log_test("Get Popular Integrations", "FAIL", 
                         "Popular integrations endpoint failed", response.status_code if response else None)
 
-    def test_websocket_connection(self):
+    def test_advanced_ai_features(self):
+        """Test advanced AI features"""
+        print("🧠 Testing Advanced AI Features...")
+        
+        if not self.auth_token:
+            self.log_test("Advanced AI Features Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test AI chat streaming
+        response = self.make_request("GET", "/api/ai/chat/stream")
+        if response and response.status_code == 200:
+            self.log_test("AI Chat Stream", "PASS", "AI chat streaming endpoint accessible", response.status_code)
+        else:
+            self.log_test("AI Chat Stream", "FAIL", "AI chat streaming endpoint failed", response.status_code if response else None)
+        
+        # Test advanced AI features
+        response = self.make_request("GET", "/api/advanced-ai/features")
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("Advanced AI Features", "PASS", f"Advanced AI features available", response.status_code)
+        else:
+            self.log_test("Advanced AI Features", "FAIL", "Advanced AI features endpoint failed", response.status_code if response else None)
+        
+        # Test architectural intelligence
+        response = self.make_request("GET", "/api/architectural-intelligence/insights/test-project")
+        if response and response.status_code == 200:
+            self.log_test("Architectural Intelligence", "PASS", "Architectural intelligence accessible", response.status_code)
+        else:
+            self.log_test("Architectural Intelligence", "FAIL", "Architectural intelligence failed", response.status_code if response else None)
+        
+        # Test smart documentation
+        response = self.make_request("GET", "/api/smart-documentation/generate/test-project")
+        if response and response.status_code == 200:
+            self.log_test("Smart Documentation", "PASS", "Smart documentation accessible", response.status_code)
+        else:
+            self.log_test("Smart Documentation", "FAIL", "Smart documentation failed", response.status_code if response else None)
+
+    def test_enterprise_analytics_performance(self):
+        """Test enterprise analytics and performance"""
+        print("📊 Testing Enterprise Analytics & Performance...")
+        
+        if not self.auth_token:
+            self.log_test("Enterprise Analytics Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test real-time analytics
+        response = self.make_request("GET", "/api/analytics/realtime")
+        if response and response.status_code == 200:
+            self.log_test("Real-time Analytics", "PASS", "Real-time analytics accessible", response.status_code)
+        else:
+            self.log_test("Real-time Analytics", "FAIL", "Real-time analytics failed", response.status_code if response else None)
+        
+        # Test predictive analytics
+        response = self.make_request("GET", "/api/analytics/predictions")
+        if response and response.status_code == 200:
+            self.log_test("Predictive Analytics", "PASS", "Predictive analytics accessible", response.status_code)
+        else:
+            self.log_test("Predictive Analytics", "FAIL", "Predictive analytics failed", response.status_code if response else None)
+        
+        # Test advanced performance metrics
+        response = self.make_request("GET", "/api/performance/advanced")
+        if response and response.status_code == 200:
+            self.log_test("Advanced Performance Metrics", "PASS", "Advanced performance metrics accessible", response.status_code)
+        else:
+            self.log_test("Advanced Performance Metrics", "FAIL", "Advanced performance metrics failed", response.status_code if response else None)
+        
+        # Test dashboard
+        response = self.make_request("GET", "/api/dashboard")
+        if response and response.status_code == 200:
+            self.log_test("Dashboard Data", "PASS", "Dashboard data accessible", response.status_code)
+        else:
+            self.log_test("Dashboard Data", "FAIL", "Dashboard data failed", response.status_code if response else None)
+
+    def test_collaboration_workflow_engine(self):
+        """Test collaboration and workflow engine"""
+        print("🤝 Testing Collaboration & Workflow Engine...")
+        
+        if not self.auth_token:
+            self.log_test("Collaboration Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test collaboration status
+        response = self.make_request("GET", "/api/collaboration/status/all")
+        if response and response.status_code == 200:
+            self.log_test("Collaboration Status", "PASS", "Collaboration status accessible", response.status_code)
+        else:
+            self.log_test("Collaboration Status", "FAIL", "Collaboration status failed", response.status_code if response else None)
+        
+        # Test active collaborators
+        response = self.make_request("GET", "/api/collaboration/users/test-project")
+        if response and response.status_code == 200:
+            self.log_test("Active Collaborators", "PASS", "Active collaborators accessible", response.status_code)
+        else:
+            self.log_test("Active Collaborators", "FAIL", "Active collaborators failed", response.status_code if response else None)
+        
+        # Test workflows
+        response = self.make_request("GET", "/api/workflows")
+        if response and response.status_code == 200:
+            self.log_test("Workflow Automation", "PASS", "Workflow automation accessible", response.status_code)
+        else:
+            self.log_test("Workflow Automation", "FAIL", "Workflow automation failed", response.status_code if response else None)
+        
+        # Test automation dashboard
+        response = self.make_request("GET", "/api/workflows/automation/dashboard")
+        if response and response.status_code == 200:
+            self.log_test("Automation Dashboard", "PASS", "Automation dashboard accessible", response.status_code)
+        else:
+            self.log_test("Automation Dashboard", "FAIL", "Automation dashboard failed", response.status_code if response else None)
+
+    def test_security_compliance(self):
+        """Test security and compliance features"""
+        print("🔒 Testing Security & Compliance...")
+        
+        if not self.auth_token:
+            self.log_test("Security Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test security status
+        response = self.make_request("GET", "/api/security/status")
+        if response and response.status_code == 200:
+            self.log_test("Security Dashboard", "PASS", "Security dashboard accessible", response.status_code)
+        else:
+            self.log_test("Security Dashboard", "FAIL", "Security dashboard failed", response.status_code if response else None)
+        
+        # Test compliance status
+        response = self.make_request("GET", "/api/security/compliance")
+        if response and response.status_code == 200:
+            self.log_test("Compliance Status", "PASS", "Compliance status accessible", response.status_code)
+        else:
+            self.log_test("Compliance Status", "FAIL", "Compliance status failed", response.status_code if response else None)
+        
+        # Test threat analysis
+        response = self.make_request("GET", "/api/security/threats")
+        if response and response.status_code == 200:
+            self.log_test("Threat Analysis", "PASS", "Threat analysis accessible", response.status_code)
+        else:
+            self.log_test("Threat Analysis", "FAIL", "Threat analysis failed", response.status_code if response else None)
+        
+        # Test security audits
+        response = self.make_request("GET", "/api/security/audits")
+        if response and response.status_code == 200:
+            self.log_test("Security Audits", "PASS", "Security audits accessible", response.status_code)
+        else:
+            self.log_test("Security Audits", "FAIL", "Security audits failed", response.status_code if response else None)
+
+    def test_advanced_services_integration(self):
+        """Test advanced services integration"""
+        print("🔧 Testing Advanced Services Integration...")
+        
+        if not self.auth_token:
+            self.log_test("Advanced Services Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test visual programming tools
+        response = self.make_request("GET", "/api/visual-programming/tools")
+        if response and response.status_code == 200:
+            self.log_test("Visual Programming Tools", "PASS", "Visual programming tools accessible", response.status_code)
+        else:
+            self.log_test("Visual Programming Tools", "FAIL", "Visual programming tools failed", response.status_code if response else None)
+        
+        # Test plugins
+        response = self.make_request("GET", "/api/plugins")
+        if response and response.status_code == 200:
+            self.log_test("Plugin Ecosystem", "PASS", "Plugin ecosystem accessible", response.status_code)
+        else:
+            self.log_test("Plugin Ecosystem", "FAIL", "Plugin ecosystem failed", response.status_code if response else None)
+        
+        # Test video explanations
+        response = self.make_request("GET", "/api/video-explanations")
+        if response and response.status_code == 200:
+            self.log_test("Video Services", "PASS", "Video services accessible", response.status_code)
+        else:
+            self.log_test("Video Services", "FAIL", "Video services failed", response.status_code if response else None)
+        
+        # Test SEO analysis
+        response = self.make_request("GET", "/api/seo/analysis/test-project")
+        if response and response.status_code == 200:
+            self.log_test("SEO Services", "PASS", "SEO services accessible", response.status_code)
+        else:
+            self.log_test("SEO Services", "FAIL", "SEO services failed", response.status_code if response else None)
+        
+        # Test internationalization
+        response = self.make_request("GET", "/api/i18n/support/test-project")
+        if response and response.status_code == 200:
+            self.log_test("Internationalization", "PASS", "Internationalization accessible", response.status_code)
+        else:
+            self.log_test("Internationalization", "FAIL", "Internationalization failed", response.status_code if response else None)
+
+    def test_cutting_edge_features(self):
+        """Test cutting-edge features"""
+        print("⚡ Testing Cutting-Edge Features...")
+        
+        if not self.auth_token:
+            self.log_test("Cutting-Edge Features Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test experimental sandbox features
+        response = self.make_request("GET", "/api/experimental-sandbox/features")
+        if response and response.status_code == 200:
+            self.log_test("Experimental Features", "PASS", "Experimental features accessible", response.status_code)
+        else:
+            self.log_test("Experimental Features", "FAIL", "Experimental features failed", response.status_code if response else None)
+        
+        # Test theme intelligence
+        response = self.make_request("GET", "/api/theme-intelligence/recommendations/test-project")
+        if response and response.status_code == 200:
+            self.log_test("Theme Intelligence", "PASS", "Theme intelligence accessible", response.status_code)
+        else:
+            self.log_test("Theme Intelligence", "FAIL", "Theme intelligence failed", response.status_code if response else None)
+        
+        # Test code quality engine
+        response = self.make_request("GET", "/api/code-quality/report/test-project")
+        if response and response.status_code == 200:
+            self.log_test("Code Quality Engine", "PASS", "Code quality engine accessible", response.status_code)
+        else:
+            self.log_test("Code Quality Engine", "FAIL", "Code quality engine failed", response.status_code if response else None)
+        
+        # Test workspace optimization
+        response = self.make_request("GET", "/api/workspace-optimization/insights")
+        if response and response.status_code == 200:
+            self.log_test("Workspace Intelligence", "PASS", "Workspace intelligence accessible", response.status_code)
+        else:
+            self.log_test("Workspace Intelligence", "FAIL", "Workspace intelligence failed", response.status_code if response else None)
+
+    def test_multi_agent_capabilities(self):
+        """Test multi-agent intelligence system"""
+        print("🤖 Testing Multi-Agent Intelligence System...")
+        
+        if not self.auth_token:
+            self.log_test("Multi-Agent System Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test agent capabilities
+        response = self.make_request("GET", "/api/agents/capabilities")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "agents" in data:
+                self.log_test("Agent Capabilities", "PASS", f"Found {len(data['agents'])} agent capabilities", response.status_code)
+            else:
+                self.log_test("Agent Capabilities", "FAIL", "No agent capabilities data", response.status_code)
+        else:
+            self.log_test("Agent Capabilities", "FAIL", "Agent capabilities endpoint failed", response.status_code if response else None)
+        
+        # Test orchestration
+        response = self.make_request("GET", "/api/agents/orchestration")
+        if response and response.status_code == 200:
+            self.log_test("Agent Orchestration", "PASS", "Agent orchestration accessible", response.status_code)
+        else:
+            self.log_test("Agent Orchestration", "FAIL", "Agent orchestration failed", response.status_code if response else None)
         """Test WebSocket connection (basic connectivity test)"""
         print("🔌 Testing WebSocket Connection...")
         
