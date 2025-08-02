@@ -21,7 +21,8 @@ import {
   ChartBarIcon,
   BoltIcon,
   MagnifyingGlassIcon,
-  TrophyIcon
+  TrophyIcon,
+  CommandLineIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
@@ -48,7 +49,7 @@ const Navigation = () => {
     { name: 'Projects', href: '/projects', icon: FolderIcon, category: 'main' },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, category: 'main' },
     { name: 'Advanced Features', href: '/advanced', icon: CpuChipIcon, category: 'advanced', badge: 'NEW' },
-    { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, category: 'advanced', badge: 'HOT' },
+    { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, category: 'advanced', badge: 'AI' },
     { name: 'Performance', href: '/performance', icon: BoltIcon, category: 'advanced', badge: 'LIVE' },
     { name: 'Agents', href: '/agents', icon: UsersIcon, category: 'advanced' },
     { name: 'Deploy', href: '/deploy', icon: RocketLaunchIcon, category: 'advanced' },
@@ -82,33 +83,48 @@ const Navigation = () => {
             className="flex items-center space-x-3 group"
           >
             <motion.div 
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
-              className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow"
+              className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300"
             >
-              <SparklesIcon className="w-5 h-5 text-white" />
+              <CommandLineIcon className="w-5 h-5 text-white" />
             </motion.div>
-            <motion.span 
-              className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            <motion.div
+              className="flex flex-col"
               whileHover={{ scale: 1.02 }}
             >
-              Tempo AI
-            </motion.span>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Aether AI
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                Next-Gen Development
+              </span>
+            </motion.div>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {/* Smart Search - Temporarily disabled for debugging */}
-            {/* {isAuthenticated && <GlobalSmartSearch />} */}
+            {/* Smart Search - Enhanced for 2025 */}
+            {isAuthenticated && (
+              <div className="relative">
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Search anything...</span>
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded">
+                    ⌘K
+                  </kbd>
+                </div>
+              </div>
+            )}
             
-            {currentNavigation.map((item) => {
+            {currentNavigation.slice(0, 6).map((item) => {
               const Icon = item.icon
               const isActive = isCurrentPage(item.href)
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
                     isActive
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                       : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
@@ -118,6 +134,16 @@ const Navigation = () => {
                     isActive ? 'text-blue-600 dark:text-blue-400' : ''
                   }`} />
                   <span>{item.name}</span>
+                  {item.badge && (
+                    <span className={`px-1.5 py-0.5 text-xs font-bold rounded uppercase ${
+                      item.badge === 'NEW' ? 'bg-green-500 text-white' :
+                      item.badge === 'AI' ? 'bg-purple-500 text-white' :
+                      item.badge === 'LIVE' ? 'bg-red-500 text-white animate-pulse' :
+                      'bg-blue-500 text-white'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               )
             })}
@@ -144,7 +170,7 @@ const Navigation = () => {
                   to="/profile"
                   className="flex items-center space-x-2 p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
                 >
-                  <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
                     <UserIcon className="w-4 h-4 text-white" />
                   </div>
                   <span className="hidden lg:block text-sm font-medium">
@@ -209,14 +235,26 @@ const Navigation = () => {
                       key={item.name}
                       to={item.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                           : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
                       }`}
                     >
-                      <Icon className="w-5 h-5" />
-                      <span>{item.name}</span>
+                      <div className="flex items-center space-x-3">
+                        <Icon className="w-5 h-5" />
+                        <span>{item.name}</span>
+                      </div>
+                      {item.badge && (
+                        <span className={`px-1.5 py-0.5 text-xs font-bold rounded uppercase ${
+                          item.badge === 'NEW' ? 'bg-green-500 text-white' :
+                          item.badge === 'AI' ? 'bg-purple-500 text-white' :
+                          item.badge === 'LIVE' ? 'bg-red-500 text-white animate-pulse' :
+                          'bg-blue-500 text-white'
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
                     </Link>
                   )
                 })}

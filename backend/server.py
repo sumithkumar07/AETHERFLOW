@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI
 app = FastAPI(
-    title="AI Tempo API",
-    description="AI-powered development platform",
-    version="1.0.0"
+    title="Aether AI API",
+    description="Next-generation AI-powered development platform with advanced multi-agent intelligence",
+    version="2.0.0"
 )
 
 # Add CORS middleware
@@ -49,7 +49,13 @@ async def startup_event():
         from routes.auth import create_demo_user
         await create_demo_user()
         
-        logger.info("🎉 AI Tempo API is ready!")
+        # Initialize AI services
+        from services.ai_service import AIService
+        ai_service = AIService()
+        await ai_service.initialize()
+        logger.info("🤖 AI services initialized")
+        
+        logger.info("🎉 Aether AI API is ready!")
         
     except Exception as e:
         logger.error(f"Startup error: {e}")
@@ -58,7 +64,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    logger.info("Application shutting down...")
+    logger.info("Aether AI shutting down...")
 
 # Include routers with /api prefix
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
@@ -71,10 +77,11 @@ app.include_router(integrations_router, prefix="/api/integrations", tags=["Integ
 async def root():
     """Health check endpoint"""
     return {
-        "message": "AI Tempo API",
+        "message": "Aether AI API",
         "status": "running",
         "timestamp": datetime.utcnow().isoformat(),
-        "version": "1.0.0"
+        "version": "2.0.0",
+        "description": "Next-generation AI development platform"
     }
 
 @app.get("/api/health")
@@ -84,9 +91,12 @@ async def health_check():
         "status": "healthy",
         "services": {
             "database": "connected",
-            "ai": "available"
+            "ai": "available",
+            "multimodal": "ready",
+            "voice": "enabled"
         },
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "2.0.0"
     }
 
 if __name__ == "__main__":

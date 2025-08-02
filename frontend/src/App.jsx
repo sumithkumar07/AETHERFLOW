@@ -14,9 +14,6 @@ import { useThemeStore } from './store/themeStore'
 import { useChatStore } from './store/chatStore'
 import { useProjectStore } from './store/projectStore'
 
-// NEW: Import Enterprise Architecture Provider
-// import { ArchitectureProvider } from './architecture'
-
 // Import pages directly instead of lazy loading for debugging
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -79,7 +76,7 @@ const SuspenseWrapper = ({ children }) => (
           <LoadingStates.LoadingSpinner size="lg" color="white" />
         </div>
         <p className="text-gray-600 dark:text-gray-400">
-          Loading...
+          Loading Aether AI...
         </p>
       </motion.div>
     </div>
@@ -90,7 +87,7 @@ const SuspenseWrapper = ({ children }) => (
   </Suspense>
 )
 
-// Main App Component wrapped with Enterprise Architecture
+// Main App Component
 function AppContent() {
   const { isAuthenticated, isLoading, token, initialize, isInitialized: authInitialized } = useAuthStore()
   const { theme, initializeTheme } = useThemeStore()
@@ -111,7 +108,7 @@ function AppContent() {
       initializationAttempted.current = true
       
       try {
-        console.log('🚀 Starting app initialization...')
+        console.log('🚀 Starting Aether AI initialization...')
         
         // Initialize theme first (synchronous)
         initializeTheme()
@@ -134,9 +131,9 @@ function AppContent() {
 
         // Initialize AI models and agents from backend
         try {
-          console.log('🤖 Initializing AI models and agents...')
+          console.log('🤖 Initializing Aether AI models and agents...')
           await initializeModelsAndAgents()
-          console.log('✅ AI models and agents initialized')
+          console.log('✅ Aether AI models and agents initialized')
         } catch (error) {
           console.error('⚠️ AI initialization failed:', error)
         }
@@ -153,7 +150,7 @@ function AppContent() {
         }
         
         // Check if user needs onboarding
-        const hasSeenOnboarding = localStorage.getItem('ai-tempo-onboarding-complete')
+        const hasSeenOnboarding = localStorage.getItem('aether-ai-onboarding-complete')
         if (!hasSeenOnboarding && isAuthenticated) {
           setTimeout(() => setIsOnboardingOpen(true), 2000)
         }
@@ -162,11 +159,11 @@ function AppContent() {
         registerServiceWorker()
         
         // Mark as initialized regardless of auth status
-        console.log('✅ App initialization complete')
+        console.log('✅ Aether AI initialization complete')
         setIsInitialized(true)
         
       } catch (error) {
-        console.error('❌ App initialization error:', error)
+        console.error('❌ Aether AI initialization error:', error)
         setIsInitialized(true) // Initialize anyway to prevent infinite loading
       }
     }
@@ -224,7 +221,7 @@ function AppContent() {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New update available
-              if (confirm('A new version is available. Reload to update?')) {
+              if (confirm('A new version of Aether AI is available. Reload to update?')) {
                 window.location.reload()
               }
             }
@@ -238,7 +235,7 @@ function AppContent() {
 
   // Handle onboarding completion
   const handleOnboardingComplete = () => {
-    localStorage.setItem('ai-tempo-onboarding-complete', 'true')
+    localStorage.setItem('aether-ai-onboarding-complete', 'true')
     setIsOnboardingOpen(false)
     
     // Start the interactive tour after onboarding
@@ -247,7 +244,7 @@ function AppContent() {
 
   // Handle onboarding skip
   const handleOnboardingSkip = () => {
-    localStorage.setItem('ai-tempo-onboarding-complete', 'true')
+    localStorage.setItem('aether-ai-onboarding-complete', 'true')
     setIsOnboardingOpen(false)
   }
 
@@ -275,10 +272,10 @@ function AppContent() {
             <LoadingStates.LoadingSpinner size="lg" color="white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Initializing AI Tempo
+            Initializing Aether AI
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Loading advanced AI capabilities...
+            Loading next-generation AI capabilities...
           </p>
           <div className="flex space-x-2 justify-center">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
@@ -477,7 +474,7 @@ function AppContent() {
         {/* PWA Enhancement */}
         <PWAEnhancement />
         
-        {/* Enhanced toast notifications with better styling */}
+        {/* Enhanced toast notifications with Aether AI branding */}
         <Toaster 
           position="top-right"
           toastOptions={{
@@ -550,6 +547,9 @@ function AppContent() {
               <div>Token: {token ? '✅' : '❌'}</div>
               <div>Theme: {theme}</div>
             </div>
+            <div className="mt-1 text-center text-[8px] text-purple-400">
+              Aether AI v2.0
+            </div>
           </div>
         )}
       </div>
@@ -557,7 +557,7 @@ function AppContent() {
   )
 }
 
-// Main App Component (temporarily without Enterprise Architecture Provider)
+// Main App Component
 function App() {
   return (
     <AppContent />
