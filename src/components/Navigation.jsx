@@ -315,6 +315,56 @@ const Navigation = () => {
                   )
                 })}
 
+                {/* Advanced Features in Mobile */}
+                {isAuthenticated && (
+                  <>
+                    <div className="px-4 py-2">
+                      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        Advanced Features
+                      </div>
+                    </div>
+                    {advancedFeatures.map((feature) => {
+                      const Icon = feature.icon
+                      const isActive = isActivePath(feature.href)
+                      
+                      return (
+                        <Link
+                          key={feature.name}
+                          to={feature.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-start space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                            isActive
+                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                              : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5 mt-0.5" />
+                          <div>
+                            <div>{feature.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              {feature.description}
+                            </div>
+                          </div>
+                        </Link>
+                      )
+                    })}
+
+                    {/* Settings in Mobile */}
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                        isActivePath('/settings')
+                          ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                          : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      }`}
+                    >
+                      <CogIcon className="w-5 h-5" />
+                      <span>Settings</span>
+                    </Link>
+                  </>
+                )}
+
                 {/* Mobile User Actions */}
                 <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between px-4 mb-4">
