@@ -537,7 +537,7 @@ What integration challenges can I solve for you? I specialize in:
 
         # Analyst agent responses
         else:  # analyst
-            return f"""I'll help you analyze requirements and optimize processes for your project!
+            return """I'll help you analyze requirements and optimize processes for your project!
 
 ## Business Analysis & Requirements
 
@@ -597,8 +597,6 @@ def analyze_user_engagement(data):
 - Security: OWASP compliance
 - Availability: 99.9% uptime
 ```
-
-**Your Request:** "{message}"
 
 How can I help analyze your project requirements? I can assist with:
 - Business requirement gathering
