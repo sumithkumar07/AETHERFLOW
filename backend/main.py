@@ -150,18 +150,13 @@ app.include_router(voice_router, prefix="/api/voice", tags=["Voice Interface"])
 app.include_router(workflows_router, prefix="/api/workflows", tags=["Workflow Automation"])
 app.include_router(smart_features_router, tags=["Smart Features"])
 
-# Include routers - New Enhancement Features
-from routes.search import router as search_router
-from routes.version_control import router as version_control_router
-from routes.gamification import router as gamification_router
-from routes.ai_code_completion import router as ai_completion_router
-from routes.error_prevention import router as error_prevention_router
-from routes.learning_assistant import router as learning_assistant_router
-from routes.template_generation import router as template_generation_router
-from routes.predictive_ui import router as predictive_ui_router
-from routes.enhanced_integrations import router as enhanced_integrations_router
-from routes.voice_code_review import router as voice_code_review_router
+# Include routers - New Enhancement Features (Available)
 from routes.enhanced_features import router as enhanced_features_router
+from routes.ai import router as ai_router
+from routes.auth import router as auth_router  
+from routes.projects import router as projects_router
+from routes.templates import router as templates_router
+from routes.integrations import router as integrations_router
 
 # Include routers - Cutting-Edge Features (Phase 1-5)
 from routes.architectural_intelligence import router as architectural_intelligence_router
