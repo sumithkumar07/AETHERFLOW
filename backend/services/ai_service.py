@@ -458,7 +458,7 @@ What testing challenges can I help you with? I can create test suites for any pa
 
         # Integrator agent responses  
         elif agent == "integrator":
-            return f"""I'll help you seamlessly connect your systems and integrate third-party services!
+            return """I'll help you seamlessly connect your systems and integrate third-party services!
 
 ## Integration Solutions
 
