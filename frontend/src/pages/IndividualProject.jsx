@@ -728,6 +728,36 @@ const IndividualProject = () => {
         codeContent={currentCode}
         reviewType="general"
       />
+      
+      {/* Enhanced Voice to Code */}
+      <EnhancedVoiceToCode
+        isVisible={isVoiceToCodeOpen}
+        onClose={() => setIsVoiceToCodeOpen(false)}
+        onCodeGenerated={(code, language) => {
+          console.log('Generated code:', code, 'Language:', language)
+          // Here you would integrate with your code editor
+        }}
+      />
+      
+      {/* Database Manager */}
+      <DatabaseManager
+        isVisible={isDatabaseManagerOpen}
+        onClose={() => setIsDatabaseManagerOpen(false)}
+        projectId={project.id}
+      />
+      
+      {/* Container Manager */}
+      <ContainerManager
+        isVisible={isContainerManagerOpen}
+        onClose={() => setIsContainerManagerOpen(false)}
+        projectId={project.id}
+      />
+      
+      {/* Gesture Navigation */}
+      <GestureNavigation 
+        isEnabled={true}
+        onGesture={(gesture) => console.log('Gesture executed:', gesture)}
+      />
     </div>
   )
 }
