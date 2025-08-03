@@ -181,12 +181,32 @@ const MarketingLanding = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                 <Link 
-                  to="/chat" 
+                  to="/auth" 
                   className="btn-primary text-lg px-8 py-4 flex items-center space-x-2"
                 >
                   <RocketLaunchIcon className="w-5 h-5" />
-                  <span>Start Coding Now</span>
+                  <span>Start Building Now</span>
                 </Link>
+                
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleDemoLogin}
+                  disabled={isDemo || isLoading}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold px-8 py-4 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDemo ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Signing In...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheckIcon className="w-5 h-5" />
+                      <span>Try Demo Now</span>
+                    </>
+                  )}
+                </motion.button>
                 
                 <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   <PlayIcon className="w-5 h-5" />
