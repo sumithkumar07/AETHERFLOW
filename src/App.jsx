@@ -15,6 +15,7 @@ import SmartAnalyticsDashboard from './components/enhanced/SmartAnalyticsDashboa
 import RealTimeCollaboration from './components/advanced/RealTimeCollaboration'
 import VisualProgrammingStudio from './components/advanced/VisualProgrammingStudio'
 import { EnterpriseDashboard } from './components/enterprise/EnterpriseDashboard'
+import SystemDashboard from './components/dashboard/SystemDashboard'
 
 // Enhanced Navigation Component
 const EnhancedNavigation = () => {
