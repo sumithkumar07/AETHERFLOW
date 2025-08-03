@@ -175,24 +175,67 @@ class BackendTester:
             self.log_test("AI Chat Test", "SKIP", "No authentication token available")
             return
         
-        # Test AI chat endpoint
+        # Test AI chat endpoint with proper model
         chat_request = {
             "message": "Build a simple todo app with React",
-            "model": "gpt-4.1-nano"
+            "model": "codellama:13b",
+            "agent": "developer"
         }
         
         response = self.make_request("POST", "/api/ai/chat", chat_request)
         if response and response.status_code == 200:
             data = response.json()
-            if "response" in data and "model" in data:
+            if "response" in data and "model_used" in data:
                 self.log_test("AI Chat Message", "PASS", 
-                            f"AI responded with model: {data.get('model')}", response.status_code)
+                            f"AI responded with model: {data.get('model_used')}", response.status_code)
             else:
                 self.log_test("AI Chat Message", "FAIL", 
-                            "Missing response or model info", response.status_code)
+                            f"Missing response or model info. Got: {list(data.keys())}", response.status_code)
         else:
             self.log_test("AI Chat Message", "FAIL", 
                         "AI chat endpoint failed", response.status_code if response else None)
+        
+        # Test AI models endpoint
+        response = self.make_request("GET", "/api/ai/models")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "models" in data and len(data["models"]) > 0:
+                self.log_test("AI Models", "PASS", 
+                            f"Found {len(data['models'])} AI models", response.status_code)
+            else:
+                self.log_test("AI Models", "FAIL", 
+                            "No AI models found", response.status_code)
+        else:
+            self.log_test("AI Models", "FAIL", 
+                        "AI models endpoint failed", response.status_code if response else None)
+        
+        # Test AI agents endpoint
+        response = self.make_request("GET", "/api/ai/agents")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "agents" in data and len(data["agents"]) > 0:
+                self.log_test("AI Agents", "PASS", 
+                            f"Found {len(data['agents'])} AI agents", response.status_code)
+            else:
+                self.log_test("AI Agents", "FAIL", 
+                            "No AI agents found", response.status_code)
+        else:
+            self.log_test("AI Agents", "FAIL", 
+                        "AI agents endpoint failed", response.status_code if response else None)
+        
+        # Test AI status endpoint
+        response = self.make_request("GET", "/api/ai/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "service" in data and "status" in data:
+                self.log_test("AI Status", "PASS", 
+                            f"AI service status: {data.get('status')}", response.status_code)
+            else:
+                self.log_test("AI Status", "FAIL", 
+                            "Missing AI status info", response.status_code)
+        else:
+            self.log_test("AI Status", "FAIL", 
+                        "AI status endpoint failed", response.status_code if response else None)
         
         # Test getting conversations
         response = self.make_request("GET", "/api/ai/conversations")
