@@ -266,7 +266,7 @@ async def refresh_token(current_user: User = Depends(get_current_user)):
         logger.error(f"Token refresh error: {e}")
         raise HTTPException(status_code=500, detail="Token refresh failed")
 
-# Demo user creation endpoint for development
+# Demo user endpoints
 @router.post("/create-demo", response_model=dict)
 async def create_demo_user():
     """Create demo user for development"""
@@ -286,7 +286,7 @@ async def create_demo_user():
             "hashed_password": get_password_hash("demo123"),
             "avatar": None,
             "is_premium": True,
-            "projects_count": 0,
+            "projects_count": 3,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         }
@@ -298,3 +298,85 @@ async def create_demo_user():
     except Exception as e:
         logger.error(f"Demo user creation error: {e}")
         raise HTTPException(status_code=500, detail="Demo user creation failed")
+
+@router.post("/demo-login", response_model=dict)
+async def demo_login():
+    """Direct demo login endpoint"""
+    try:
+        db = await get_database()
+        
+        # Find or create demo user
+        user = await db.users.find_one({"email": "demo@aicodestudio.com"})
+        
+        if not user:
+            # Create demo user if doesn't exist
+            demo_user = {
+                "_id": "demo_user_123",
+                "name": "Demo User",
+                "email": "demo@aicodestudio.com",
+                "hashed_password": get_password_hash("demo123"),
+                "avatar": None,
+                "is_premium": True,
+                "projects_count": 3,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            await db.users.insert_one(demo_user)
+            user = demo_user
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": str(user["_id"])}, expires_delta=access_token_expires
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse(
+                id=str(user["_id"]),
+                email=user["email"],
+                name=user["name"],
+                avatar=user.get("avatar"),
+                is_premium=user.get("is_premium", True),
+                projects_count=user.get("projects_count", 3),
+                created_at=user["created_at"]
+            )
+        }
+        
+    except Exception as e:
+        logger.error(f"Demo login error: {e}")
+        raise HTTPException(status_code=500, detail="Demo login failed")
+
+
+# Helper function to ensure demo user exists
+async def create_demo_user():
+    """Utility function to create demo user on startup"""
+    try:
+        db = await get_database()
+        
+        # Check if demo user already exists
+        existing_user = await db.users.find_one({"email": "demo@aicodestudio.com"})
+        if existing_user:
+            logger.info("✅ Demo user already exists")
+            return
+        
+        # Create demo user
+        demo_user = {
+            "_id": "demo_user_123",
+            "name": "Demo User",
+            "email": "demo@aicodestudio.com",
+            "hashed_password": get_password_hash("demo123"),
+            "avatar": None,
+            "is_premium": True,
+            "projects_count": 3,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.users.insert_one(demo_user)
+        logger.info("✅ Demo user created successfully")
+        
+    except Exception as e:
+        logger.error(f"Demo user creation error: {e}")
