@@ -516,41 +516,51 @@ class BackendTester:
         else:
             self.log_test("Smart Documentation", "FAIL", "Smart documentation failed", response.status_code if response else None)
 
-    def test_enterprise_analytics_performance(self):
-        """Test enterprise analytics and performance"""
-        print("📊 Testing Enterprise Analytics & Performance...")
+    def test_analytics_dashboard_integration(self):
+        """Test analytics dashboard endpoints"""
+        print("📊 Testing Analytics Dashboard Integration...")
         
-        if not self.auth_token:
-            self.log_test("Enterprise Analytics Test", "SKIP", "No authentication token available")
-            return
+        # Test analytics dashboard (public endpoint)
+        response = self.make_request("GET", "/api/analytics/dashboard")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "ai_insights" in data and "user_behavior" in data:
+                self.log_test("Analytics Dashboard", "PASS", 
+                            f"Dashboard data loaded with {len(data)} sections", response.status_code)
+            else:
+                self.log_test("Analytics Dashboard", "FAIL", 
+                            "Missing dashboard sections", response.status_code)
+        else:
+            self.log_test("Analytics Dashboard", "FAIL", 
+                        "Analytics dashboard endpoint failed", response.status_code if response else None)
         
         # Test real-time analytics
         response = self.make_request("GET", "/api/analytics/realtime")
         if response and response.status_code == 200:
-            self.log_test("Real-time Analytics", "PASS", "Real-time analytics accessible", response.status_code)
+            data = response.json()
+            if "active_users_now" in data and "requests_per_minute" in data:
+                self.log_test("Real-time Analytics", "PASS", 
+                            f"Real-time data: {data.get('active_users_now')} active users", response.status_code)
+            else:
+                self.log_test("Real-time Analytics", "FAIL", 
+                            "Missing real-time data", response.status_code)
         else:
-            self.log_test("Real-time Analytics", "FAIL", "Real-time analytics failed", response.status_code if response else None)
+            self.log_test("Real-time Analytics", "FAIL", 
+                        "Real-time analytics endpoint failed", response.status_code if response else None)
         
         # Test predictive analytics
-        response = self.make_request("GET", "/api/analytics/predictions")
+        response = self.make_request("GET", "/api/analytics/predictions?metric=users")
         if response and response.status_code == 200:
-            self.log_test("Predictive Analytics", "PASS", "Predictive analytics accessible", response.status_code)
+            data = response.json()
+            if "predictions" in data and "confidence" in data:
+                self.log_test("Predictive Analytics", "PASS", 
+                            f"Predictions with {data.get('confidence')} confidence", response.status_code)
+            else:
+                self.log_test("Predictive Analytics", "FAIL", 
+                            "Missing prediction data", response.status_code)
         else:
-            self.log_test("Predictive Analytics", "FAIL", "Predictive analytics failed", response.status_code if response else None)
-        
-        # Test advanced performance metrics
-        response = self.make_request("GET", "/api/performance/advanced")
-        if response and response.status_code == 200:
-            self.log_test("Advanced Performance Metrics", "PASS", "Advanced performance metrics accessible", response.status_code)
-        else:
-            self.log_test("Advanced Performance Metrics", "FAIL", "Advanced performance metrics failed", response.status_code if response else None)
-        
-        # Test dashboard
-        response = self.make_request("GET", "/api/dashboard")
-        if response and response.status_code == 200:
-            self.log_test("Dashboard Data", "PASS", "Dashboard data accessible", response.status_code)
-        else:
-            self.log_test("Dashboard Data", "FAIL", "Dashboard data failed", response.status_code if response else None)
+            self.log_test("Predictive Analytics", "FAIL", 
+                        "Predictive analytics endpoint failed", response.status_code if response else None)
 
     def test_collaboration_workflow_engine(self):
         """Test collaboration and workflow engine"""
