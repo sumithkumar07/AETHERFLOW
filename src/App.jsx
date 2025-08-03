@@ -172,6 +172,7 @@ const EnhancedRouter = () => {
         {currentView === 'collaboration' && <RealTimeCollaboration documentId="demo-doc" projectId="demo-project" />}
         {currentView === 'visual' && <VisualProgrammingStudio projectId="demo-project" />}
         {currentView === 'enterprise' && <EnterpriseDashboard />}
+        {currentView === 'system' && <SystemDashboard />}
       </div>
     </div>
   )
