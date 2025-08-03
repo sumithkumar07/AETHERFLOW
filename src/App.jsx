@@ -242,7 +242,7 @@ const App = () => {
             path="/auth" 
             element={
               !isAuthenticated ? (
-                <AuthPage />
+                <Login />
               ) : (
                 <Navigate to="/dashboard" replace />
               )
