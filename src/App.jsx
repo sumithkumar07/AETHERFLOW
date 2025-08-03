@@ -7,7 +7,7 @@ import { useEnhancedChatStore } from './store/enhancedChatStore'
 
 // Components
 import LoadingStates from './components/LoadingStates'
-import AuthPage from './components/AuthPage'
+import Login from './pages/Login'
 import MarketingLanding from './components/MarketingLanding'
 import ChatHub from './pages/ChatHub'
 import EnhancedChatInterface from './components/enhanced/EnhancedChatInterface'
