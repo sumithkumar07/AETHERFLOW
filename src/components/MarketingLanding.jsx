@@ -19,12 +19,24 @@ import { useAuthStore } from '../store/authStore'
 import SEOHead from './SEOHead'
 
 const MarketingLanding = () => {
+  const navigate = useNavigate()
+  const { demoLogin, isLoading } = useAuthStore()
+  const [isDemo, setIsDemo] = useState(false)
   const [stats, setStats] = useState({
     activeProjects: '15,247',
     developers: '2,100+',
     templates: '50+',
     satisfaction: '98%'
   })
+
+  const handleDemoLogin = async () => {
+    setIsDemo(true)
+    const result = await demoLogin()
+    if (result.success) {
+      navigate('/dashboard')
+    }
+    setIsDemo(false)
+  }
 
   const features = [
     {
