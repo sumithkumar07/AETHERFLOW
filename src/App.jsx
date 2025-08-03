@@ -149,6 +149,9 @@ const EnhancedRouter = () => {
         case '/enterprise':
           setCurrentView('enterprise')
           break
+        case '/system':
+          setCurrentView('system')
+          break
         default:
           setCurrentView('chat')
       }
