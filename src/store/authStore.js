@@ -532,12 +532,83 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Enhanced demo login
+  // Enhanced demo login with direct API call
   demoLogin: async () => {
-    return get().login({
-      email: 'demo@aicodestudio.com',
-      password: 'demo123'
-    })
+    const state = get()
+    
+    // Prevent concurrent login attempts
+    if (state.isLoggingIn || state.authOperationInProgress) {
+      return { success: false, error: 'Authentication already in progress' }
+    }
+
+    try {
+      set({ 
+        isLoading: true, 
+        isLoggingIn: true,
+        authOperationInProgress: true,
+        error: null 
+      })
+      
+      // Try demo-login endpoint first
+      let response
+      try {
+        response = await axios.post('/auth/demo-login')
+      } catch (demoError) {
+        // Fallback to regular login with demo credentials
+        console.log('Demo login endpoint failed, trying regular login:', demoError.message)
+        response = await axios.post('/auth/login', {
+          email: 'demo@aicodestudio.com',
+          password: 'demo123'
+        })
+      }
+      
+      const { user, access_token, refresh_token } = response.data
+      
+      // Set authorization header for future requests
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
+      
+      // Save to localStorage
+      localStorage.setItem('ai-tempo-token', access_token)
+      localStorage.setItem('ai-tempo-user', JSON.stringify(user))
+      if (refresh_token) {
+        localStorage.setItem('ai-tempo-refresh', refresh_token)
+      }
+      
+      const now = Date.now()
+      
+      set({
+        user,
+        token: access_token,
+        refreshToken: refresh_token,
+        isAuthenticated: true,
+        isLoading: false,
+        isLoggingIn: false,
+        isInitialized: true,
+        authOperationInProgress: false,
+        error: null,
+        loginAttempts: 0,
+        lastLoginAttempt: null,
+        lastSuccessfulLogin: now
+      })
+      
+      toast.success(`Welcome to Aether AI Platform, ${user.name}! 🎉`)
+      return { success: true, user }
+      
+    } catch (error) {
+      console.error('Demo login failed:', error)
+      const errorMessage = error.response?.data?.detail || 'Demo login failed'
+      
+      set({
+        error: errorMessage,
+        isLoading: false,
+        isLoggingIn: false,
+        authOperationInProgress: false,
+        isInitialized: true
+      })
+      
+      toast.error(`Demo login failed: ${errorMessage}`)
+      return { success: false, error: errorMessage }
+    }
   },
 
   // Clear errors
