@@ -28,7 +28,8 @@ const EnhancedNavigation = () => {
     { id: 'analytics', name: 'Analytics', icon: '📊', path: '/analytics' },
     { id: 'collaboration', name: 'Collaboration', icon: '👥', path: '/collaboration' },
     { id: 'visual', name: 'Visual Studio', icon: '🎨', path: '/visual-programming' },
-    { id: 'enterprise', name: 'Enterprise', icon: '🏢', path: '/enterprise' }
+    { id: 'enterprise', name: 'Enterprise', icon: '🏢', path: '/enterprise' },
+    { id: 'system', name: 'System', icon: '⚙️', path: '/system' }
   ]
 
   return (
