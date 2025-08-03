@@ -2,12 +2,17 @@ import { create } from 'zustand'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-// Get backend URL from environment
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'
+// Get backend URL from environment - check both possible env var names
+const BACKEND_URL = import.meta.env.REACT_APP_BACKEND_URL || 
+                   import.meta.env.VITE_BACKEND_URL || 
+                   process.env.REACT_APP_BACKEND_URL ||
+                   'http://localhost:8001'
 
 // Configure axios defaults
 axios.defaults.baseURL = `${BACKEND_URL}/api`
 axios.defaults.headers.common['Content-Type'] = 'application/json'
+
+console.log('🔧 Auth Store initialized with Backend URL:', BACKEND_URL)
 
 // Enhanced auth store with race condition prevention and improved state management
 const useAuthStore = create((set, get) => ({
