@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   SparklesIcon,
   RocketLaunchIcon,
@@ -11,9 +11,11 @@ import {
   CheckIcon,
   PlayIcon,
   ArrowRightIcon,
-  StarIcon
+  StarIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { useAuthStore } from '../store/authStore'
 import SEOHead from './SEOHead'
 
 const MarketingLanding = () => {
