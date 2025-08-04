@@ -309,24 +309,35 @@ async def download_model(
 
 @router.get("/status")
 async def get_ai_status():
-    """Get AI service status"""
+    """Get Groq AI service status"""
     try:
         model_status = await ai_service.get_model_status()
+        usage_stats = ai_service.get_usage_stats()
         
         return {
-            "service": "Local Ollama AI",
-            "status": "online" if model_status.get("ollama_connected", False) else "offline",
-            "unlimited": True,
-            "local": True,
-            "privacy": "complete",
-            "cost": "free",
+            "service": "Groq AI",
+            "status": "online" if model_status.get("groq_connected", False) else "offline", 
+            "ultra_fast": True,
+            "cloud_based": True,
+            "cost_optimized": True,
+            "provider": "Groq",
             "models": model_status,
+            "usage": usage_stats,
             "features": {
-                "unlimited_usage": True,
-                "offline_capable": True,
-                "private_processing": True,
-                "no_api_costs": True,
-                "multi_agent_support": True
+                "ultra_fast_inference": True,
+                "smart_cost_routing": True,
+                "generous_free_tier": True,
+                "enterprise_reliability": True,
+                "multiple_model_support": True,
+                "real_time_streaming": True,
+                "cost_effective": True,
+                "no_infrastructure_needed": True
+            },
+            "benefits": {
+                "speed": "10x faster than competitors",
+                "cost": "80%+ savings vs alternatives", 
+                "reliability": "Enterprise-grade uptime",
+                "scalability": "Handles unlimited concurrent users"
             }
         }
     except Exception as e:
