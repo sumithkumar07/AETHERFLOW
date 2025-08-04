@@ -22,14 +22,13 @@ from routes.enhanced_features import router as enhanced_features_router
 from routes.integrations_enhanced import router as integrations_enhanced_router
 from routes.subscription import router as subscription_router
 
-# Import additional missing routes
+# Import additional missing routes (only working ones)
 from routes.advanced_ai import router as advanced_ai_router
 from routes.enterprise import router as enterprise_router
 from routes.analytics_dashboard import router as analytics_dashboard_router
 from routes.performance import router as performance_router
 from routes.visual_programming import router as visual_programming_router
 from routes.security import router as security_router
-from routes.workflows import router as workflows_router
 from routes.architectural_intelligence import router as architectural_intelligence_router
 from routes.voice import router as voice_router
 from routes.agents import router as agents_router
