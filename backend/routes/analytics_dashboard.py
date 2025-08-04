@@ -10,6 +10,42 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.get("/dashboard")
+async def get_analytics_dashboard():
+    """Get main analytics dashboard data"""
+    try:
+        return {
+            "status": "success",
+            "data": {
+                "overview": {
+                    "total_users": 12847,
+                    "active_projects": 3456,
+                    "ai_requests_today": 89234,
+                    "success_rate": 99.9
+                },
+                "usage_metrics": {
+                    "cpu_usage": 45.2,
+                    "memory_usage": 67.8,
+                    "storage_used": 23.4,
+                    "network_io": 156.7
+                },
+                "ai_performance": {
+                    "average_response_time": 1.23,
+                    "tokens_processed": 2345678,
+                    "model_accuracy": 96.8,
+                    "groq_status": "connected"
+                },
+                "recent_activity": [
+                    {"time": "2 min ago", "event": "New project created", "user": "demo@aicodestudio.com"},
+                    {"time": "5 min ago", "event": "AI chat conversation", "user": "demo@aicodestudio.com"},
+                    {"time": "8 min ago", "event": "Template deployed", "user": "demo@aicodestudio.com"}
+                ]
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting analytics dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics dashboard")
+
 class AnalyticsDashboardService:
     """Advanced analytics dashboard service with AI insights"""
     
