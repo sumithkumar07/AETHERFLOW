@@ -5,7 +5,7 @@ import logging
 
 from models.subscription import (
     SubscriptionPlan, BillingInterval, SubscriptionCreate, SubscriptionUpdate,
-    SubscriptionResponse, UsageResponse, PLAN_CONFIGS
+    SubscriptionResponse, UsageResponse, PLAN_CONFIGS, SubscriptionStatus
 )
 from models.user import User
 from routes.auth import get_current_user
