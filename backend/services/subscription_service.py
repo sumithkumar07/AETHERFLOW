@@ -264,9 +264,16 @@ class SubscriptionService:
             if not subscription:
                 return {"allowed": False, "reason": "No active subscription"}
             
-            plan_config = get_plan_config(SubscriptionPlan(subscription.plan))
-            if not plan_config:
-                return {"allowed": False, "reason": "Invalid subscription plan"}
+            from models.subscription import is_trial_active, get_trial_limits, get_plan_config, SubscriptionPlan
+            
+            # Check if subscription is in trial
+            if is_trial_active(subscription):
+                limits = get_trial_limits(SubscriptionPlan(subscription.plan))
+            else:
+                plan_config = get_plan_config(SubscriptionPlan(subscription.plan))
+                if not plan_config:
+                    return {"allowed": False, "reason": "Invalid subscription plan"}
+                limits = plan_config["features"]
             
             # Map usage types to limit keys
             usage_limit_map = {
@@ -281,7 +288,7 @@ class SubscriptionService:
             if not limit_key:
                 return {"allowed": True, "reason": "Unknown usage type"}
             
-            limit = plan_config["features"].get(limit_key, -1)
+            limit = limits.get(limit_key, -1)
             
             # Unlimited (-1)
             if limit == -1:
@@ -293,16 +300,19 @@ class SubscriptionService:
             
             # Check if request would exceed limit
             if current_usage + requested_amount > limit:
+                trial_status = " (Trial)" if is_trial_active(subscription) else ""
                 return {
                     "allowed": False,
-                    "reason": f"Usage limit exceeded. Current: {current_usage}, Limit: {limit}, Requested: {requested_amount}"
+                    "reason": f"Usage limit exceeded{trial_status}. Current: {current_usage}, Limit: {limit}, Requested: {requested_amount}",
+                    "is_trial": is_trial_active(subscription)
                 }
             
             return {
                 "allowed": True,
                 "current_usage": current_usage,
                 "limit": limit,
-                "remaining": limit - current_usage
+                "remaining": limit - current_usage,
+                "is_trial": is_trial_active(subscription)
             }
             
         except Exception as e:
