@@ -104,8 +104,8 @@ async def chat_with_ai(
         }
         
     except Exception as e:
-        logger.error(f"Local AI chat error: {e}")
-        raise HTTPException(status_code=500, detail="Local AI service error")
+        logger.error(f"Groq AI chat error: {e}")
+        raise HTTPException(status_code=500, detail="Groq AI service error")
 
 @router.get("/conversations")
 async def get_conversations(
