@@ -18,6 +18,8 @@ from routes.integrations import router as integrations_router
 from routes.enhanced_ai_workflows import router as enhanced_ai_router
 from routes.real_time_collaboration import router as collaboration_router
 from routes.enhanced_project_lifecycle import router as lifecycle_router
+from routes.enhanced_features import router as enhanced_features_router
+from routes.integrations_enhanced import router as integrations_enhanced_router
 
 from models.database import init_db
 
