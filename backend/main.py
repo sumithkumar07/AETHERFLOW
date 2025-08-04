@@ -431,7 +431,10 @@ async def health_check():
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     """WebSocket connection for real-time collaboration"""
-    await manager.connect(websocket, client_id)
+    await websocket.accept()
+    # Use client_id as both user_id and session_id for simplicity
+    user_id = client_id.split('-')[0] if '-' in client_id else client_id
+    session_id = client_id
     try:
         while True:
             data = await websocket.receive_text()
