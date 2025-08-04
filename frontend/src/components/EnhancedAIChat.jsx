@@ -218,17 +218,7 @@ const EnhancedAIChat = () => {
     }
   }
 
-  const startVoiceRecognition = () => {
-    if (recognition.current && !isListening) {
-      recognition.current.start()
-    }
-  }
 
-  const stopVoiceRecognition = () => {
-    if (recognition.current && isListening) {
-      recognition.current.stop()
-    }
-  }
 
   const handleSuggestionClick = (suggestion) => {
     setInputMessage(suggestion.text)
