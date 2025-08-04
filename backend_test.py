@@ -1220,6 +1220,11 @@ class BackendTester:
         self.test_project_management()
         self.test_template_system()
         
+        # Run subscription system tests (PRIORITY - as requested in review)
+        self.test_subscription_system()
+        self.test_ai_chat_with_usage_tracking()
+        self.test_subscription_database_models()
+        
         # Run advanced feature tests (as requested in review)
         self.test_multi_agent_capabilities()
         self.test_advanced_ai_features()
