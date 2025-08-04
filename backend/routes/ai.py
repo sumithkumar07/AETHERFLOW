@@ -33,14 +33,14 @@ async def chat_with_ai(
     message_data: ChatMessage,
     current_user: User = Depends(get_current_user)
 ):
-    """Chat with local Ollama AI agent"""
+    """Chat with ultra-fast Groq AI agent"""
     try:
-        logger.info(f"Processing local AI chat request from user {current_user.id}")
+        logger.info(f"Processing Groq AI chat request from user {current_user.id}")
         
         # Generate unique message ID
         message_id = f"msg_{uuid.uuid4().hex[:12]}"
         
-        # Process with local AI service
+        # Process with Groq AI service (ultra-fast responses)
         ai_response = await ai_service.process_message(
             message=message_data.message,
             model=message_data.model,
