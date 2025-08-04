@@ -713,6 +713,122 @@ class BackendTester:
         else:
             self.log_test("Workspace Intelligence", "FAIL", "Workspace intelligence failed", response.status_code if response else None)
 
+    def test_7_day_trial_system(self):
+        """Test the 7-day free trial system as requested"""
+        print("🎯 Testing 7-Day Free Trial System...")
+        
+        # Test 1: Auto-Trial Creation on Registration
+        print("📝 Testing Auto-Trial Creation on Registration...")
+        import random
+        trial_user = {
+            "email": f"trialuser{random.randint(10000,99999)}@example.com",
+            "name": "Trial Test User",
+            "password": "testpassword123"
+        }
+        
+        response = self.make_request("POST", "/api/auth/register", trial_user)
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("access_token" in data and "trial_created" in data and 
+                data.get("trial_created") == True and "message" in data):
+                self.log_test("Auto-Trial Creation on Registration", "PASS", 
+                            f"Trial created for new user: {data.get('message')}", response.status_code)
+                self.trial_auth_token = data["access_token"]
+                self.trial_user_email = trial_user["email"]
+            else:
+                self.log_test("Auto-Trial Creation on Registration", "FAIL", 
+                            "Registration successful but trial not created properly", response.status_code)
+        else:
+            self.log_test("Auto-Trial Creation on Registration", "FAIL", 
+                        "User registration failed", response.status_code if response else None)
+            return
+        
+        # Test 2: Trial Status API
+        print("📊 Testing Trial Status API...")
+        if hasattr(self, 'trial_auth_token'):
+            headers = {"Authorization": f"Bearer {self.trial_auth_token}"}
+            response = self.make_request("GET", "/api/subscription/trial/status", headers=headers)
+            if response and response.status_code == 200:
+                data = response.json()
+                if ("has_trial" in data and "is_trial_active" in data and 
+                    "trial_days_remaining" in data and data.get("is_trial_active") == True):
+                    days_remaining = data.get("trial_days_remaining", 0)
+                    self.log_test("Trial Status API", "PASS", 
+                                f"Trial active with {days_remaining} days remaining", response.status_code)
+                else:
+                    self.log_test("Trial Status API", "FAIL", 
+                                f"Trial status incorrect: {data}", response.status_code)
+            else:
+                self.log_test("Trial Status API", "FAIL", 
+                            "Trial status endpoint failed", response.status_code if response else None)
+        
+        # Test 3: Subscription Plans API with Trial Info
+        print("📋 Testing Subscription Plans API...")
+        response = self.make_request("GET", "/api/subscription/plans")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "plans" in data and "basic" in data["plans"]:
+                basic_plan = data["plans"]["basic"]
+                if ("trial" in basic_plan and 
+                    basic_plan["trial"].get("tokens_per_week") == 50000 and
+                    basic_plan["trial"].get("duration_days") == 7):
+                    self.log_test("Subscription Plans with Trial Config", "PASS", 
+                                f"Basic plan includes trial: 50K tokens/week for 7 days", response.status_code)
+                else:
+                    self.log_test("Subscription Plans with Trial Config", "FAIL", 
+                                f"Trial configuration missing or incorrect in basic plan", response.status_code)
+            else:
+                self.log_test("Subscription Plans with Trial Config", "FAIL", 
+                            "Plans data structure invalid", response.status_code)
+        else:
+            self.log_test("Subscription Plans with Trial Config", "FAIL", 
+                        "Plans endpoint failed", response.status_code if response else None)
+        
+        # Test 4: Trial Limits Verification
+        print("🔒 Testing Trial Limits...")
+        if hasattr(self, 'trial_auth_token'):
+            headers = {"Authorization": f"Bearer {self.trial_auth_token}"}
+            response = self.make_request("GET", "/api/subscription/current", headers=headers)
+            if response and response.status_code == 200:
+                data = response.json()
+                if ("status" in data and data.get("status") == "trialing" and
+                    "trial_limits" in data):
+                    trial_limits = data["trial_limits"]
+                    if trial_limits.get("tokens_per_month") == 50000:  # Trial gets 50K tokens
+                        self.log_test("Trial Limits Verification", "PASS", 
+                                    f"Trial user has correct limits: {trial_limits.get('tokens_per_month')} tokens", response.status_code)
+                    else:
+                        self.log_test("Trial Limits Verification", "FAIL", 
+                                    f"Trial limits incorrect: {trial_limits}", response.status_code)
+                else:
+                    self.log_test("Trial Limits Verification", "FAIL", 
+                                f"Trial subscription data incorrect: {data}", response.status_code)
+            else:
+                self.log_test("Trial Limits Verification", "FAIL", 
+                            "Current subscription endpoint failed", response.status_code if response else None)
+        
+        # Test 5: Trial Conversion
+        print("💳 Testing Trial Conversion...")
+        if hasattr(self, 'trial_auth_token'):
+            headers = {"Authorization": f"Bearer {self.trial_auth_token}"}
+            conversion_data = {
+                "plan": "professional",
+                "billing_interval": "monthly"
+            }
+            response = self.make_request("POST", "/api/subscription/trial/convert", conversion_data, headers=headers)
+            if response and response.status_code == 200:
+                data = response.json()
+                if ("message" in data and "subscription" in data and 
+                    "professional" in data.get("message", "")):
+                    self.log_test("Trial Conversion", "PASS", 
+                                f"Trial converted successfully: {data.get('message')}", response.status_code)
+                else:
+                    self.log_test("Trial Conversion", "FAIL", 
+                                f"Trial conversion response invalid: {data}", response.status_code)
+            else:
+                self.log_test("Trial Conversion", "FAIL", 
+                            "Trial conversion endpoint failed", response.status_code if response else None)
+
     def test_subscription_system(self):
         """Test complete subscription system with new pricing model"""
         print("💳 Testing Subscription System...")
