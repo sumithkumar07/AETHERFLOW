@@ -1,0 +1,23 @@
+[
+  {
+    "test": "Root API Endpoint",
+    "status": "FAIL",
+    "details": "Endpoint not accessible",
+    "response_code": null,
+    "timestamp": "2025-08-04T17:05:39.958338"
+  },
+  {
+    "test": "Health Check",
+    "status": "FAIL",
+    "details": "Health endpoint not accessible",
+    "response_code": null,
+    "timestamp": "2025-08-04T17:05:39.959471"
+  },
+  {
+    "test": "Demo User Login",
+    "status": "FAIL",
+    "details": "Login failed",
+    "response_code": null,
+    "timestamp": "2025-08-04T17:05:39.960489"
+  }
+]
