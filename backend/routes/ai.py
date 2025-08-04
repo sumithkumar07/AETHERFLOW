@@ -199,62 +199,27 @@ async def create_conversation(
 
 @router.get("/models")
 async def get_available_models():
-    """Get available local AI models"""
+    """Get available Groq AI models with cost information"""
     try:
+        # Get models from the new Groq service
+        models = await ai_service.get_available_models()
         model_status = await ai_service.get_model_status()
         
         return {
-            "models": [
-                {
-                    "id": "codellama:13b",
-                    "name": "CodeLlama 13B",
-                    "provider": "Meta (Local)",
-                    "description": "Specialized for code generation, debugging, and software architecture",
-                    "capabilities": ["code", "debugging", "architecture", "best-practices"],
-                    "speed": "medium",
-                    "quality": "highest",
-                    "cost": "free",
-                    "size": "13B",
-                    "type": "coding",
-                    "unlimited": True,
-                    "local": True,
-                    "available": model_status["models"].get("codellama:13b", {}).get("available", False)
-                },
-                {
-                    "id": "llama3.1:8b", 
-                    "name": "LLaMA 3.1 8B",
-                    "provider": "Meta (Local)",
-                    "description": "Excellent general-purpose model for various tasks",
-                    "capabilities": ["general", "analysis", "creative", "reasoning"],
-                    "speed": "fast",
-                    "quality": "high",
-                    "cost": "free",
-                    "size": "8B",
-                    "type": "general",
-                    "unlimited": True,
-                    "local": True,
-                    "available": model_status["models"].get("llama3.1:8b", {}).get("available", False)
-                },
-                {
-                    "id": "deepseek-coder:6.7b",
-                    "name": "DeepSeek Coder 6.7B",
-                    "provider": "DeepSeek (Local)",
-                    "description": "Fast responses for quick coding tasks and completion",
-                    "capabilities": ["code", "completion", "quick-fixes", "snippets"],
-                    "speed": "fastest",
-                    "quality": "high",
-                    "cost": "free",
-                    "size": "6.7B",
-                    "type": "coding-fast",
-                    "unlimited": True,
-                    "local": True,
-                    "available": model_status["models"].get("deepseek-coder:6.7b", {}).get("available", False)
-                }
-            ],
+            "models": models,
             "status": model_status,
-            "total": len(model_status["models"]),
-            "unlimited_usage": True,
-            "local_processing": True
+            "total": len(models),
+            "ultra_fast": True,
+            "cloud_based": True,
+            "cost_optimized": True,
+            "provider": "Groq",
+            "features": {
+                "ultra_fast_inference": True,
+                "smart_cost_routing": True,
+                "multiple_models": True,
+                "enterprise_reliability": True,
+                "generous_free_tier": True
+            }
         }
     except Exception as e:
         logger.error(f"Failed to get models: {e}")
