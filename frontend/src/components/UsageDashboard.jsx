@@ -149,7 +149,7 @@ const UsageDashboard = () => {
     {
       key: 'storage_used',
       name: 'Storage',
-      icon: DatabaseIcon,
+      icon: CircleStackIcon, // Updated from DatabaseIcon
       current: usageData?.current_usage?.storage_used || 0,
       limit: usageData?.limits?.storage_gb || 0.5,
       unit: 'GB',
