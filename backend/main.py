@@ -31,7 +31,7 @@ from routes.development import router as development_router, set_development_ass
 from routes.collaboration import router as collaboration_router, set_collaboration_engine
 from services.ai_service import AIService
 from services.enhanced_ai_service import EnhancedAIService
-from services.websocket_manager import ConnectionManager
+from services.websocket_manager import WebSocketManager
 from services.intelligent_ai_router import IntelligentAIRouter
 from services.plugin_manager import PluginManager
 from services.advanced_analytics import AdvancedAnalytics, SmartRecommendationEngine
@@ -103,7 +103,7 @@ app.add_middleware(
 )
 
 # Initialize services
-manager = ConnectionManager()
+manager = WebSocketManager()
 ai_service = AIService()
 enhanced_ai_service = EnhancedAIService()
 
