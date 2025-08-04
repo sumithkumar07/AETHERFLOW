@@ -44,11 +44,7 @@ const EnhancedAIChat = () => {
   } = useEnhancedChatStore()
 
   const [inputMessage, setInputMessage] = useState('')
-  const [selectedAgent, setSelectedAgent] = useState('developer')
-  const [selectedModel, setSelectedModel] = useState('llama-3.1-70b-versatile')
-  const [isListening, setIsListening] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(true)
-  const [collaborationMode, setCollaborationMode] = useState(true)
   const [conversationId, setConversationId] = useState(null)
   
   const messagesEndRef = useRef(null)
