@@ -403,19 +403,19 @@ const Subscription = () => {
             {[
               {
                 question: "Can I change plans anytime?",
-                answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+                answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing."
               },
               {
                 question: "Is there a free trial?",
-                answer: "Our Developer plan is completely free forever. You can upgrade to paid plans when you need more features."
+                answer: "We offer a 14-day free trial on all paid plans so you can test all features before committing."
               },
               {
-                question: "What AI models are included?",
-                answer: "All plans include access to Puter.js AI with GPT-4.1 Nano, Claude Sonnet 4, Gemini 2.5 Flash, and GPT-4 models at no additional cost."
+                question: "How does token usage work?",
+                answer: "Each plan includes a monthly token allowance for AI operations. Tokens reset monthly and unused tokens don't roll over."
               },
               {
-                question: "Do you offer refunds?",
-                answer: "Yes, we offer a 30-day money-back guarantee on all paid plans. No questions asked."
+                question: "What happens if I exceed my limits?",
+                answer: "You'll receive warnings at 80% and 95% usage. At 100%, certain features may be temporarily limited until your next billing cycle or plan upgrade."
               }
             ].map((faq, index) => (
               <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
