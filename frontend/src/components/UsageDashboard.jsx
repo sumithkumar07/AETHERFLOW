@@ -8,7 +8,7 @@ import {
   BoltIcon,
   CpuChipIcon,
   ServerIcon,
-  DatabaseIcon,
+  CircleStackIcon, // DatabaseIcon replacement
   CloudIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
