@@ -299,7 +299,7 @@ function AppContent() {
           <div className="flex flex-col space-y-2 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Ollama Connected</span>
+              <span>Groq Connected</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
               <div className={`w-2 h-2 rounded-full ${realTimeConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
