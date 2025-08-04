@@ -85,6 +85,8 @@ app.include_router(integrations_router, prefix="/api/integrations", tags=["Integ
 app.include_router(enhanced_ai_router, prefix="/api/ai/enhanced", tags=["Enhanced AI Workflows"])
 app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Real-time Collaboration"])
 app.include_router(lifecycle_router, prefix="/api/projects", tags=["Enhanced Project Lifecycle"])
+app.include_router(enhanced_features_router, prefix="/api/enhanced", tags=["Enhanced Features"])
+app.include_router(integrations_enhanced_router, prefix="/api/integrations/enhanced", tags=["Enhanced Integrations"])
 
 @app.get("/")
 async def root():
