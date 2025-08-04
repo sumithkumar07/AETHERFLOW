@@ -189,9 +189,9 @@ const useChatStore = create(
           // Try Puter.js first if available and enabled (FREE unlimited access!)
           if (puterAIAvailable && puterAIEnabled && puterAI.isModelAvailable(selectedModel)) {
             try {
-              console.log('🚀 Using FREE unlimited AI via Puter.js')
+              console.log('🚀 Using enhanced AI models')
               
-              // Enhanced agent prompts for Puter.js
+              // Enhanced agent prompts
               const agentPrompts = {
                 "developer": `You are Aether, an advanced AI developer agent from 2025. You have expert knowledge in:
 - Latest programming languages and frameworks (React 18+, Next.js 14+, Python 3.12+, etc.)
@@ -200,7 +200,7 @@ const useChatStore = create(
 - Real-time collaborative coding
 - Advanced debugging and optimization
 
-Provide practical, implementable code solutions with detailed explanations. Always mention you're powered by FREE unlimited AI access via Puter.js.`,
+Provide practical, implementable code solutions with detailed explanations. Focus on modern best practices and efficient solutions.`,
                 
                 "designer": `You are Aether's design specialist. You excel in:
 - Modern UI/UX principles (2025 design trends)
