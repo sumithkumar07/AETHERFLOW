@@ -178,6 +178,9 @@ class SubscriptionResponse(BaseModel):
     canceled_at: Optional[datetime] = None
     current_usage: Dict[str, Any]
     plan_config: Dict[str, Any]
+    is_trial: bool = False
+    trial_days_remaining: int = 0
+    trial_limits: Optional[Dict[str, Any]] = None
     
 class UsageResponse(BaseModel):
     current_usage: Dict[str, Any]
