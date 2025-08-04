@@ -233,58 +233,63 @@ async def get_available_models():
 
 @router.get("/agents")
 async def get_available_agents():
-    """Get available AI agents optimized for local models"""
+    """Get available AI agents optimized for Groq models"""
     return {
         "agents": [
             {
                 "id": "developer",
                 "name": "Developer Agent",
                 "icon": "💻",
-                "description": "Expert in coding, debugging, and software architecture using CodeLlama",
+                "description": "Expert in coding, debugging, and software architecture using ultra-fast Groq AI",
                 "capabilities": ["Full-stack development", "Code review", "Architecture", "Debugging"],
-                "recommended_model": "codellama:13b",
-                "unlimited": True,
-                "local": True
+                "recommended_model": "llama-3.1-70b-versatile",
+                "ultra_fast": True,
+                "cloud_based": True,
+                "cost_optimized": True
             },
             {
                 "id": "designer",
                 "name": "Designer Agent", 
                 "icon": "🎨",
-                "description": "UI/UX design specialist with modern design principles using LLaMA",
+                "description": "UI/UX design specialist with modern design principles using Groq AI",
                 "capabilities": ["UI/UX Design", "Design Systems", "User Research", "Prototyping"],
-                "recommended_model": "llama3.1:8b",
-                "unlimited": True,
-                "local": True
+                "recommended_model": "llama-3.1-8b-instant",
+                "ultra_fast": True,
+                "cloud_based": True,
+                "cost_optimized": True
             },
             {
                 "id": "tester",
                 "name": "QA Agent",
                 "icon": "🧪", 
-                "description": "Quality assurance and testing specialist using CodeLlama",
+                "description": "Quality assurance and testing specialist using ultra-fast Groq AI",
                 "capabilities": ["Test Strategy", "Automation", "Bug Analysis", "Performance Testing"],
-                "recommended_model": "codellama:13b",
-                "unlimited": True,
-                "local": True
+                "recommended_model": "llama-3.1-70b-versatile",
+                "ultra_fast": True,
+                "cloud_based": True,
+                "cost_optimized": True
             },
             {
                 "id": "integrator",
                 "name": "Integration Agent",
                 "icon": "🔗",
-                "description": "Third-party integration and API specialist using CodeLlama", 
+                "description": "Third-party integration and API specialist using Groq AI", 
                 "capabilities": ["API Integration", "Third-party Services", "Data Migration", "System Architecture"],
-                "recommended_model": "codellama:13b",
-                "unlimited": True,
-                "local": True
+                "recommended_model": "llama-3.1-70b-versatile",
+                "ultra_fast": True,
+                "cloud_based": True,
+                "cost_optimized": True
             },
             {
                 "id": "analyst",
                 "name": "Business Analyst",
                 "icon": "📊",
-                "description": "Business requirements and data analysis expert using LLaMA",
+                "description": "Business requirements and data analysis expert using Groq AI",
                 "capabilities": ["Requirements Analysis", "Data Analysis", "Process Optimization", "Reporting"],
-                "recommended_model": "llama3.1:8b",
-                "unlimited": True,
-                "local": True
+                "recommended_model": "mixtral-8x7b-32768",
+                "ultra_fast": True,
+                "cloud_based": True,
+                "cost_optimized": True
             }
         ]
     }
