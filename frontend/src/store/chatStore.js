@@ -47,8 +47,8 @@ const useChatStore = create(
           set({ puterAIAvailable: puterAvailable })
           
           if (puterAvailable) {
-            console.log('🎉 Puter.js initialized - FREE unlimited AI access enabled!')
-            toast.success('🆓 FREE unlimited AI access enabled via Puter.js!')
+            console.log('🎉 Puter.js initialized - Enhanced AI models ready!')
+            toast.success('🤖 Enhanced AI models loaded successfully!')
           }
           
           // Get Puter.js models
