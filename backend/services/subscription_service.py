@@ -347,20 +347,34 @@ class SubscriptionService:
     
     async def get_subscription_response(self, subscription: Subscription) -> SubscriptionResponse:
         """Convert subscription to response format"""
+        from models.subscription import is_trial_active, get_trial_limits, get_trial_days_remaining
+        
         plan_config = get_plan_config(SubscriptionPlan(subscription.plan))
         
-        return SubscriptionResponse(
-            id=subscription.id,
-            plan=SubscriptionPlan(subscription.plan),
-            billing_interval=BillingInterval(subscription.billing_interval),
-            status=SubscriptionStatus(subscription.status),
-            current_period_start=subscription.current_period_start,
-            current_period_end=subscription.current_period_end,
-            trial_end=subscription.trial_end,
-            canceled_at=subscription.canceled_at,
-            current_usage=subscription.current_usage,
-            plan_config=plan_config
-        )
+        # Add trial information
+        response_data = {
+            "id": subscription.id,
+            "plan": SubscriptionPlan(subscription.plan),
+            "billing_interval": BillingInterval(subscription.billing_interval),
+            "status": SubscriptionStatus(subscription.status),
+            "current_period_start": subscription.current_period_start,
+            "current_period_end": subscription.current_period_end,
+            "trial_end": subscription.trial_end,
+            "canceled_at": subscription.canceled_at,
+            "current_usage": subscription.current_usage,
+            "plan_config": plan_config
+        }
+        
+        # Add trial-specific information
+        if is_trial_active(subscription):
+            response_data["is_trial"] = True
+            response_data["trial_days_remaining"] = get_trial_days_remaining(subscription)
+            response_data["trial_limits"] = get_trial_limits(SubscriptionPlan(subscription.plan))
+        else:
+            response_data["is_trial"] = False
+            response_data["trial_days_remaining"] = 0
+        
+        return SubscriptionResponse(**response_data)
     
     async def _create_billing_event(self, user_id: str, subscription_id: str, event_type: str, metadata: Dict[str, Any] = None):
         """Create a billing event record"""
