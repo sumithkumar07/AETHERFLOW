@@ -9,6 +9,7 @@ from models.user import User
 from models.database import get_database
 from routes.auth import get_current_user
 from services.ai_service import AIService
+from middleware.usage_tracking import get_chat_usage_dependency, estimate_tokens, estimate_response_tokens
 
 router = APIRouter()
 ai_service = AIService()
