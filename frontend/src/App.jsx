@@ -178,14 +178,13 @@ function AppContent() {
         // Register service worker for PWA
         registerServiceWorker()
         
-        // Mark as initialized regardless of auth status
-        console.log('✅ Aether AI initialization complete - Platform ready!')
-        setIsInitialized(true)
-        
       } catch (error) {
         console.error('❌ Aether AI initialization error:', error)
-        setIsInitialized(true) // Initialize anyway to prevent infinite loading
       }
+      
+      // Always mark as initialized to prevent infinite loading
+      console.log('✅ Aether AI initialization complete - Platform ready!')
+      setIsInitialized(true)
     }
     
     initializeApp()
