@@ -137,7 +137,7 @@ const EnhancedHome = () => {
               >
                 Experience the enhanced AI development platform with improved conversation quality, 
                 intelligent multi-agent coordination, and simplified workflow structure.
-              </p>
+              </motion.p>
 
               {/* Enhanced Capabilities */}
               <motion.div 
