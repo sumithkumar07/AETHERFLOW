@@ -273,6 +273,6 @@ usage_tracking_service = UsageTrackingService()
 
 async def get_usage_tracking_service() -> UsageTrackingService:
     """Get usage tracking service instance"""
-    if not usage_tracking_service.db:
+    if usage_tracking_service.db is None:
         await usage_tracking_service.initialize()
     return usage_tracking_service
