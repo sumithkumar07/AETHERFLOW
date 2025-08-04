@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   CheckIcon,
@@ -10,7 +10,9 @@ import {
   UserGroupIcon,
   ChartBarIcon,
   CloudIcon,
-  SparklesIcon
+  SparklesIcon,
+  ClockIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
@@ -19,88 +21,232 @@ const Subscription = () => {
   const { isAuthenticated, user } = useAuthStore()
   const [billingCycle, setBillingCycle] = useState('monthly')
   const [loading, setLoading] = useState(false)
+  const [plans, setPlans] = useState([])
+  const [currentSubscription, setCurrentSubscription] = useState(null)
+  const [trialStatus, setTrialStatus] = useState(null)
 
-  const plans = [
-    {
-      id: 'basic',
-      name: 'Basic',
-      price: { monthly: 19, yearly: 190 },
-      description: 'Perfect for individual developers getting started',
-      features: [
-        '500K AI Tokens/month',
-        '10 Projects maximum',
-        'Basic AI Models',
-        'Email Support', 
-        'Basic Templates (10)',
-        'Basic Integrations (5)',
-        '1GB Storage',
-        'Community Access'
-      ],
-      limitations: [],
-      popular: false,
-      current: false,
-      color: 'border-gray-200',
-      buttonColor: 'btn-secondary'
-    },
-    {
-      id: 'professional',
-      name: 'Professional',
-      price: { monthly: 49, yearly: 490 },
-      description: 'Advanced features for professional developers and small teams',
-      features: [
-        'Everything in Basic',
-        '2M AI Tokens/month',
-        '50 Projects maximum',
-        '5 Team Members',
-        'Advanced AI Models',
-        'Priority Support',
-        'Advanced Templates (50+)',
-        'Advanced Integrations (50+)',
-        '10GB Storage',
-        'API Access',
-        'Custom Domains',
-        'Advanced Analytics'
-      ],
-      limitations: [],
-      popular: true,
-      current: false,
-      color: 'border-primary-500',
-      buttonColor: 'btn-primary'
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: { monthly: 179, yearly: 1790 },
-      description: 'Complete solution for teams and organizations',
-      features: [
-        'Everything in Professional',
-        '10M AI Tokens/month',
-        'Unlimited Projects',
-        'Unlimited Team Members',
-        'Premium AI Models',
-        'Dedicated Account Manager',
-        '24/7 Priority Support',
-        'Custom AI Training',
-        'Unlimited Integrations',
-        '100GB Storage',
-        'Enterprise Analytics',
-        'SSO & Audit Logs',
-        'SLA Guarantees',
-        'Custom Deployment'
-      ],
-      limitations: [],
-      popular: false,
-      current: false,
-      color: 'border-purple-500',
-      buttonColor: 'btn-primary'
+  // Load plans and subscription data
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load available plans
+        const plansResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/plans`)
+        const plansData = await plansResponse.json()
+        
+        // Transform plans to frontend format
+        const transformedPlans = Object.entries(plansData.plans).map(([key, plan]) => ({
+          id: key,
+          name: plan.name,
+          price: { 
+            monthly: plan.price_monthly, 
+            yearly: plan.price_yearly 
+          },
+          description: plan.description,
+          features: Object.entries(plan.features).map(([featureKey, value]) => {
+            // Format features for display
+            switch(featureKey) {
+              case 'tokens_per_month':
+                return `${(value / 1000).toLocaleString()}K AI Tokens/month`
+              case 'max_projects':
+                return value === -1 ? 'Unlimited Projects' : `${value} Projects maximum`
+              case 'max_team_members':
+                return value === -1 ? 'Unlimited Team Members' : `${value} Team Member${value > 1 ? 's' : ''}`
+              case 'integrations_limit':
+                return value === -1 ? 'Unlimited Integrations' : `${value} Integrations`
+              case 'support_level':
+                return value === 'email' ? 'Email Support' : 
+                       value === 'priority' ? 'Priority Support' : 
+                       'Dedicated Account Manager'
+              case 'ai_models':
+                return `${value.length} AI Model${value.length > 1 ? 's' : ''}`
+              case 'analytics':
+                return `${value.charAt(0).toUpperCase() + value.slice(1)} Analytics`
+              case 'api_access':
+                return value ? 'API Access' : null
+              case 'custom_domains':
+                return value ? 'Custom Domains' : null
+              case 'priority_support':
+                return value ? 'Priority Support' : null
+              case 'dedicated_manager':
+                return value ? 'Dedicated Account Manager' : null
+              case 'sso':
+                return value ? 'SSO & Audit Logs' : null
+              case 'audit_logs':
+                return null // Combined with SSO
+              default:
+                return null
+            }
+          }).filter(Boolean),
+          limitations: [],
+          popular: key === 'professional',
+          current: false,
+          color: key === 'professional' ? 'border-primary-500' : 'border-gray-200',
+          buttonColor: key === 'basic' ? 'btn-secondary' : 'btn-primary',
+          trial: plan.trial || null
+        }))
+
+        setPlans(transformedPlans)
+
+        // Load current subscription if authenticated
+        if (isAuthenticated) {
+          try {
+            const subResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/current`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            })
+            
+            if (subResponse.ok) {
+              const subData = await subResponse.json()
+              setCurrentSubscription(subData)
+            }
+          } catch (error) {
+            console.log('No current subscription found')
+          }
+
+          // Load trial status
+          try {
+            const trialResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/trial/status`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            })
+            
+            if (trialResponse.ok) {
+              const trialData = await trialResponse.json()
+              setTrialStatus(trialData)
+            }
+          } catch (error) {
+            console.log('Could not load trial status')
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load subscription data:', error)
+        toast.error('Failed to load subscription data')
+      }
     }
-  ]
+
+    loadData()
+  }, [isAuthenticated])
+
+  const handleSubscribe = async (planId) => {
+    if (!isAuthenticated) {
+      toast.error('Please login to subscribe')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          plan: planId,
+          billing_interval: billingCycle === 'yearly' ? 'yearly' : 'monthly'
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        toast.success(`Successfully subscribed to ${plans.find(p => p.id === planId)?.name} plan!`)
+        
+        // Reload subscription data
+        const subResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/current`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        
+        if (subResponse.ok) {
+          const subData = await subResponse.json()
+          setCurrentSubscription(subData)
+        }
+      } else {
+        throw new Error(result.detail || 'Failed to create subscription')
+      }
+    } catch (error) {
+      console.error('Subscription error:', error)
+      toast.error(error.message || 'Subscription failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTrialConvert = async (planId) => {
+    if (!trialStatus?.is_trial_active) {
+      toast.error('No active trial to convert')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/trial/convert`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          plan: planId,
+          billing_interval: billingCycle === 'yearly' ? 'yearly' : 'monthly'
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        toast.success(`Trial successfully converted to ${plans.find(p => p.id === planId)?.name} plan!`)
+        
+        // Reload data
+        window.location.reload()
+      } else {
+        throw new Error(result.detail || 'Failed to convert trial')
+      }
+    } catch (error) {
+      console.error('Trial conversion error:', error)
+      toast.error(error.message || 'Trial conversion failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getButtonText = (plan) => {
+    if (loading) return 'Processing...'
+    
+    if (currentSubscription?.plan === plan.id) {
+      return 'Current Plan'
+    }
+    
+    if (trialStatus?.is_trial_active) {
+      return `Convert Trial to ${plan.name}`
+    }
+    
+    if (plan.id === 'basic' && !currentSubscription) {
+      return 'Start Free Trial'
+    }
+    
+    return `Upgrade to ${plan.name}`
+  }
+
+  const handleButtonClick = (plan) => {
+    if (currentSubscription?.plan === plan.id) return
+
+    if (trialStatus?.is_trial_active) {
+      handleTrialConvert(plan.id)
+    } else {
+      handleSubscribe(plan.id)
+    }
+  }
 
   const features = [
     {
       category: 'AI & Development',
       items: [
-        { name: 'AI Tokens/Month', basic: '500K', professional: '2M', enterprise: '10M' },
+        { name: 'AI Tokens/Month', basic: '50K (Trial: 50K/week)', professional: '2M', enterprise: '10M' },
         { name: 'AI Models Available', basic: 'Basic (4)', professional: 'Advanced (10+)', enterprise: 'Premium + Custom' },
         { name: 'Code Generation', basic: true, professional: true, enterprise: true },
         { name: 'Custom AI Training', basic: false, professional: false, enterprise: true },
@@ -152,43 +298,26 @@ const Subscription = () => {
     return <span className="text-sm text-gray-700">{value}</span>
   }
 
-  const handleSubscribe = async (planId) => {
-    if (!isAuthenticated) {
-      toast.error('Please login to subscribe')
-      return
-    }
-
-    setLoading(true)
-    try {
-      // TODO: Integrate with Lemon Squeezy when ready
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          plan: planId,
-          billing_interval: billingCycle === 'yearly' ? 'yearly' : 'monthly'
-        })
-      })
-
-      if (response.ok) {
-        toast.success(`Successfully subscribed to ${plans.find(p => p.id === planId)?.name} plan!`)
-        // Redirect to billing dashboard or refresh user data
-      } else {
-        throw new Error('Failed to create subscription')
-      }
-    } catch (error) {
-      console.error('Subscription error:', error)
-      toast.error('Subscription system coming soon! We\'ll notify you when it\'s ready.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Trial Status Banner */}
+      {trialStatus?.is_trial_active && (
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-center space-x-3">
+              <ClockIcon className="w-5 h-5" />
+              <span className="font-medium">
+                🎉 Free Trial Active - {trialStatus.trial_days_remaining} days remaining
+              </span>
+              <span className="text-blue-100">|</span>
+              <span className="text-sm">
+                Convert to paid plan below to continue after trial
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -202,8 +331,7 @@ const Subscription = () => {
                 Choose Your Plan
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                Scale your AI development with plans designed for every stage of your journey.
-                From individual projects to enterprise solutions.
+                Start with a 7-day free trial, then scale your AI development with plans designed for every stage of your journey.
               </p>
 
               {/* Billing Toggle */}
@@ -256,31 +384,53 @@ const Subscription = () => {
                 </div>
               )}
 
-              <div className={`p-8 ${plan.popular ? 'pt-12' : ''}`}>
+              {plan.trial && plan.id === 'basic' && !currentSubscription && (
+                <div className="absolute top-0 left-0 right-0 bg-green-600 text-white text-center py-2 text-sm font-medium">
+                  Free 7-Day Trial
+                </div>
+              )}
+
+              <div className={`p-8 ${plan.popular || (plan.trial && plan.id === 'basic' && !currentSubscription) ? 'pt-12' : ''}`}>
                 {/* Plan Header */}
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                   <p className="text-gray-600 mb-4">{plan.description}</p>
                   
                   <div className="mb-6">
-                    <span className="text-4xl font-bold text-gray-900">
-                      ${plan.price[billingCycle]}
-                    </span>
-                    <span className="text-gray-500 ml-2">
-                      /{billingCycle === 'yearly' ? 'year' : 'month'}
-                    </span>
-                    {billingCycle === 'yearly' && plan.price.yearly > 0 && (
-                      <div className="text-sm text-green-600 font-medium mt-1">
-                        Save ${(plan.price.monthly * 12) - plan.price.yearly}/year
+                    {plan.id === 'basic' && !currentSubscription && plan.trial ? (
+                      <div>
+                        <div className="text-3xl font-bold text-green-600 mb-1">
+                          FREE
+                        </div>
+                        <div className="text-sm text-green-600 font-medium">
+                          7-day trial • {(plan.trial.tokens_per_week / 1000).toLocaleString()}K tokens
+                        </div>
+                        <div className="text-sm text-gray-500 mt-2">
+                          Then ${plan.price[billingCycle]}/{billingCycle === 'yearly' ? 'year' : 'month'}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="text-4xl font-bold text-gray-900">
+                          ${plan.price[billingCycle]}
+                        </span>
+                        <span className="text-gray-500 ml-2">
+                          /{billingCycle === 'yearly' ? 'year' : 'month'}
+                        </span>
+                        {billingCycle === 'yearly' && plan.price.yearly > 0 && (
+                          <div className="text-sm text-green-600 font-medium mt-1">
+                            Save ${(plan.price.monthly * 12) - plan.price.yearly}/year
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
 
                   <button
-                    onClick={() => handleSubscribe(plan.id)}
-                    disabled={loading || plan.current}
+                    onClick={() => handleButtonClick(plan)}
+                    disabled={loading || (currentSubscription?.plan === plan.id)}
                     className={`w-full ${plan.buttonColor} py-3 px-6 font-medium ${
-                      plan.current ? 'opacity-50 cursor-not-allowed' : ''
+                      (currentSubscription?.plan === plan.id) ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {loading ? (
@@ -288,12 +438,8 @@ const Subscription = () => {
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         <span>Processing...</span>
                       </div>
-                    ) : plan.current ? (
-                      'Current Plan'
-                    ) : plan.id === 'free' ? (
-                      'Get Started Free'
                     ) : (
-                      `Upgrade to ${plan.name}`
+                      getButtonText(plan)
                     )}
                   </button>
                 </div>
@@ -402,12 +548,12 @@ const Subscription = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
-                question: "Can I change plans anytime?",
-                answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing."
+                question: "How does the 7-day free trial work?",
+                answer: "New users automatically get 7 days free access to our Basic plan with 50,000 AI tokens. No credit card required. After the trial, you can choose to upgrade to a paid plan."
               },
               {
-                question: "Is there a free trial?",
-                answer: "We offer a 14-day free trial on all paid plans so you can test all features before committing."
+                question: "Can I change plans anytime?",
+                answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing."
               },
               {
                 question: "How does token usage work?",
