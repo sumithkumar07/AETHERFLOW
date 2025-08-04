@@ -43,6 +43,11 @@ PLAN_CONFIGS = {
             "api_calls_per_minute": 60,
             "storage_gb": 1,
             "bandwidth_gb": 10
+        },
+        # Trial configuration for new users
+        "trial": {
+            "tokens_per_week": 50000,  # Limited tokens for 7-day trial
+            "duration_days": 7
         }
     },
     SubscriptionPlan.PROFESSIONAL: {
