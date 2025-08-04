@@ -235,7 +235,7 @@ const Home = () => {
               >
                 <span className="relative z-10 flex items-center">
                   <MicrophoneIcon className="w-5 h-5 mr-2" />
-                  Start Building with AI
+                  Start Free Trial
                   <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
                 {isHovered && (
