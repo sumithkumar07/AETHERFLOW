@@ -17,7 +17,7 @@ import realTimeAPI from './services/realTimeAPI'
 import realTimeIntegration from './services/realTimeIntegration'
 
 // Import pages directly instead of lazy loading for debugging
-import Home from './pages/Home'
+import EnhancedHome from './pages/EnhancedHome'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ChatHub from './pages/ChatHub'
