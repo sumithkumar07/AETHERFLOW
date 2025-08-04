@@ -146,33 +146,45 @@ const Subscription = () => {
     }
   ]
 
+  const formatFeatureValue = (value) => {
+    if (value === true) return <CheckIcon className="w-5 h-5 text-green-500" />
+    if (value === false) return <XMarkIcon className="w-5 h-5 text-gray-300" />
+    return <span className="text-sm text-gray-700">{value}</span>
+  }
+
   const handleSubscribe = async (planId) => {
     if (!isAuthenticated) {
       toast.error('Please login to subscribe')
       return
     }
 
-    if (planId === 'free') {
-      toast.success('You are already on the free plan!')
-      return
-    }
-
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      toast.success(`Successfully subscribed to ${plans.find(p => p.id === planId)?.name} plan!`)
+      // TODO: Integrate with Lemon Squeezy when ready
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subscription/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          plan: planId,
+          billing_interval: billingCycle === 'yearly' ? 'yearly' : 'monthly'
+        })
+      })
+
+      if (response.ok) {
+        toast.success(`Successfully subscribed to ${plans.find(p => p.id === planId)?.name} plan!`)
+        // Redirect to billing dashboard or refresh user data
+      } else {
+        throw new Error('Failed to create subscription')
+      }
     } catch (error) {
-      toast.error('Failed to process subscription')
+      console.error('Subscription error:', error)
+      toast.error('Subscription system coming soon! We\'ll notify you when it\'s ready.')
     } finally {
       setLoading(false)
     }
-  }
-
-  const formatFeatureValue = (value) => {
-    if (value === true) return <CheckIcon className="w-5 h-5 text-green-500" />
-    if (value === false) return <XMarkIcon className="w-5 h-5 text-gray-300" />
-    return <span className="text-sm text-gray-700">{value}</span>
   }
 
   return (
