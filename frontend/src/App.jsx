@@ -446,6 +446,14 @@ function AppContent() {
               } 
             />
             <Route 
+              path="/subscription/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <SubscriptionDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/integrations" 
               element={
                 <ProtectedRoute>
