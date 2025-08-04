@@ -713,6 +713,296 @@ class BackendTester:
         else:
             self.log_test("Workspace Intelligence", "FAIL", "Workspace intelligence failed", response.status_code if response else None)
 
+    def test_subscription_system(self):
+        """Test complete subscription system with new pricing model"""
+        print("💳 Testing Subscription System...")
+        
+        # Test getting subscription plans (public endpoint)
+        response = self.make_request("GET", "/api/subscription/plans")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "plans" in data and "billing_intervals" in data:
+                plans = data["plans"]
+                # Verify new pricing model
+                expected_plans = ["basic", "professional", "enterprise"]
+                expected_prices = {
+                    "basic": {"monthly": 19, "tokens": 500000, "projects": 10},
+                    "professional": {"monthly": 49, "tokens": 2000000, "projects": 50, "team_members": 5},
+                    "enterprise": {"monthly": 179, "tokens": 10000000, "projects": -1, "team_members": -1}
+                }
+                
+                all_plans_valid = True
+                for plan_name in expected_plans:
+                    if plan_name not in plans:
+                        all_plans_valid = False
+                        break
+                    
+                    plan_config = plans[plan_name]
+                    expected = expected_prices[plan_name]
+                    
+                    if (plan_config.get("price_monthly") != expected["monthly"] or
+                        plan_config.get("features", {}).get("tokens_per_month") != expected["tokens"] or
+                        plan_config.get("features", {}).get("max_projects") != expected["projects"]):
+                        all_plans_valid = False
+                        break
+                
+                if all_plans_valid:
+                    self.log_test("Get Subscription Plans", "PASS", 
+                                f"All 3 plans with correct pricing: Basic ${expected_prices['basic']['monthly']}, Professional ${expected_prices['professional']['monthly']}, Enterprise ${expected_prices['enterprise']['monthly']}", response.status_code)
+                else:
+                    self.log_test("Get Subscription Plans", "FAIL", 
+                                "Plan pricing or features don't match expected values", response.status_code)
+            else:
+                self.log_test("Get Subscription Plans", "FAIL", 
+                            "Missing plans or billing_intervals in response", response.status_code)
+        else:
+            self.log_test("Get Subscription Plans", "FAIL", 
+                        "Plans endpoint failed", response.status_code if response else None)
+        
+        if not self.auth_token:
+            self.log_test("Subscription System Test", "SKIP", "No authentication token for user-specific tests")
+            return
+        
+        # Test creating a subscription (Basic plan)
+        subscription_data = {
+            "plan": "basic",
+            "billing_interval": "monthly"
+        }
+        
+        response = self.make_request("POST", "/api/subscription/create", subscription_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "id" in data and "plan" in data and data["plan"] == "basic":
+                self.log_test("Create Basic Subscription", "PASS", 
+                            f"Subscription created: {data.get('id')}", response.status_code)
+                self.test_subscription_id = data["id"]
+            else:
+                self.log_test("Create Basic Subscription", "FAIL", 
+                            "Invalid subscription creation response", response.status_code)
+        elif response and response.status_code == 400:
+            # User might already have subscription
+            self.log_test("Create Basic Subscription", "SKIP", 
+                        "User already has subscription (expected)", response.status_code)
+        else:
+            self.log_test("Create Basic Subscription", "FAIL", 
+                        "Subscription creation failed", response.status_code if response else None)
+        
+        # Test getting current subscription
+        response = self.make_request("GET", "/api/subscription/current")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "plan" in data and "current_usage" in data and "plan_config" in data:
+                self.log_test("Get Current Subscription", "PASS", 
+                            f"Current plan: {data.get('plan')}, Status: {data.get('status')}", response.status_code)
+                self.current_subscription = data
+            else:
+                self.log_test("Get Current Subscription", "FAIL", 
+                            "Missing subscription data fields", response.status_code)
+        elif response and response.status_code == 404:
+            self.log_test("Get Current Subscription", "SKIP", 
+                        "No active subscription found", response.status_code)
+        else:
+            self.log_test("Get Current Subscription", "FAIL", 
+                        "Current subscription endpoint failed", response.status_code if response else None)
+        
+        # Test getting usage statistics
+        response = self.make_request("GET", "/api/subscription/usage")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "current_usage" in data and "limits" in data and "usage_percentage" in data:
+                self.log_test("Get Usage Statistics", "PASS", 
+                            f"Usage data retrieved with {len(data['current_usage'])} usage types", response.status_code)
+            else:
+                self.log_test("Get Usage Statistics", "FAIL", 
+                            "Missing usage statistics fields", response.status_code)
+        elif response and response.status_code == 404:
+            self.log_test("Get Usage Statistics", "SKIP", 
+                        "No usage data found", response.status_code)
+        else:
+            self.log_test("Get Usage Statistics", "FAIL", 
+                        "Usage statistics endpoint failed", response.status_code if response else None)
+        
+        # Test getting usage warnings
+        response = self.make_request("GET", "/api/subscription/usage/warnings")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "warnings" in data and "total_warnings" in data:
+                self.log_test("Get Usage Warnings", "PASS", 
+                            f"Found {data.get('total_warnings', 0)} usage warnings", response.status_code)
+            else:
+                self.log_test("Get Usage Warnings", "FAIL", 
+                            "Missing warnings data", response.status_code)
+        else:
+            self.log_test("Get Usage Warnings", "FAIL", 
+                        "Usage warnings endpoint failed", response.status_code if response else None)
+        
+        # Test usage limit checking
+        usage_check_data = {
+            "usage_type": "tokens",
+            "amount": 1000
+        }
+        
+        response = self.make_request("POST", "/api/subscription/usage/check", usage_check_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "allowed" in data:
+                self.log_test("Check Usage Limits", "PASS", 
+                            f"Usage check result: {'Allowed' if data['allowed'] else 'Denied'}", response.status_code)
+            else:
+                self.log_test("Check Usage Limits", "FAIL", 
+                            "Missing allowed field in response", response.status_code)
+        else:
+            self.log_test("Check Usage Limits", "FAIL", 
+                        "Usage check endpoint failed", response.status_code if response else None)
+        
+        # Test subscription upgrade (Basic to Professional)
+        if hasattr(self, 'current_subscription') and self.current_subscription.get('plan') == 'basic':
+            upgrade_data = {
+                "new_plan": "professional"
+            }
+            
+            response = self.make_request("POST", "/api/subscription/upgrade", upgrade_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                if "message" in data and "subscription" in data:
+                    self.log_test("Upgrade Subscription", "PASS", 
+                                f"Upgraded to Professional: {data.get('message')}", response.status_code)
+                else:
+                    self.log_test("Upgrade Subscription", "FAIL", 
+                                "Invalid upgrade response", response.status_code)
+            else:
+                self.log_test("Upgrade Subscription", "FAIL", 
+                            "Subscription upgrade failed", response.status_code if response else None)
+        else:
+            self.log_test("Upgrade Subscription", "SKIP", 
+                        "No basic subscription to upgrade from")
+        
+        # Test billing history
+        response = self.make_request("GET", "/api/subscription/billing/history")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "billing_events" in data and "total" in data:
+                self.log_test("Get Billing History", "PASS", 
+                            f"Found {data.get('total', 0)} billing events", response.status_code)
+            else:
+                self.log_test("Get Billing History", "FAIL", 
+                            "Missing billing history data", response.status_code)
+        else:
+            self.log_test("Get Billing History", "FAIL", 
+                        "Billing history endpoint failed", response.status_code if response else None)
+
+    def test_ai_chat_with_usage_tracking(self):
+        """Test AI chat integration with token usage tracking"""
+        print("🤖💳 Testing AI Chat with Usage Tracking...")
+        
+        if not self.auth_token:
+            self.log_test("AI Chat Usage Tracking Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test AI chat with usage tracking
+        chat_request = {
+            "message": "Create a simple React component for a todo list",
+            "model": "llama-3.1-8b-instant",
+            "agent": "developer"
+        }
+        
+        response = self.make_request("POST", "/api/ai/chat", chat_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("response" in data and "metadata" in data and 
+                "tokens_used" in data["metadata"] and "usage_tracked" in data["metadata"]):
+                tokens_used = data["metadata"]["tokens_used"]
+                usage_tracked = data["metadata"]["usage_tracked"]
+                remaining = data["metadata"].get("remaining_tokens", "unknown")
+                
+                self.log_test("AI Chat with Usage Tracking", "PASS", 
+                            f"Chat successful, tokens used: {tokens_used}, usage tracked: {usage_tracked}, remaining: {remaining}", response.status_code)
+            else:
+                self.log_test("AI Chat with Usage Tracking", "FAIL", 
+                            "Missing usage tracking metadata in response", response.status_code)
+        elif response and response.status_code == 429:
+            # Usage limit exceeded
+            data = response.json()
+            self.log_test("AI Chat Usage Limit", "PASS", 
+                        f"Usage limit properly enforced: {data.get('detail', {}).get('message', 'Limit exceeded')}", response.status_code)
+        else:
+            self.log_test("AI Chat with Usage Tracking", "FAIL", 
+                        "AI chat with usage tracking failed", response.status_code if response else None)
+        
+        # Test multiple requests to check rate limiting
+        for i in range(3):
+            response = self.make_request("POST", "/api/ai/chat", {
+                "message": f"Test message {i+1}",
+                "model": "llama-3.1-8b-instant"
+            })
+            
+            if response and response.status_code == 429:
+                self.log_test("Rate Limiting Test", "PASS", 
+                            f"Rate limiting working - request {i+1} blocked", response.status_code)
+                break
+            elif response and response.status_code == 200:
+                continue
+            else:
+                self.log_test("Rate Limiting Test", "FAIL", 
+                            f"Unexpected response on request {i+1}", response.status_code if response else None)
+                break
+        else:
+            self.log_test("Rate Limiting Test", "SKIP", 
+                        "Rate limits not reached in test")
+
+    def test_subscription_database_models(self):
+        """Test that subscription database collections are working"""
+        print("🗄️ Testing Subscription Database Models...")
+        
+        if not self.auth_token:
+            self.log_test("Database Models Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test that subscription endpoints return data indicating database is working
+        response = self.make_request("GET", "/api/subscription/current")
+        if response and response.status_code in [200, 404]:
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data and "created_at" in data:
+                    self.log_test("Subscriptions Collection", "PASS", 
+                                "Subscriptions collection working - data retrieved", response.status_code)
+                else:
+                    self.log_test("Subscriptions Collection", "FAIL", 
+                                "Subscription data missing required fields", response.status_code)
+            else:
+                self.log_test("Subscriptions Collection", "PASS", 
+                            "Subscriptions collection accessible (no subscription found)", response.status_code)
+        else:
+            self.log_test("Subscriptions Collection", "FAIL", 
+                        "Subscriptions collection not accessible", response.status_code if response else None)
+        
+        # Test usage records through usage endpoint
+        response = self.make_request("GET", "/api/subscription/usage")
+        if response and response.status_code in [200, 404]:
+            if response.status_code == 200:
+                self.log_test("Usage Records Collection", "PASS", 
+                            "Usage records collection working", response.status_code)
+            else:
+                self.log_test("Usage Records Collection", "PASS", 
+                            "Usage records collection accessible (no data found)", response.status_code)
+        else:
+            self.log_test("Usage Records Collection", "FAIL", 
+                        "Usage records collection not accessible", response.status_code if response else None)
+        
+        # Test billing events through billing history
+        response = self.make_request("GET", "/api/subscription/billing/history")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "billing_events" in data:
+                self.log_test("Billing Events Collection", "PASS", 
+                            f"Billing events collection working - {data.get('total', 0)} events", response.status_code)
+            else:
+                self.log_test("Billing Events Collection", "FAIL", 
+                            "Billing events data structure invalid", response.status_code)
+        else:
+            self.log_test("Billing Events Collection", "FAIL", 
+                        "Billing events collection not accessible", response.status_code if response else None)
+
     def test_multi_agent_capabilities(self):
         """Test multi-agent intelligence system"""
         print("🤖 Testing Multi-Agent Intelligence System...")
