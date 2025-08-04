@@ -15,6 +15,142 @@ from services.usage_tracking_service import get_usage_tracking_service
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+@router.get("/trial/status")
+async def get_trial_status(current_user: User = Depends(get_current_user)):
+    """Get trial status for current user"""
+    try:
+        subscription_service = await get_subscription_service()
+        
+        subscription = await subscription_service.get_user_subscription(str(current_user.id))
+        if not subscription:
+            return {
+                "has_trial": False,
+                "is_trial_active": False,
+                "trial_days_remaining": 0,
+                "can_start_trial": True,
+                "message": "No subscription found"
+            }
+        
+        from models.subscription import is_trial_active, get_trial_days_remaining
+        
+        trial_active = is_trial_active(subscription)
+        days_remaining = get_trial_days_remaining(subscription)
+        
+        return {
+            "has_trial": subscription.trial_end is not None,
+            "is_trial_active": trial_active,
+            "trial_days_remaining": days_remaining,
+            "trial_start": subscription.trial_start,
+            "trial_end": subscription.trial_end,
+            "can_start_trial": False,  # User already has subscription/trial
+            "subscription_status": subscription.status,
+            "message": f"{'Active trial' if trial_active else 'Trial expired'} - {days_remaining} days remaining"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get trial status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get trial status")
+
+@router.post("/trial/start")
+async def start_trial(current_user: User = Depends(get_current_user)):
+    """Start a 7-day free trial for user (if eligible)"""
+    try:
+        subscription_service = await get_subscription_service()
+        
+        # Check if user already has a subscription
+        existing = await subscription_service.get_user_subscription(str(current_user.id))
+        if existing:
+            return {
+                "success": False,
+                "message": "User already has an active subscription or trial"
+            }
+        
+        # Create trial subscription
+        trial_subscription = await subscription_service.create_trial_subscription(str(current_user.id))
+        
+        return {
+            "success": True,
+            "message": "7-day free trial started!",
+            "subscription": await subscription_service.get_subscription_response(trial_subscription)
+        }
+        
+    except ValueError as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+    except Exception as e:
+        logger.error(f"Failed to start trial: {e}")
+        raise HTTPException(status_code=500, detail="Failed to start trial")
+
+@router.post("/trial/convert")
+async def convert_trial_to_paid(
+    plan: SubscriptionPlan,
+    billing_interval: BillingInterval = BillingInterval.MONTHLY,
+    current_user: User = Depends(get_current_user)
+):
+    """Convert trial subscription to paid subscription"""
+    try:
+        subscription_service = await get_subscription_service()
+        
+        # Get current subscription
+        subscription = await subscription_service.get_user_subscription(str(current_user.id))
+        if not subscription:
+            raise HTTPException(status_code=404, detail="No active subscription found")
+        
+        if subscription.status != SubscriptionStatus.TRIALING.value:
+            raise HTTPException(status_code=400, detail="Current subscription is not in trial")
+        
+        # Update subscription to paid
+        from models.subscription import SubscriptionUpdate, SubscriptionStatus
+        updates = SubscriptionUpdate(
+            plan=plan,
+            billing_interval=billing_interval,
+            status=SubscriptionStatus.ACTIVE
+        )
+        
+        updated_subscription = await subscription_service.update_subscription(
+            subscription.id, updates
+        )
+        
+        if not updated_subscription:
+            raise HTTPException(status_code=400, detail="Failed to convert trial")
+        
+        # Reset trial fields and extend period
+        now = datetime.utcnow()
+        if billing_interval == BillingInterval.YEARLY:
+            period_end = now + timedelta(days=365)
+        else:
+            period_end = now + timedelta(days=30)
+        
+        # Update period end and remove trial status
+        await subscription_service.db.subscriptions.update_one(
+            {"_id": subscription.id},
+            {
+                "$set": {
+                    "current_period_start": now,
+                    "current_period_end": period_end,
+                    "trial_start": None,
+                    "trial_end": None,
+                    "updated_at": now
+                }
+            }
+        )
+        
+        # Get updated subscription
+        final_subscription = await subscription_service.get_subscription(subscription.id)
+        
+        return {
+            "message": f"Trial successfully converted to {plan.value} plan",
+            "subscription": await subscription_service.get_subscription_response(final_subscription)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to convert trial: {e}")
+        raise HTTPException(status_code=500, detail="Failed to convert trial")
+
 @router.get("/plans", response_model=Dict[str, Any])
 async def get_subscription_plans():
     """Get all available subscription plans with pricing and features"""
