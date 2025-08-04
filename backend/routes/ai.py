@@ -141,9 +141,16 @@ async def chat_with_ai(
             "agent": message_data.agent,
             "confidence": ai_response.get("confidence", 0.95),
             "suggestions": ai_response.get("suggestions", []),
-            "usage": ai_response.get("usage", {}),
-            "conversation_id": conversation_data["_id"],
-            "metadata": ai_response.get("metadata", {})
+            "metadata": {
+                **ai_response.get("metadata", {}),
+                "tokens_used": total_tokens,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "remaining_tokens": usage_result.get("remaining", "unlimited"),
+                "usage_tracked": usage_result["success"]
+            },
+            "conversation_id": message_data.conversation_id or conversation_data["_id"],
+            "timestamp": datetime.utcnow().isoformat()
         }
         
     except Exception as e:
