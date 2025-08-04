@@ -106,87 +106,86 @@ function AppContent() {
   const initializationAttempted = useRef(false)
 
   useEffect(() => {
-    // Initialize theme and authentication on app startup
+    // Simplified initialization - non-blocking
     const initializeApp = async () => {
       // Prevent multiple initialization attempts
       if (initializationAttempted.current) return
       initializationAttempted.current = true
       
+      console.log('🚀 Starting Aether AI initialization...')
+      
       try {
-        console.log('🚀 Starting Aether AI initialization...')
-        
         // Initialize theme first (synchronous)
         initializeTheme()
         console.log('✅ Theme initialized')
-        
-        // Initialize auth store with timeout
-        console.log('🔑 Starting auth initialization...')
-        const authInitPromise = initialize()
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth init timeout')), 5000)
-        )
-        
-        try {
-          await Promise.race([authInitPromise, timeoutPromise])
-          console.log('✅ Auth initialization completed')
-        } catch (error) {
-          console.error('⚠️ Auth initialization failed or timed out:', error)
-          // Continue anyway to prevent infinite loading
-        }
-
-        // Initialize AI models and agents from backend
-        try {
-          console.log('🤖 Initializing Aether AI models and agents...')
-          await initializeModelsAndAgents()
-          console.log('✅ Aether AI models and agents initialized')
-        } catch (error) {
-          console.error('⚠️ AI initialization failed:', error)
-        }
-
-        // Initialize real-time services
-        try {
-          console.log('⚡ Initializing real-time services...')
-          await realTimeAPI.initializeWebSocket('main-app-client')
-          
-          // Initialize our enhanced real-time integration
-          console.log('🔗 Connecting to all backend services...')
-          const realTimeSuccess = await realTimeIntegration.initialize()
-          
-          setRealTimeConnected(realTimeSuccess)
-          console.log('✅ Real-time services connected')
-        } catch (error) {
-          console.error('⚠️ Real-time services initialization failed:', error)
-        }
-
-        // Load projects if authenticated
-        if (isAuthenticated) {
-          try {
-            console.log('📁 Loading user projects...')
-            await fetchProjects({ limit: 10 })
-            console.log('✅ Projects loaded')
-          } catch (error) {
-            console.error('⚠️ Projects loading failed:', error)
-          }
-        }
-        
-        // Check if user needs onboarding
-        const hasSeenOnboarding = localStorage.getItem('aether-ai-onboarding-complete')
-        if (!hasSeenOnboarding && isAuthenticated) {
-          setTimeout(() => setIsOnboardingOpen(true), 2000)
-        }
-        
-        // Register service worker for PWA
-        registerServiceWorker()
-        
       } catch (error) {
-        console.error('❌ Aether AI initialization error:', error)
+        console.error('⚠️ Theme initialization failed:', error)
       }
+
+      // Initialize auth store in background - don't block on it
+      try {
+        console.log('🔑 Starting auth initialization (non-blocking)...')
+        initialize().catch(error => {
+          console.error('⚠️ Auth initialization failed:', error)
+        })
+      } catch (error) {
+        console.error('⚠️ Auth initialization error:', error)
+      }
+
+      // Initialize AI models in background
+      try {
+        console.log('🤖 Initializing AI models (non-blocking)...')
+        initializeModelsAndAgents().catch(error => {
+          console.error('⚠️ AI initialization failed:', error)
+        })
+      } catch (error) {
+        console.error('⚠️ AI initialization error:', error)
+      }
+
+      // Initialize real-time services in background
+      try {
+        console.log('⚡ Initializing real-time services (non-blocking)...')
+        realTimeAPI.initializeWebSocket('main-app-client').catch(error => {
+          console.error('⚠️ WebSocket initialization failed:', error)
+        })
+        
+        realTimeIntegration.initialize().then(realTimeSuccess => {
+          setRealTimeConnected(realTimeSuccess)
+          console.log('✅ Real-time services status:', realTimeSuccess)
+        }).catch(error => {
+          console.error('⚠️ Real-time services failed:', error)
+        })
+      } catch (error) {
+        console.error('⚠️ Real-time services error:', error)
+      }
+
+      // Load projects in background if authenticated
+      if (isAuthenticated) {
+        try {
+          console.log('📁 Loading user projects (non-blocking)...')
+          fetchProjects({ limit: 10 }).catch(error => {
+            console.error('⚠️ Projects loading failed:', error)
+          })
+        } catch (error) {
+          console.error('⚠️ Projects loading error:', error)
+        }
+      }
+      
+      // Check if user needs onboarding
+      const hasSeenOnboarding = localStorage.getItem('aether-ai-onboarding-complete')
+      if (!hasSeenOnboarding && isAuthenticated) {
+        setTimeout(() => setIsOnboardingOpen(true), 2000)
+      }
+      
+      // Register service worker for PWA
+      registerServiceWorker()
       
       // Always mark as initialized to prevent infinite loading
       console.log('✅ Aether AI initialization complete - Platform ready!')
       setIsInitialized(true)
     }
     
+    // Start initialization immediately
     initializeApp()
   }, [initialize, initializeTheme, initializeModelsAndAgents, fetchProjects, isAuthenticated])
 
