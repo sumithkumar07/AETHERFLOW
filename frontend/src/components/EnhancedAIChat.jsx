@@ -31,8 +31,17 @@ const EnhancedAIChat = () => {
     agents, 
     sendMessage, 
     initializeModelsAndAgents,
-    clearMessages 
-  } = useChatStore()
+    clearMessages,
+    selectedAgent,
+    selectedModel,
+    setSelectedAgent,
+    collaborationMode,
+    toggleCollaborationMode,
+    requestAgentHandoff,
+    startVoiceRecognition,
+    stopVoiceRecognition,
+    isListening
+  } = useEnhancedChatStore()
 
   const [inputMessage, setInputMessage] = useState('')
   const [selectedAgent, setSelectedAgent] = useState('developer')
