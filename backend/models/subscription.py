@@ -190,6 +190,41 @@ def get_plan_config(plan: SubscriptionPlan) -> Dict[str, Any]:
     """Get configuration for a subscription plan"""
     return PLAN_CONFIGS.get(plan, {})
 
+def get_trial_config(plan: SubscriptionPlan = SubscriptionPlan.BASIC) -> Dict[str, Any]:
+    """Get trial configuration for a plan"""
+    config = PLAN_CONFIGS.get(plan, {})
+    return config.get("trial", {})
+
+def is_trial_active(subscription: 'Subscription') -> bool:
+    """Check if subscription is in active trial period"""
+    if not subscription.trial_end:
+        return False
+    return subscription.status == SubscriptionStatus.TRIALING and subscription.trial_end > datetime.utcnow()
+
+def get_trial_days_remaining(subscription: 'Subscription') -> int:
+    """Get remaining trial days"""
+    if not subscription.trial_end or subscription.status != SubscriptionStatus.TRIALING:
+        return 0
+    
+    remaining = subscription.trial_end - datetime.utcnow()
+    return max(0, remaining.days)
+
+def get_trial_limits(plan: SubscriptionPlan = SubscriptionPlan.BASIC) -> Dict[str, Any]:
+    """Get limits for trial users"""
+    trial_config = get_trial_config(plan)
+    plan_config = get_plan_config(plan)
+    
+    # Use trial limits if available, otherwise regular limits
+    return {
+        "tokens_per_month": trial_config.get("tokens_per_week", plan_config["features"]["tokens_per_month"]),
+        "max_projects": 3,  # Limited projects during trial
+        "max_team_members": 1,
+        "integrations_limit": 2,  # Limited integrations during trial
+        "api_calls_per_minute": 30,  # Reduced API calls
+        "storage_gb": 0.5,  # Reduced storage
+        "bandwidth_gb": 5   # Reduced bandwidth
+    }
+
 def calculate_usage_percentage(current_usage: Dict[str, Any], limits: Dict[str, Any]) -> Dict[str, float]:
     """Calculate usage percentage for each limit"""
     percentages = {}
