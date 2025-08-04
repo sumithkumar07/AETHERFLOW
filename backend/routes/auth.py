@@ -86,7 +86,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 @router.post("/register", response_model=dict)
 async def register(user: UserCreate):
-    """Register a new user"""
+    """Register a new user with automatic 7-day free trial"""
     try:
         db = await get_database()
         
@@ -116,6 +116,16 @@ async def register(user: UserCreate):
         
         result = await db.users.insert_one(user_dict)
         
+        # Create 7-day free trial subscription
+        try:
+            from services.subscription_service import get_subscription_service
+            subscription_service = await get_subscription_service()
+            trial_subscription = await subscription_service.create_trial_subscription(user_id)
+            logger.info(f"✅ Created trial subscription for new user {user_id}")
+        except Exception as e:
+            logger.error(f"Failed to create trial subscription: {e}")
+            # Don't fail registration if trial creation fails
+        
         # Create access token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
@@ -132,7 +142,9 @@ async def register(user: UserCreate):
                 is_premium=False,
                 projects_count=0,
                 created_at=user_dict["created_at"]
-            )
+            ),
+            "trial_created": True,
+            "message": "Account created with 7-day free trial!"
         }
         
     except HTTPException:
