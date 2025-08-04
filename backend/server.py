@@ -104,6 +104,9 @@ app.include_router(enhanced_features_router, prefix="/api/enhanced", tags=["Enha
 app.include_router(integrations_enhanced_router, prefix="/api/integrations/enhanced", tags=["Enhanced Integrations"])
 app.include_router(subscription_router, prefix="/api/subscription", tags=["Subscription Management"])
 
+# Include new enhanced AI router with better capabilities
+app.include_router(enhanced_ai_new_router, prefix="/api/ai/v2", tags=["Enhanced AI v2"])
+
 # Include additional missing routers
 app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advanced AI"])
 app.include_router(enterprise_router, prefix="/api/enterprise", tags=["Enterprise"])
