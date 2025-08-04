@@ -102,7 +102,6 @@ async def convert_trial_to_paid(
             raise HTTPException(status_code=400, detail="Current subscription is not in trial")
         
         # Update subscription to paid
-        from models.subscription import SubscriptionUpdate, SubscriptionStatus
         updates = SubscriptionUpdate(
             plan=plan,
             billing_interval=billing_interval,
