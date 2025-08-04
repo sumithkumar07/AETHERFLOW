@@ -933,7 +933,7 @@ class BackendTester:
         # Run advanced feature tests (as requested in review)
         self.test_multi_agent_capabilities()
         self.test_advanced_ai_features()
-        self.test_enterprise_analytics_performance()
+        self.test_analytics_dashboard_integration()
         self.test_collaboration_workflow_engine()
         self.test_security_compliance()
         self.test_advanced_services_integration()
