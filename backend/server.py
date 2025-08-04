@@ -33,6 +33,9 @@ from routes.architectural_intelligence import router as architectural_intelligen
 from routes.voice import router as voice_router
 from routes.agents import router as agents_router
 
+# Import new enhanced AI route
+from routes.enhanced_ai import router as enhanced_ai_new_router
+
 from models.database import init_db
 
 # Load environment variables
