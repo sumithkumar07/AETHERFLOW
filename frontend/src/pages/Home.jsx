@@ -199,7 +199,7 @@ const Home = () => {
                 className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 leading-relaxed"
               >
                 Transform ideas into production-ready applications through conversation, voice commands, and AI collaboration. 
-                Experience the perfect harmony of next-generation development.
+                <span className="text-blue-600 font-semibold"> Start your 7-day free trial</span> and experience the perfect harmony of next-generation development.
               </motion.p>
 
               {/* AI Capabilities Pills */}
