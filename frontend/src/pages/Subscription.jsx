@@ -100,49 +100,48 @@ const Subscription = () => {
     {
       category: 'AI & Development',
       items: [
-        { name: 'AI Chat Access', free: true, pro: true, enterprise: true },
-        { name: 'AI Models Available', free: '4 Models', pro: '10+ Models', enterprise: 'Unlimited + Custom' },
-        { name: 'Code Generation', free: true, pro: true, enterprise: true },
-        { name: 'Custom AI Training', free: false, pro: false, enterprise: true },
-        { name: 'Multi-Agent System', free: false, pro: 'Basic', enterprise: 'Advanced' }
+        { name: 'AI Tokens/Month', basic: '500K', professional: '2M', enterprise: '10M' },
+        { name: 'AI Models Available', basic: 'Basic (4)', professional: 'Advanced (10+)', enterprise: 'Premium + Custom' },
+        { name: 'Code Generation', basic: true, professional: true, enterprise: true },
+        { name: 'Custom AI Training', basic: false, professional: false, enterprise: true },
+        { name: 'Multi-Agent System', basic: false, professional: 'Basic', enterprise: 'Advanced' }
       ]
     },
     {
       category: 'Projects & Templates',
       items: [
-        { name: 'Project Management', free: true, pro: true, enterprise: true },
-        { name: 'Templates Available', free: '10 Basic', pro: '50+ Advanced', enterprise: 'Unlimited + Custom' },
-        { name: 'Custom Templates', free: false, pro: true, enterprise: true },
-        { name: 'Project Analytics', free: 'Basic', pro: 'Advanced', enterprise: 'Enterprise' }
+        { name: 'Max Projects', basic: '10', professional: '50', enterprise: 'Unlimited' },
+        { name: 'Templates Available', basic: '10 Basic', professional: '50+ Advanced', enterprise: 'Unlimited + Custom' },
+        { name: 'Custom Templates', basic: false, professional: true, enterprise: true },
+        { name: 'Project Analytics', basic: 'Basic', professional: 'Advanced', enterprise: 'Enterprise' }
       ]
     },
     {
-      category: 'Integrations',
+      category: 'Integrations & Storage',
       items: [
-        { name: 'Basic Integrations', free: '5', pro: '50+', enterprise: 'Unlimited' },
-        { name: 'Enterprise Integrations', free: false, pro: 'Limited', enterprise: true },
-        { name: 'Custom Integrations', free: false, pro: false, enterprise: true },
-        { name: 'API Access', free: false, pro: true, enterprise: true }
+        { name: 'Integrations', basic: '5 Basic', professional: '50 Advanced', enterprise: 'Unlimited' },
+        { name: 'Storage Space', basic: '1GB', professional: '10GB', enterprise: '100GB' },
+        { name: 'API Access', basic: false, professional: true, enterprise: true },
+        { name: 'Custom Domains', basic: false, professional: true, enterprise: true }
       ]
     },
     {
       category: 'Team & Collaboration',
       items: [
-        { name: 'Team Members', free: '1', pro: '5', enterprise: 'Unlimited' },
-        { name: 'Real-time Collaboration', free: false, pro: true, enterprise: true },
-        { name: 'Role-based Access', free: false, pro: 'Basic', enterprise: 'Advanced' },
-        { name: 'Team Analytics', free: false, pro: true, enterprise: true }
+        { name: 'Team Members', basic: '1', professional: '5', enterprise: 'Unlimited' },
+        { name: 'Real-time Collaboration', basic: false, professional: true, enterprise: true },
+        { name: 'Role-based Access', basic: false, professional: 'Basic', enterprise: 'Advanced' },
+        { name: 'Team Analytics', basic: false, professional: true, enterprise: true }
       ]
     },
     {
       category: 'Support & Security',
       items: [
-        { name: 'Community Support', free: true, pro: true, enterprise: true },
-        { name: 'Email Support', free: false, pro: true, enterprise: true },
-        { name: 'Priority Support', free: false, pro: false, enterprise: true },
-        { name: 'Dedicated Account Manager', free: false, pro: false, enterprise: true },
-        { name: 'Enterprise Security', free: false, pro: 'Basic', enterprise: 'Advanced' },
-        { name: 'Compliance Tools', free: false, pro: false, enterprise: true }
+        { name: 'Support Level', basic: 'Email', professional: 'Priority Email', enterprise: 'Dedicated Manager' },
+        { name: '24/7 Support', basic: false, professional: false, enterprise: true },
+        { name: 'Enterprise Security', basic: false, professional: 'Basic', enterprise: 'Advanced' },
+        { name: 'SSO & Audit Logs', basic: false, professional: false, enterprise: true },
+        { name: 'SLA Guarantee', basic: false, professional: false, enterprise: true }
       ]
     }
   ]
