@@ -108,7 +108,6 @@ app.include_router(analytics_dashboard_router, prefix="/api/dashboard/analytics"
 app.include_router(performance_router, prefix="/api/performance", tags=["Performance"])
 app.include_router(visual_programming_router, prefix="/api/visual-programming", tags=["Visual Programming"])
 app.include_router(security_router, prefix="/api/security", tags=["Security"])
-
 app.include_router(architectural_intelligence_router, prefix="/api/architectural-intelligence", tags=["Architectural Intelligence"])
 app.include_router(voice_router, prefix="/api/voice", tags=["Voice"])
 app.include_router(agents_router, prefix="/api/agents", tags=["Agents"])
