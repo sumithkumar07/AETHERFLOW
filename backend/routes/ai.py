@@ -93,7 +93,7 @@ async def chat_with_ai(
         
         conversation_data = {
             "_id": f"conv_{uuid.uuid4().hex[:12]}",
-            "user_id": str(current_user.id),
+            "user_id": user_id,
             "project_id": message_data.project_id,
             "messages": [
                 {
@@ -111,7 +111,12 @@ async def chat_with_ai(
                     "timestamp": datetime.utcnow(),
                     "model": ai_response.get("model_used", message_data.model),
                     "agent": message_data.agent,
-                    "metadata": ai_response.get("metadata", {})
+                    "metadata": {
+                        **ai_response.get("metadata", {}),
+                        "tokens_used": total_tokens,
+                        "input_tokens": input_tokens,
+                        "output_tokens": output_tokens
+                    }
                 }
             ],
             "created_at": datetime.utcnow(),
@@ -121,7 +126,7 @@ async def chat_with_ai(
         # Insert or update conversation
         if message_data.conversation_id:
             await db.conversations.update_one(
-                {"_id": message_data.conversation_id, "user_id": str(current_user.id)},
+                {"_id": message_data.conversation_id, "user_id": user_id},
                 {
                     "$push": {"messages": conversation_data["messages"]},
                     "$set": {"updated_at": datetime.utcnow()}
