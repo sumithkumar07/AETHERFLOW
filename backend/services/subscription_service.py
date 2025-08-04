@@ -24,7 +24,8 @@ class SubscriptionService:
         logger.info("✅ Subscription service initialized")
     
     async def create_subscription(self, user_id: str, plan: SubscriptionPlan, 
-                                billing_interval: BillingInterval = BillingInterval.MONTHLY) -> Subscription:
+                                billing_interval: BillingInterval = BillingInterval.MONTHLY,
+                                is_trial: bool = False) -> Subscription:
         """Create a new subscription for a user"""
         try:
             # Check if user already has an active subscription
@@ -41,19 +42,32 @@ class SubscriptionService:
             now = datetime.utcnow()
             
             # Calculate billing period
-            if billing_interval == BillingInterval.YEARLY:
-                period_end = now + timedelta(days=365)
+            if is_trial:
+                # Trial period - 7 days
+                period_end = now + timedelta(days=7)
+                trial_start = now
+                trial_end = period_end
+                status = SubscriptionStatus.TRIALING
             else:
-                period_end = now + timedelta(days=30)
+                # Regular subscription
+                if billing_interval == BillingInterval.YEARLY:
+                    period_end = now + timedelta(days=365)
+                else:
+                    period_end = now + timedelta(days=30)
+                trial_start = None
+                trial_end = None
+                status = SubscriptionStatus.ACTIVE
             
             subscription_data = {
                 "_id": subscription_id,
                 "user_id": user_id,
                 "plan": plan.value,
                 "billing_interval": billing_interval.value,
-                "status": SubscriptionStatus.ACTIVE.value,
+                "status": status.value,
                 "current_period_start": now,
                 "current_period_end": period_end,
+                "trial_start": trial_start,
+                "trial_end": trial_end,
                 "created_at": now,
                 "updated_at": now,
                 "current_usage": {
@@ -79,17 +93,27 @@ class SubscriptionService:
             )
             
             # Log billing event
+            event_type = "trial_created" if is_trial else "subscription_created"
             await self._create_billing_event(
-                user_id, subscription_id, "subscription_created", 
-                {"plan": plan.value, "billing_interval": billing_interval.value}
+                user_id, subscription_id, event_type,
+                {"plan": plan.value, "billing_interval": billing_interval.value, "is_trial": is_trial}
             )
             
-            logger.info(f"✅ Created subscription {subscription_id} for user {user_id}")
+            logger.info(f"✅ Created {'trial' if is_trial else 'subscription'} {subscription_id} for user {user_id}")
             return Subscription(**subscription_data)
             
         except Exception as e:
             logger.error(f"Failed to create subscription: {e}")
             raise
+    
+    async def create_trial_subscription(self, user_id: str) -> Subscription:
+        """Create a 7-day free trial subscription for new user"""
+        return await self.create_subscription(
+            user_id=user_id,
+            plan=SubscriptionPlan.BASIC,
+            billing_interval=BillingInterval.MONTHLY,
+            is_trial=True
+        )
     
     async def get_subscription(self, subscription_id: str) -> Optional[Subscription]:
         """Get subscription by ID"""
