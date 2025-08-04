@@ -325,6 +325,11 @@ const SubscriptionDashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Enhanced Usage Dashboard */}
+        <div className="mt-8">
+          <UsageDashboard />
+        </div>
       </div>
     </div>
   )
