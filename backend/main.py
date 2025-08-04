@@ -435,7 +435,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     # Use client_id as both user_id and session_id for simplicity
     user_id = client_id.split('-')[0] if '-' in client_id else client_id
     session_id = client_id
+    
     try:
+        # Connect using the proper websocket manager interface
+        await manager.connect(websocket, user_id, session_id)
+        
         while True:
             data = await websocket.receive_text()
             message_data = json.loads(data)
@@ -448,23 +452,24 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                     message_data.get("context", {})
                 )
                 await manager.send_personal_message(
-                    json.dumps({
+                    {
                         "type": "ai_response",
                         "content": response,
                         "timestamp": datetime.utcnow().isoformat()
-                    }),
-                    websocket
+                    },
+                    user_id,
+                    session_id
                 )
             elif message_data["type"] == "collaboration":
-                # Broadcast to other users in the same project
-                await manager.broadcast_to_room(
-                    message_data["project_id"],
-                    json.dumps(message_data),
-                    exclude=websocket
+                # Broadcast to other users in the same session
+                await manager.broadcast_to_session(
+                    session_id,
+                    message_data,
+                    exclude_user=user_id
                 )
                 
     except WebSocketDisconnect:
-        manager.disconnect(websocket, client_id)
+        await manager.disconnect(user_id, session_id)
         logger.info(f"Client {client_id} disconnected")
 
 if __name__ == "__main__":
