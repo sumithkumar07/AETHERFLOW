@@ -205,15 +205,6 @@ const EnhancedAIChat = () => {
         setConversationId(response.conversation_id)
       }
 
-      // Show enhanced features
-      if (response?.suggestions?.length > 0) {
-        toast.success(`AI provided ${response.suggestions.length} smart suggestions!`)
-      }
-
-      if (response?.collaboration_opportunities?.length > 0) {
-        toast.success(`Found collaboration opportunities with other agents!`)
-      }
-
     } catch (error) {
       console.error('Error sending message:', error)
       toast.error('Failed to send message. Please try again.')
