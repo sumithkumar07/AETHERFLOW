@@ -123,7 +123,7 @@ function AppContent() {
         console.log('🔑 Starting auth initialization...')
         const authInitPromise = initialize()
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth init timeout')), 15000)
+          setTimeout(() => reject(new Error('Auth init timeout')), 5000)
         )
         
         try {
