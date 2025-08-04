@@ -27,7 +27,7 @@ class UsageTrackingMiddleware:
                               operation_type: str = "chat", metadata: Dict[str, Any] = None) -> Dict[str, Any]:
         """Track AI usage and enforce limits"""
         try:
-            if not self.usage_service:
+            if self.usage_service is None:
                 await self.initialize()
             
             # Track usage and check limits
@@ -47,7 +47,7 @@ class UsageTrackingMiddleware:
     async def check_api_limits(self, user_id: str, endpoint: str) -> Dict[str, Any]:
         """Check API rate limits for user"""
         try:
-            if not self.usage_service:
+            if self.usage_service is None:
                 await self.initialize()
             
             result = await self.usage_service.track_api_usage(
