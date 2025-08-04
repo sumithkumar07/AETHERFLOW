@@ -88,6 +88,7 @@ app.include_router(collaboration_router, prefix="/api/collaboration", tags=["Rea
 app.include_router(lifecycle_router, prefix="/api/projects", tags=["Enhanced Project Lifecycle"])
 app.include_router(enhanced_features_router, prefix="/api/enhanced", tags=["Enhanced Features"])
 app.include_router(integrations_enhanced_router, prefix="/api/integrations/enhanced", tags=["Enhanced Integrations"])
+app.include_router(subscription_router, prefix="/api/subscription", tags=["Subscription Management"])
 
 @app.get("/")
 async def root():
