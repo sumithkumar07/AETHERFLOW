@@ -19,7 +19,7 @@ import {
   ShareIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
-import { useChatStore } from '../store/chatStore'
+import { useEnhancedChatStore } from '../store/enhancedChatStore'
 import toast from 'react-hot-toast'
 
 const EnhancedAIChat = () => {
