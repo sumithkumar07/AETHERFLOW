@@ -32,11 +32,18 @@ class ConversationCreate(BaseModel):
 @router.post("/chat")
 async def chat_with_ai(
     message_data: ChatMessage,
-    current_user: User = Depends(get_current_user)
+    usage_info = Depends(get_chat_usage_dependency)
 ):
-    """Chat with ultra-fast Groq AI agent"""
+    """Chat with ultra-fast Groq AI agent with usage tracking"""
     try:
-        logger.info(f"Processing Groq AI chat request from user {current_user.id}")
+        current_user = usage_info["user"]
+        user_id = usage_info["user_id"]
+        track_usage = usage_info["track_usage"]
+        
+        logger.info(f"Processing Groq AI chat request from user {user_id}")
+        
+        # Estimate input tokens
+        input_tokens = estimate_tokens(message_data.message)
         
         # Generate unique message ID
         message_id = f"msg_{uuid.uuid4().hex[:12]}"
@@ -47,9 +54,39 @@ async def chat_with_ai(
             model=message_data.model,
             agent=message_data.agent,
             context=message_data.context,
-            user_id=str(current_user.id),
+            user_id=user_id,
             project_id=message_data.project_id
         )
+        
+        # Estimate output tokens and track usage
+        output_tokens = estimate_response_tokens(ai_response["response"], ai_response.get("model_used", message_data.model))
+        total_tokens = input_tokens + output_tokens
+        
+        # Track token usage
+        usage_result = await track_usage(
+            tokens=total_tokens,
+            model=ai_response.get("model_used", message_data.model),
+            metadata={
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "agent": message_data.agent,
+                "project_id": message_data.project_id,
+                "message_length": len(message_data.message),
+                "response_length": len(ai_response["response"])
+            }
+        )
+        
+        # Check if usage tracking failed
+        if not usage_result["success"] and "limit exceeded" in usage_result.get("error", "").lower():
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "Usage limit exceeded",
+                    "message": usage_result["error"],
+                    "tokens_used": total_tokens,
+                    "upgrade_required": True
+                }
+            )
         
         # Save conversation to database
         db = await get_database()
