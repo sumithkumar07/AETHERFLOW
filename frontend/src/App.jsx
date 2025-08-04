@@ -324,7 +324,7 @@ function AppContent() {
               path="/" 
               element={
                 <PublicRoute>
-                  <Home />
+                  <EnhancedHome />
                 </PublicRoute>
               } 
             />
