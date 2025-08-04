@@ -351,6 +351,6 @@ subscription_service = SubscriptionService()
 
 async def get_subscription_service() -> SubscriptionService:
     """Get subscription service instance"""
-    if not subscription_service.db:
+    if subscription_service.db is None:
         await subscription_service.initialize()
     return subscription_service
