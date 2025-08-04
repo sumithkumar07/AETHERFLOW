@@ -11,6 +11,7 @@ import {
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
+import UsageDashboard from '../components/UsageDashboard'
 import toast from 'react-hot-toast'
 
 const SubscriptionDashboard = () => {
