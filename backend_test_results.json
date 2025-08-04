@@ -1,11 +1,11 @@
 {
   "summary": {
-    "total": 55,
-    "passed": 11,
-    "failed": 42,
+    "total": 57,
+    "passed": 15,
+    "failed": 40,
     "skipped": 2,
-    "duration": 1.8028101921081543,
-    "timestamp": "2025-08-03T15:32:04.379370"
+    "duration": 2.023728609085083,
+    "timestamp": "2025-08-04T11:09:44.828520"
   },
   "results": [
     {
@@ -13,385 +13,399 @@
       "status": "FAIL",
       "details": "Non-JSON response: <!doctype html>\n<html lang=\"en\">\n  <head>\n    <script type=\"module\">import { injectIntoGlobalHook } from \"/@react-refresh\";\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () => {};\nwindow.$Refres",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:02.689443"
+      "timestamp": "2025-08-04T11:09:42.882935"
     },
     {
       "test": "Detailed Health Check",
       "status": "PASS",
       "details": "Services: {'database': 'connected', 'ai': 'available', 'multimodal': 'ready', 'voice': 'enabled'}",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:02.697351"
+      "timestamp": "2025-08-04T11:09:42.896167"
     },
     {
       "test": "User Registration",
       "status": "PASS",
-      "details": "User created: testuser7876@example.com",
+      "details": "User created: testuser4379@example.com",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:02.957436"
+      "timestamp": "2025-08-04T11:09:43.159888"
     },
     {
       "test": "Demo User Login",
       "status": "PASS",
       "details": "Token received for demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.212398"
+      "timestamp": "2025-08-04T11:09:43.417793"
     },
     {
       "test": "Get User Profile",
       "status": "PASS",
       "details": "Profile retrieved: demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.221549"
+      "timestamp": "2025-08-04T11:09:43.428166"
     },
     {
       "test": "AI Chat Message",
-      "status": "FAIL",
-      "details": "Missing response or model info",
+      "status": "PASS",
+      "details": "AI responded with model: codellama:13b",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.238589"
+      "timestamp": "2025-08-04T11:09:43.439957"
+    },
+    {
+      "test": "AI Models",
+      "status": "PASS",
+      "details": "Found 3 AI models",
+      "response_code": 200,
+      "timestamp": "2025-08-04T11:09:43.484163"
+    },
+    {
+      "test": "AI Agents",
+      "status": "PASS",
+      "details": "Found 5 AI agents",
+      "response_code": 200,
+      "timestamp": "2025-08-04T11:09:43.498822"
+    },
+    {
+      "test": "AI Status",
+      "status": "PASS",
+      "details": "AI service status: offline",
+      "response_code": 200,
+      "timestamp": "2025-08-04T11:09:43.583581"
     },
     {
       "test": "Get Conversations",
       "status": "PASS",
-      "details": "Found 1 conversations",
+      "details": "Found 3 conversations",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.251594"
+      "timestamp": "2025-08-04T11:09:43.594987"
     },
     {
       "test": "Create Project",
       "status": "PASS",
       "details": "Project created: Test Project",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.305743"
+      "timestamp": "2025-08-04T11:09:43.648409"
     },
     {
       "test": "Get Projects",
       "status": "PASS",
-      "details": "Found 1 projects",
+      "details": "Found 2 projects",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.316615"
+      "timestamp": "2025-08-04T11:09:43.662458"
     },
     {
       "test": "Get Templates",
       "status": "PASS",
       "details": "Found 6 templates",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.327583"
+      "timestamp": "2025-08-04T11:09:43.674136"
     },
     {
       "test": "Get Featured Templates",
       "status": "FAIL",
       "details": "Featured templates endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.377510"
+      "timestamp": "2025-08-04T11:09:43.724431"
     },
     {
       "test": "Get Specific Template",
       "status": "PASS",
       "details": "Template: React Starter Kit",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:03.426658"
+      "timestamp": "2025-08-04T11:09:43.733972"
     },
     {
       "test": "Agent Capabilities",
       "status": "FAIL",
       "details": "Agent capabilities endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.433618"
+      "timestamp": "2025-08-04T11:09:43.742327"
     },
     {
       "test": "AI Chat Stream",
       "status": "FAIL",
       "details": "AI chat streaming endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.481114"
+      "timestamp": "2025-08-04T11:09:43.790463"
     },
     {
       "test": "Advanced AI Features",
       "status": "FAIL",
       "details": "Advanced AI features endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.529338"
+      "timestamp": "2025-08-04T11:09:43.798144"
     },
     {
       "test": "Architectural Intelligence",
       "status": "FAIL",
       "details": "Architectural intelligence failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.576654"
+      "timestamp": "2025-08-04T11:09:43.847251"
     },
     {
       "test": "Smart Documentation",
       "status": "FAIL",
       "details": "Smart documentation failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.583722"
+      "timestamp": "2025-08-04T11:09:43.855686"
+    },
+    {
+      "test": "Analytics Dashboard",
+      "status": "FAIL",
+      "details": "Analytics dashboard endpoint failed",
+      "response_code": null,
+      "timestamp": "2025-08-04T11:09:43.904576"
     },
     {
       "test": "Real-time Analytics",
       "status": "FAIL",
-      "details": "Real-time analytics failed",
+      "details": "Real-time analytics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.630437"
+      "timestamp": "2025-08-04T11:09:43.912712"
     },
     {
       "test": "Predictive Analytics",
       "status": "FAIL",
-      "details": "Predictive analytics failed",
+      "details": "Predictive analytics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.636928"
-    },
-    {
-      "test": "Advanced Performance Metrics",
-      "status": "FAIL",
-      "details": "Advanced performance metrics failed",
-      "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.643079"
-    },
-    {
-      "test": "Dashboard Data",
-      "status": "FAIL",
-      "details": "Dashboard data failed",
-      "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.690276"
+      "timestamp": "2025-08-04T11:09:43.921195"
     },
     {
       "test": "Collaboration Status",
       "status": "FAIL",
       "details": "Collaboration status failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.696837"
+      "timestamp": "2025-08-04T11:09:43.969599"
     },
     {
       "test": "Active Collaborators",
       "status": "FAIL",
       "details": "Active collaborators failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.703292"
+      "timestamp": "2025-08-04T11:09:43.977416"
     },
     {
       "test": "Workflow Automation",
       "status": "FAIL",
       "details": "Workflow automation failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.750500"
+      "timestamp": "2025-08-04T11:09:43.985542"
     },
     {
       "test": "Automation Dashboard",
       "status": "FAIL",
       "details": "Automation dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.756827"
+      "timestamp": "2025-08-04T11:09:44.035530"
     },
     {
       "test": "Security Dashboard",
       "status": "FAIL",
       "details": "Security dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.763408"
+      "timestamp": "2025-08-04T11:09:44.043721"
     },
     {
       "test": "Compliance Status",
       "status": "FAIL",
       "details": "Compliance status failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.769345"
+      "timestamp": "2025-08-04T11:09:44.092302"
     },
     {
       "test": "Threat Analysis",
       "status": "FAIL",
       "details": "Threat analysis failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.816132"
+      "timestamp": "2025-08-04T11:09:44.100505"
     },
     {
       "test": "Security Audits",
       "status": "FAIL",
       "details": "Security audits failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.823178"
+      "timestamp": "2025-08-04T11:09:44.149604"
     },
     {
       "test": "Visual Programming Tools",
       "status": "FAIL",
       "details": "Visual programming tools failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.830123"
+      "timestamp": "2025-08-04T11:09:44.158167"
     },
     {
       "test": "Plugin Ecosystem",
       "status": "FAIL",
       "details": "Plugin ecosystem failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.878117"
+      "timestamp": "2025-08-04T11:09:44.206209"
     },
     {
       "test": "Video Services",
       "status": "FAIL",
       "details": "Video services failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.885450"
+      "timestamp": "2025-08-04T11:09:44.214192"
     },
     {
       "test": "SEO Services",
       "status": "FAIL",
       "details": "SEO services failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.932525"
+      "timestamp": "2025-08-04T11:09:44.221598"
     },
     {
       "test": "Internationalization",
       "status": "FAIL",
       "details": "Internationalization failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.980271"
+      "timestamp": "2025-08-04T11:09:44.269321"
     },
     {
       "test": "Experimental Features",
       "status": "FAIL",
       "details": "Experimental features failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:03.987336"
+      "timestamp": "2025-08-04T11:09:44.277435"
     },
     {
       "test": "Theme Intelligence",
       "status": "FAIL",
       "details": "Theme intelligence failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.036786"
+      "timestamp": "2025-08-04T11:09:44.325092"
     },
     {
       "test": "Code Quality Engine",
       "status": "FAIL",
       "details": "Code quality engine failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.044091"
+      "timestamp": "2025-08-04T11:09:44.374498"
     },
     {
       "test": "Workspace Intelligence",
       "status": "FAIL",
       "details": "Workspace intelligence failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.050345"
+      "timestamp": "2025-08-04T11:09:44.423663"
     },
     {
       "test": "Enterprise Integrations",
       "status": "FAIL",
       "details": "Enterprise integrations endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.097437"
+      "timestamp": "2025-08-04T11:09:44.432054"
     },
     {
       "test": "Compliance Dashboard",
       "status": "FAIL",
       "details": "Compliance dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.103949"
+      "timestamp": "2025-08-04T11:09:44.480492"
     },
     {
       "test": "Automation Dashboard",
       "status": "FAIL",
       "details": "Automation dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.152395"
+      "timestamp": "2025-08-04T11:09:44.548185"
     },
     {
       "test": "Get Agents",
       "status": "FAIL",
       "details": "Agents endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.160460"
+      "timestamp": "2025-08-04T11:09:44.555969"
     },
     {
       "test": "Orchestration Status",
       "status": "FAIL",
       "details": "Orchestration status failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.167346"
+      "timestamp": "2025-08-04T11:09:44.604188"
     },
     {
       "test": "Get Agent Teams",
       "status": "FAIL",
       "details": "Agent teams endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.174086"
+      "timestamp": "2025-08-04T11:09:44.612024"
     },
     {
       "test": "Get Available Integrations",
       "status": "PASS",
       "details": "Found 12 integrations",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:04.199154"
+      "timestamp": "2025-08-04T11:09:44.640027"
     },
     {
       "test": "Get Integration Categories",
       "status": "PASS",
       "details": "Found 7 categories",
       "response_code": 200,
-      "timestamp": "2025-08-03T15:32:04.246121"
+      "timestamp": "2025-08-04T11:09:44.647776"
     },
     {
       "test": "Get Popular Integrations",
       "status": "FAIL",
       "details": "Popular integrations endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.255848"
+      "timestamp": "2025-08-04T11:09:44.698589"
     },
     {
       "test": "WebSocket Connection",
       "status": "SKIP",
       "details": "websocket-client not installed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.256082"
+      "timestamp": "2025-08-04T11:09:44.699698"
     },
     {
       "test": "WebSocket Connection",
       "status": "SKIP",
       "details": "websocket-client not installed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.256172"
+      "timestamp": "2025-08-04T11:09:44.699834"
     },
     {
       "test": "Get Available Experiments",
       "status": "FAIL",
       "details": "Available experiments endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.262402"
+      "timestamp": "2025-08-04T11:09:44.707741"
     },
     {
       "test": "Create Sandbox",
       "status": "FAIL",
       "details": "Sandbox creation failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.311126"
+      "timestamp": "2025-08-04T11:09:44.715953"
     },
     {
       "test": "Get Supported Diagram Types",
       "status": "FAIL",
       "details": "Supported diagram types endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.317950"
+      "timestamp": "2025-08-04T11:09:44.764141"
     },
     {
       "test": "Get Diagram Examples",
       "status": "FAIL",
       "details": "Diagram examples endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.365204"
+      "timestamp": "2025-08-04T11:09:44.772147"
     },
     {
       "test": "Get Community Statistics",
       "status": "FAIL",
       "details": "Community statistics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.371728"
+      "timestamp": "2025-08-04T11:09:44.780139"
     },
     {
       "test": "Get Trending Content",
       "status": "FAIL",
       "details": "Trending content endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-03T15:32:04.379028"
+      "timestamp": "2025-08-04T11:09:44.828148"
     }
   ]
 }
