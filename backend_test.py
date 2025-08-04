@@ -1332,6 +1332,10 @@ class BackendTester:
         # Run core test suites
         self.test_health_endpoints()
         self.test_authentication_system()
+        
+        # Run 7-day trial system tests (PRIORITY - as requested in review)
+        self.test_7_day_trial_system()
+        
         self.test_ai_chat_integration()
         self.test_project_management()
         self.test_template_system()
