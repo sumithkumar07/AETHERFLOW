@@ -3,10 +3,12 @@ from typing import List, Optional
 from datetime import datetime
 import uuid
 import logging
+import json
 
 from models.user import User
 from models.database import get_database
 from routes.auth import get_current_user
+from services.enhanced_template_library import enhanced_template_library
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
