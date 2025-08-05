@@ -1,108 +1,159 @@
-// AI Tempo Service Worker - Progressive Web App Support
-const CACHE_NAME = 'ai-tempo-v1.0.0'
+// Enhanced Service Worker for Aether AI PWA
+// Implements offline functionality, caching, and performance optimization
+
+const CACHE_NAME = 'aether-ai-v1.0.0'
 const OFFLINE_URL = '/offline.html'
+const API_CACHE_NAME = 'aether-ai-api-v1.0.0'
 
 // Files to cache for offline functionality
 const STATIC_CACHE_URLS = [
   '/',
+  '/chat',
+  '/templates',
+  '/projects',
   '/offline.html',
-  '/manifest.json',
+  '/static/js/bundle.js',
   '/static/css/main.css',
-  '/static/js/main.js'
+  '/manifest.json'
 ]
 
-// Dynamic cache for API responses and user data
-const DYNAMIC_CACHE_NAME = 'ai-tempo-dynamic-v1'
-const API_CACHE_NAME = 'ai-tempo-api-v1'
+// API endpoints to cache for offline functionality
+const API_CACHE_URLS = [
+  '/api/ai/agents',
+  '/api/ai/models',
+  '/api/templates',
+  '/api/health'
+]
 
-// Install event - cache static assets
+// Install event - cache essential resources
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...')
+  console.log('[SW] Installing...')
+  
   event.waitUntil(
-    (async () => {
-      try {
-        const cache = await caches.open(CACHE_NAME)
-        console.log('Service Worker: Caching static assets')
-        await cache.addAll(STATIC_CACHE_URLS)
-        
-        // Skip waiting to activate immediately
-        self.skipWaiting()
-      } catch (error) {
-        console.error('Service Worker: Installation failed', error)
-      }
-    })()
+    Promise.all([
+      // Cache static resources
+      caches.open(CACHE_NAME).then((cache) => {
+        console.log('[SW] Caching static resources')
+        return cache.addAll(STATIC_CACHE_URLS)
+      }),
+      // Cache API responses
+      caches.open(API_CACHE_NAME).then((cache) => {
+        console.log('[SW] Pre-caching API responses')
+        return Promise.all(
+          API_CACHE_URLS.map(url => 
+            fetch(url)
+              .then(response => response.ok ? cache.put(url, response.clone()) : null)
+              .catch(() => console.log(`[SW] Failed to cache ${url}`))
+          )
+        )
+      })
+    ]).then(() => {
+      console.log('[SW] Installation complete')
+      self.skipWaiting() // Immediately activate
+    })
   )
 })
 
-// Activate event - cleanup old caches
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...')
+  console.log('[SW] Activating...')
+  
   event.waitUntil(
-    (async () => {
-      try {
-        // Clean up old caches
-        const cacheNames = await caches.keys()
-        const deletePromises = cacheNames
-          .filter(name => name !== CACHE_NAME && name !== DYNAMIC_CACHE_NAME && name !== API_CACHE_NAME)
-          .map(name => {
-            console.log('Service Worker: Deleting old cache', name)
-            return caches.delete(name)
-          })
-        
-        await Promise.all(deletePromises)
-        
-        // Take control of all pages
-        await self.clients.claim()
-        console.log('Service Worker: Activated successfully')
-      } catch (error) {
-        console.error('Service Worker: Activation failed', error)
-      }
-    })()
+    caches.keys().then((cacheNames) => {
+      return Promise.all([
+        // Delete old caches
+        ...cacheNames
+          .filter(cacheName => 
+            cacheName !== CACHE_NAME && 
+            cacheName !== API_CACHE_NAME &&
+            cacheName.startsWith('aether-ai-')
+          )
+          .map(cacheName => {
+            console.log('[SW] Deleting old cache:', cacheName)
+            return caches.delete(cacheName)
+          }),
+        // Claim all clients immediately
+        self.clients.claim()
+      ])
+    }).then(() => {
+      console.log('[SW] Activation complete')
+    })
   )
 })
 
-// Fetch event - handle requests with cache strategies
+// Fetch event - handle requests with intelligent caching strategy
 self.addEventListener('fetch', (event) => {
-  const { request } = event
-  const url = new URL(request.url)
-
-  // Skip non-GET requests and external URLs
-  if (request.method !== 'GET' || !url.origin.includes(location.origin)) {
-    return
+  // Skip non-http requests
+  if (!event.request.url.startsWith('http')) return
+  
+  // Skip requests with specific headers (like authentication)
+  if (event.request.headers.get('Authorization')) {
+    return handleAPIRequest(event)
   }
 
-  // Handle different types of requests with appropriate strategies
+  const url = new URL(event.request.url)
+  
+  // Handle API requests
   if (url.pathname.startsWith('/api/')) {
-    // API requests - Network First with cache fallback
-    event.respondWith(handleApiRequest(request))
-  } else if (url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2)$/)) {
-    // Static assets - Cache First
-    event.respondWith(handleStaticAssets(request))
-  } else {
-    // HTML pages - Network First with offline fallback
-    event.respondWith(handlePageRequest(request))
+    event.respondWith(handleAPIRequest(event))
+  }
+  // Handle navigation requests
+  else if (event.request.mode === 'navigate') {
+    event.respondWith(handleNavigationRequest(event))
+  }
+  // Handle static assets
+  else {
+    event.respondWith(handleStaticRequest(event))
   }
 })
 
-// Network First strategy for API requests
-async function handleApiRequest(request) {
+// Handle API requests with cache-first strategy for performance
+async function handleAPIRequest(event) {
+  const request = event.request
+  const url = new URL(request.url)
+  
   try {
-    // Try network first
+    // For GET requests, try cache first for performance
+    if (request.method === 'GET') {
+      const cachedResponse = await caches.match(request, { cacheName: API_CACHE_NAME })
+      
+      if (cachedResponse) {
+        console.log('[SW] Serving API from cache:', url.pathname)
+        
+        // Update cache in background for next time
+        fetch(request)
+          .then(response => {
+            if (response.ok) {
+              caches.open(API_CACHE_NAME).then(cache => {
+                cache.put(request, response.clone())
+              })
+            }
+          })
+          .catch(() => {}) // Ignore background update failures
+        
+        return cachedResponse
+      }
+    }
+    
+    // Fetch from network
     const networkResponse = await fetch(request)
     
-    // Cache successful responses
-    if (networkResponse.ok) {
+    // Cache successful GET responses
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(API_CACHE_NAME)
       cache.put(request, networkResponse.clone())
+      console.log('[SW] Cached API response:', url.pathname)
     }
     
     return networkResponse
-  } catch (error) {
-    // Network failed, try cache
-    console.log('Service Worker: API network failed, trying cache', request.url)
-    const cachedResponse = await caches.match(request)
     
+  } catch (error) {
+    console.log('[SW] API request failed:', url.pathname, error)
+    
+    // Return cached response if available
+    const cachedResponse = await caches.match(request, { cacheName: API_CACHE_NAME })
     if (cachedResponse) {
+      console.log('[SW] Serving stale API response from cache:', url.pathname)
       return cachedResponse
     }
     
@@ -111,133 +162,163 @@ async function handleApiRequest(request) {
       JSON.stringify({
         error: 'Offline',
         message: 'This feature requires an internet connection',
-        offline: true
+        offline: true,
+        cached: false
       }),
       {
         status: 503,
+        statusText: 'Service Unavailable',
         headers: { 'Content-Type': 'application/json' }
       }
     )
   }
 }
 
-// Cache First strategy for static assets
-async function handleStaticAssets(request) {
+// Handle navigation requests with network-first strategy
+async function handleNavigationRequest(event) {
+  const request = event.request
+  
   try {
-    // Try cache first
-    const cachedResponse = await caches.match(request)
+    // Try network first for fresh content
+    const networkResponse = await fetch(request)
+    
+    if (networkResponse.ok) {
+      // Cache the response
+      const cache = await caches.open(CACHE_NAME)
+      cache.put(request, networkResponse.clone())
+      return networkResponse
+    }
+    
+    throw new Error('Network response not ok')
+    
+  } catch (error) {
+    console.log('[SW] Navigation request failed, checking cache:', request.url)
+    
+    // Try cache
+    const cachedResponse = await caches.match(request, { cacheName: CACHE_NAME })
     if (cachedResponse) {
       return cachedResponse
     }
     
-    // Cache miss, fetch from network
+    // Return offline page for navigation requests
+    const offlineResponse = await caches.match(OFFLINE_URL, { cacheName: CACHE_NAME })
+    if (offlineResponse) {
+      return offlineResponse
+    }
+    
+    // Fallback offline page
+    return new Response(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Aether AI - Offline</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              margin: 0;
+              padding: 20px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+            }
+            .container {
+              max-width: 400px;
+              background: rgba(255,255,255,0.1);
+              backdrop-filter: blur(10px);
+              border-radius: 16px;
+              padding: 2rem;
+              border: 1px solid rgba(255,255,255,0.2);
+            }
+            h1 { margin: 0 0 1rem 0; }
+            p { opacity: 0.9; line-height: 1.6; margin-bottom: 2rem; }
+            button {
+              background: rgba(255,255,255,0.2);
+              border: 1px solid rgba(255,255,255,0.3);
+              color: white;
+              padding: 0.75rem 1.5rem;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 1rem;
+              transition: all 0.2s;
+            }
+            button:hover {
+              background: rgba(255,255,255,0.3);
+              transform: translateY(-2px);
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>📱 Aether AI</h1>
+            <p>You're currently offline. Some features may be limited, but you can still access cached content and continue working.</p>
+            <button onclick="window.location.reload()">Try Again</button>
+          </div>
+        </body>
+      </html>
+    `, {
+      headers: { 'Content-Type': 'text/html' }
+    })
+  }
+}
+
+// Handle static asset requests with cache-first strategy
+async function handleStaticRequest(event) {
+  const request = event.request
+  
+  // Try cache first for static assets
+  const cachedResponse = await caches.match(request, { cacheName: CACHE_NAME })
+  if (cachedResponse) {
+    return cachedResponse
+  }
+  
+  try {
+    // Fetch from network and cache
     const networkResponse = await fetch(request)
     
-    // Cache the response
     if (networkResponse.ok) {
       const cache = await caches.open(CACHE_NAME)
       cache.put(request, networkResponse.clone())
     }
     
     return networkResponse
-  } catch (error) {
-    console.error('Service Worker: Failed to fetch static asset', request.url, error)
     
-    // Return a placeholder for critical assets
-    if (request.url.includes('.css')) {
-      return new Response('/* Offline - CSS unavailable */', {
-        headers: { 'Content-Type': 'text/css' }
-      })
+  } catch (error) {
+    console.log('[SW] Static request failed:', request.url)
+    
+    // For images, return a placeholder
+    if (request.destination === 'image') {
+      return new Response(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#f0f0f0" width="200" height="200"/><text x="50%" y="50%" text-anchor="middle" dy="0.3em" fill="#999">Offline</text></svg>',
+        { headers: { 'Content-Type': 'image/svg+xml' } }
+      )
     }
     
-    // For other assets, just fail gracefully
-    return new Response('', { status: 404 })
+    throw error
   }
 }
 
-// Network First strategy for HTML pages
-async function handlePageRequest(request) {
-  try {
-    // Try network first
-    const networkResponse = await fetch(request)
-    
-    // Cache successful page responses
-    if (networkResponse.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE_NAME)
-      cache.put(request, networkResponse.clone())
-    }
-    
-    return networkResponse
-  } catch (error) {
-    // Network failed, try cache
-    console.log('Service Worker: Page network failed, trying cache', request.url)
-    const cachedResponse = await caches.match(request)
-    
-    if (cachedResponse) {
-      return cachedResponse
-    }
-    
-    // Show offline page for navigation requests
-    if (request.mode === 'navigate') {
-      const offlineResponse = await caches.match(OFFLINE_URL)
-      return offlineResponse || new Response('Offline', { 
-        status: 503,
-        headers: { 'Content-Type': 'text/html' }
-      })
-    }
-    
-    return new Response('Offline', { status: 503 })
-  }
-}
-
-// Background sync for offline actions
+// Handle background sync for offline actions
 self.addEventListener('sync', (event) => {
-  console.log('Service Worker: Background sync triggered', event.tag)
+  console.log('[SW] Background sync triggered:', event.tag)
   
-  if (event.tag === 'sync-projects') {
-    event.waitUntil(syncProjects())
-  }
-  
-  if (event.tag === 'sync-chat-messages') {
-    event.waitUntil(syncChatMessages())
+  if (event.tag === 'chat-message-sync') {
+    event.waitUntil(syncOfflineMessages())
+  } else if (event.tag === 'performance-metrics-sync') {
+    event.waitUntil(syncPerformanceMetrics())
   }
 })
 
-// Sync offline projects when connection restored
-async function syncProjects() {
+// Sync offline chat messages when back online
+async function syncOfflineMessages() {
   try {
-    console.log('Service Worker: Syncing offline projects...')
-    
-    // Get offline projects from IndexedDB or localStorage
-    const offlineProjects = await getOfflineProjects()
-    
-    for (const project of offlineProjects) {
-      try {
-        const response = await fetch('/api/projects', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(project)
-        })
-        
-        if (response.ok) {
-          await removeOfflineProject(project.id)
-          console.log('Service Worker: Project synced successfully', project.name)
-        }
-      } catch (error) {
-        console.error('Service Worker: Failed to sync project', project.name, error)
-      }
-    }
-  } catch (error) {
-    console.error('Service Worker: Project sync failed', error)
-  }
-}
-
-// Sync offline chat messages
-async function syncChatMessages() {
-  try {
-    console.log('Service Worker: Syncing offline chat messages...')
-    
-    const offlineMessages = await getOfflineChatMessages()
+    // Get offline messages from IndexedDB
+    const offlineMessages = await getOfflineMessages()
     
     for (const message of offlineMessages) {
       try {
@@ -248,151 +329,120 @@ async function syncChatMessages() {
         })
         
         if (response.ok) {
-          await removeOfflineChatMessage(message.id)
-          console.log('Service Worker: Chat message synced successfully')
+          await removeOfflineMessage(message.id)
+          console.log('[SW] Synced offline message:', message.id)
         }
       } catch (error) {
-        console.error('Service Worker: Failed to sync chat message', error)
+        console.log('[SW] Failed to sync message:', message.id, error)
       }
     }
   } catch (error) {
-    console.error('Service Worker: Chat sync failed', error)
+    console.log('[SW] Background sync failed:', error)
   }
 }
 
-// Push notification handling
+// Sync performance metrics
+async function syncPerformanceMetrics() {
+  try {
+    const metrics = await getOfflineMetrics()
+    
+    if (metrics && metrics.length > 0) {
+      await fetch('/api/performance/metrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metrics })
+      })
+      
+      await clearOfflineMetrics()
+      console.log('[SW] Synced performance metrics')
+    }
+  } catch (error) {
+    console.log('[SW] Failed to sync performance metrics:', error)
+  }
+}
+
+// Handle push notifications
 self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push notification received', event)
-  
   const options = {
-    body: 'AI Tempo has updates for you!',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
-    vibrate: [200, 100, 200],
+    body: event.data ? event.data.text() : 'New update available!',
+    icon: '/images/icon-192x192.png',
+    badge: '/images/badge-72x72.png',
+    vibrate: [100, 50, 100],
     data: {
-      url: '/',
-      timestamp: Date.now()
+      dateOfArrival: Date.now(),
+      primaryKey: 1
     },
     actions: [
       {
-        action: 'open',
-        title: 'Open App',
-        icon: '/icons/open-24x24.png'
+        action: 'explore',
+        title: 'Open Aether AI',
+        icon: '/images/checkmark.png'
       },
       {
-        action: 'dismiss',
-        title: 'Dismiss',
-        icon: '/icons/dismiss-24x24.png'
+        action: 'close',
+        title: 'Close',
+        icon: '/images/xmark.png'
       }
     ]
   }
   
-  if (event.data) {
-    try {
-      const payload = event.data.json()
-      options.body = payload.body || options.body
-      options.data = { ...options.data, ...payload.data }
-    } catch (error) {
-      console.error('Service Worker: Failed to parse push payload', error)
-    }
-  }
-  
   event.waitUntil(
-    self.registration.showNotification('AI Tempo', options)
+    self.registration.showNotification('Aether AI', options)
   )
 })
 
-// Notification click handling
+// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification clicked', event)
-  
   event.notification.close()
   
-  if (event.action === 'dismiss') {
-    return
-  }
-  
-  // Open or focus the app
-  event.waitUntil(
-    (async () => {
-      const clients = await self.clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true
-      })
-      
-      // Check if app is already open
-      for (const client of clients) {
-        if (client.url.includes(location.origin)) {
-          await client.focus()
-          return
+  if (event.action === 'explore') {
+    event.waitUntil(
+      clients.matchAll().then((clientList) => {
+        if (clientList.length > 0) {
+          return clientList[0].focus()
         }
-      }
-      
-      // Open new window
-      const url = event.notification.data?.url || '/'
-      await self.clients.openWindow(url)
-    })()
-  )
+        return clients.openWindow('/')
+      })
+    )
+  }
 })
 
-// Utility functions for offline data management
-async function getOfflineProjects() {
+// Message handling for client communication
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+  } else if (event.data && event.data.type === 'CACHE_URLS') {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.addAll(event.data.urls)
+      })
+    )
+  }
+})
+
+// Periodic background sync
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'performance-sync') {
+    event.waitUntil(syncPerformanceMetrics())
+  }
+})
+
+// Helper functions for IndexedDB operations (simplified)
+async function getOfflineMessages() {
   // In a real implementation, this would use IndexedDB
-  return JSON.parse(localStorage.getItem('offline-projects') || '[]')
+  return JSON.parse(localStorage.getItem('offlineMessages') || '[]')
 }
 
-async function removeOfflineProject(projectId) {
-  const projects = await getOfflineProjects()
-  const filtered = projects.filter(p => p.id !== projectId)
-  localStorage.setItem('offline-projects', JSON.stringify(filtered))
+async function removeOfflineMessage(id) {
+  const messages = await getOfflineMessages()
+  const filtered = messages.filter(msg => msg.id !== id)
+  localStorage.setItem('offlineMessages', JSON.stringify(filtered))
 }
 
-async function getOfflineChatMessages() {
-  return JSON.parse(localStorage.getItem('offline-chat-messages') || '[]')
+async function getOfflineMetrics() {
+  return JSON.parse(localStorage.getItem('offlineMetrics') || '[]')
 }
 
-async function removeOfflineChatMessage(messageId) {
-  const messages = await getOfflineChatMessages()
-  const filtered = messages.filter(m => m.id !== messageId)
-  localStorage.setItem('offline-chat-messages', JSON.stringify(filtered))
+async function clearOfflineMetrics() {
+  localStorage.removeItem('offlineMetrics')
 }
-
-// Share target handling
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url)
-  
-  if (url.pathname === '/share' && event.request.method === 'POST') {
-    event.respondWith(handleShareTarget(event.request))
-  }
-})
-
-async function handleShareTarget(request) {
-  try {
-    const formData = await request.formData()
-    const title = formData.get('title') || ''
-    const text = formData.get('text') || ''
-    const files = formData.getAll('files')
-    
-    // Store shared content for the app to process
-    const sharedContent = {
-      title,
-      text,
-      files: files.map(file => ({
-        name: file.name,
-        type: file.type,
-        size: file.size
-      })),
-      timestamp: Date.now()
-    }
-    
-    localStorage.setItem('shared-content', JSON.stringify(sharedContent))
-    
-    // Redirect to the app
-    return Response.redirect('/?shared=true', 302)
-  } catch (error) {
-    console.error('Service Worker: Share handling failed', error)
-    return Response.redirect('/', 302)
-  }
-}
-
-console.log('Service Worker: Loaded successfully')
