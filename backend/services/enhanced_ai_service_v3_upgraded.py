@@ -654,9 +654,11 @@ class EnhancedAIServiceV3Upgraded:
             "agents": ["developer"],
             "type": "quick_fallback_with_intelligence",
             "architectural_intelligence": True,
+            "coordination_strategy": "single_agent",
             "intelligence_level": "basic",
             "model_used": "quick_fallback",
-            "performance_optimized": True
+            "performance_optimized": True,
+            "enterprise_grade": True
         }
 
     def get_active_agents(self, session_id: str) -> List[str]:
