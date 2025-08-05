@@ -26,6 +26,7 @@ import CompetitiveFeatures from '../components/CompetitiveFeatures'
 const EnhancedHome = () => {
   const { isAuthenticated } = useAuthStore()
   const [isHovered, setIsHovered] = useState(false)
+  const [showCompetitiveFeatures, setShowCompetitiveFeatures] = useState(false)
 
   // Enhanced 2025 features with simplified presentation
   const coreFeatures = [
