@@ -302,7 +302,6 @@ async def clear_user_cache(
         raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
 
 @router.get("/v4/health/detailed")
-@monitor_performance("health_check")
 async def detailed_health_check():
     """Comprehensive health check with performance metrics"""
     try:
