@@ -1,0 +1,117 @@
+{
+  "summary": {
+    "total_tests": 13,
+    "passed": 12,
+    "failed": 1,
+    "skipped": 0,
+    "total_time": 4.533596754074097,
+    "avg_response_time": 0.34860689823444074,
+    "fast_responses": 13
+  },
+  "results": [
+    {
+      "test": "AI Services Health Check",
+      "status": "PASS",
+      "details": "AI services available: {'database': 'connected', 'ai': 'available', 'multimodal': 'ready', 'voice': 'enabled'}",
+      "response_code": 200,
+      "response_time": 0.005320549011230469,
+      "timestamp": "2025-08-05T09:49:26.705814"
+    },
+    {
+      "test": "Multi-Agent System Available",
+      "status": "PASS",
+      "details": "Found 5 agents: Dev, Luna, Atlas, Quinn, Sage",
+      "response_code": 200,
+      "response_time": 0.04205131530761719,
+      "timestamp": "2025-08-05T09:49:26.747995"
+    },
+    {
+      "test": "Demo Login",
+      "status": "PASS",
+      "details": "Successfully logged in as demo@aicodestudio.com",
+      "response_code": 200,
+      "response_time": 0.5517928600311279,
+      "timestamp": "2025-08-05T09:49:27.299908"
+    },
+    {
+      "test": "JWT Token Validation",
+      "status": "PASS",
+      "details": "Token valid for user: demo@aicodestudio.com",
+      "response_code": 200,
+      "response_time": 0.27596497535705566,
+      "timestamp": "2025-08-05T09:49:27.576007"
+    },
+    {
+      "test": "Trial Status API",
+      "status": "PASS",
+      "details": "Trial status: Inactive, Days remaining: 0",
+      "response_code": 200,
+      "response_time": 0.5077927112579346,
+      "timestamp": "2025-08-05T09:49:28.083919"
+    },
+    {
+      "test": "Subscription Plans",
+      "status": "PASS",
+      "details": "All plans available: Basic $19, Pro $49, Enterprise $179",
+      "response_code": 200,
+      "response_time": 0.0428919792175293,
+      "timestamp": "2025-08-05T09:49:28.126963"
+    },
+    {
+      "test": "Current Subscription",
+      "status": "FAIL",
+      "details": "Current subscription endpoint failed",
+      "response_code": null,
+      "response_time": 0.5059106349945068,
+      "timestamp": "2025-08-05T09:49:28.633014"
+    },
+    {
+      "test": "Groq AI Response Speed",
+      "status": "PASS",
+      "details": "Ultra-fast response from Luna using llama-3.1-8b-instant",
+      "response_code": 200,
+      "response_time": 0.9487922191619873,
+      "timestamp": "2025-08-05T09:49:29.581945"
+    },
+    {
+      "test": "Quick Response Speed",
+      "status": "PASS",
+      "details": "Ultra-fast quick response",
+      "response_code": 200,
+      "response_time": 0.08195161819458008,
+      "timestamp": "2025-08-05T09:49:29.664029"
+    },
+    {
+      "test": "Projects API",
+      "status": "PASS",
+      "details": "Found 4 projects",
+      "response_code": 200,
+      "response_time": 0.7407779693603516,
+      "timestamp": "2025-08-05T09:49:30.404968"
+    },
+    {
+      "test": "Templates API",
+      "status": "PASS",
+      "details": "Found 6 templates",
+      "response_code": 200,
+      "response_time": 0.5109431743621826,
+      "timestamp": "2025-08-05T09:49:30.916069"
+    },
+    {
+      "test": "MongoDB Atlas Connection",
+      "status": "PASS",
+      "details": "Database connection healthy",
+      "response_code": 200,
+      "response_time": 0.042699575424194336,
+      "timestamp": "2025-08-05T09:49:30.958873"
+    },
+    {
+      "test": "User Data Persistence",
+      "status": "PASS",
+      "details": "User data retrieved from database",
+      "response_code": 200,
+      "response_time": 0.27500009536743164,
+      "timestamp": "2025-08-05T09:49:31.233983"
+    }
+  ]
+}
