@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 import uuid
 from groq import AsyncGroq
 import os
-from models.conversation import ConversationModel
-from models.project import ProjectModel
+from models.conversation import Conversation, Message, MessageRole
+from models.project import Project
 
 class EnhancedAIServiceV4:
     def __init__(self):
