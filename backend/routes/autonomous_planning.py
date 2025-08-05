@@ -112,7 +112,7 @@ class AutonomousPlanningService:
             return roadmap
             
         except Exception as e:
-            raise HTTPException(status_code=500, f"Planning generation failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Planning generation failed: {str(e)}")
     
     async def _generate_task_breakdown(self, goal: str, complexity: str) -> List[TaskBreakdown]:
         """Generate intelligent task breakdown"""
