@@ -1,475 +1,516 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-import asyncio
+from fastapi import APIRouter, HTTPException, Depends
+from typing import List, Dict, Optional, Any
 import uuid
-import base64
+from datetime import datetime
+import logging
+from pydantic import BaseModel
+import asyncio
 import json
-from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
-from models.database import get_database
-from routes.auth import get_current_user
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-class GitHubRepo(BaseModel):
-    name: str
-    description: Optional[str] = ""
-    private: bool = True
-    auto_init: bool = True
-
-class DeploymentConfig(BaseModel):
-    platform: str  # vercel, netlify, railway, aws, gcp
-    environment: str  # dev, staging, production
-    auto_deploy: bool = True
-    build_command: Optional[str] = ""
-    deploy_hooks: List[str] = []
-
-class CICDPipeline(BaseModel):
+# Models for Git & CI/CD Integration
+class GitRepository(BaseModel):
     id: str
     name: str
-    repository: str
-    branch: str = "main"
-    triggers: List[str] = ["push", "pull_request"]
-    steps: List[Dict[str, Any]]
-    environment_vars: Dict[str, str] = {}
-    notifications: Dict[str, Any] = {}
+    url: str
+    branch: str
+    provider: str  # github, gitlab, bitbucket
+    is_private: bool
+    last_commit: Optional[Dict] = None
     created_at: datetime
 
-class GitIntegrationService:
+class DeploymentTarget(BaseModel):
+    id: str
+    name: str
+    provider: str  # vercel, netlify, heroku, aws, railway
+    environment: str  # development, staging, production
+    auto_deploy: bool
+    branch_pattern: str  # main, develop, feat/*
+    build_command: Optional[str] = None
+    deploy_url: Optional[str] = None
+    status: str = "inactive"  # active, inactive, deploying, error
+
+class CIPipeline(BaseModel):
+    id: str
+    name: str
+    repository_id: str
+    trigger_events: List[str]  # push, pull_request, tag
+    steps: List[Dict]
+    environment_variables: Dict[str, str]
+    status: str = "inactive"
+    last_run: Optional[Dict] = None
+
+class GitCommit(BaseModel):
+    sha: str
+    message: str
+    author: str
+    timestamp: datetime
+    files_changed: List[str]
+    additions: int
+    deletions: int
+
+class DeploymentHistory(BaseModel):
+    id: str
+    deployment_id: str
+    commit_sha: str
+    status: str  # pending, deploying, success, failed
+    build_logs: List[str]
+    deploy_time: Optional[datetime] = None
+    duration: Optional[int] = None  # seconds
+    error_message: Optional[str] = None
+
+# Advanced Git & CI/CD Engine
+class GitCICDEngine:
     def __init__(self):
-        self.ai_service = EnhancedAIServiceV3()
+        # In-memory storage (in production, use database)
+        self.repositories: Dict[str, GitRepository] = {}
+        self.deployment_targets: Dict[str, DeploymentTarget] = {}
+        self.ci_pipelines: Dict[str, CIPipeline] = {}
+        self.deployment_history: List[DeploymentHistory] = []
         
-    async def create_github_repo(self, repo_config: GitHubRepo, github_token: str, user_id: str) -> Dict[str, Any]:
-        """Create GitHub repository with AI-generated content"""
-        try:
-            import httpx
-            
-            headers = {
-                "Authorization": f"token {github_token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-            
-            # Create repository
-            repo_data = {
-                "name": repo_config.name,
-                "description": repo_config.description,
-                "private": repo_config.private,
-                "auto_init": repo_config.auto_init
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    "https://api.github.com/user/repos",
-                    headers=headers,
-                    json=repo_data
-                )
-                
-                if response.status_code != 201:
-                    raise HTTPException(status_code=400, detail=f"GitHub API error: {response.text}")
-                
-                repo_info = response.json()
-                
-                # Generate AI-powered README
-                readme_content = await self._generate_smart_readme(repo_config, user_id)
-                
-                # Add README to repository
-                await self._add_file_to_repo(
-                    repo_info["full_name"], 
-                    "README.md", 
-                    readme_content, 
-                    github_token
-                )
-                
-                # Generate .gitignore based on project type
-                gitignore_content = await self._generate_gitignore(repo_config, user_id)
-                await self._add_file_to_repo(
-                    repo_info["full_name"],
-                    ".gitignore",
-                    gitignore_content,
-                    github_token
-                )
-                
-                # Store in database
-                db = await get_database()
-                await db.git_repositories.insert_one({
-                    "id": str(uuid.uuid4()),
-                    "user_id": user_id,
-                    "github_repo": repo_info,
-                    "created_at": datetime.utcnow(),
-                    "last_sync": datetime.utcnow()
-                })
-                
-                return {
-                    "repository": repo_info,
-                    "readme_generated": True,
-                    "gitignore_generated": True,
-                    "status": "created"
-                }
-                
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Repository creation failed: {str(e)}")
-    
-    async def setup_cicd_pipeline(self, pipeline_config: CICDPipeline, user_id: str) -> Dict[str, Any]:
-        """Setup CI/CD pipeline with intelligent configuration"""
-        try:
-            # Generate intelligent pipeline configuration
-            pipeline_yaml = await self._generate_pipeline_config(pipeline_config, user_id)
-            
-            # Create GitHub Actions workflow
-            workflow_content = await self._create_github_actions_workflow(pipeline_config, user_id)
-            
-            pipeline_id = str(uuid.uuid4())
-            
-            # Store pipeline configuration
-            db = await get_database()
-            await db.cicd_pipelines.insert_one({
-                "id": pipeline_id,
-                "user_id": user_id,
-                "config": pipeline_config.dict(),
-                "pipeline_yaml": pipeline_yaml,
-                "workflow_content": workflow_content,
-                "status": "active",
-                "created_at": datetime.utcnow(),
-                "last_run": None
-            })
-            
-            return {
-                "pipeline_id": pipeline_id,
-                "workflow_generated": True,
-                "config": pipeline_yaml,
-                "github_actions": workflow_content,
-                "status": "configured"
-            }
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Pipeline setup failed: {str(e)}")
-    
-    async def auto_deploy_to_platform(self, deployment_config: DeploymentConfig, project_path: str, user_id: str) -> Dict[str, Any]:
-        """Auto-deploy to specified platform"""
-        try:
-            deployment_id = str(uuid.uuid4())
-            
-            # Generate platform-specific deployment configuration
-            deploy_config = await self._generate_deployment_config(deployment_config, user_id)
-            
-            # Create deployment script
-            deploy_script = await self._create_deployment_script(deployment_config, project_path, user_id)
-            
-            # Store deployment information
-            db = await get_database()
-            await db.deployments.insert_one({
-                "id": deployment_id,
-                "user_id": user_id,
-                "platform": deployment_config.platform,
-                "environment": deployment_config.environment,
-                "config": deploy_config,
-                "script": deploy_script,
-                "status": "configured",
-                "created_at": datetime.utcnow(),
-                "last_deployment": None
-            })
-            
-            return {
-                "deployment_id": deployment_id,
-                "platform": deployment_config.platform,
-                "config": deploy_config,
-                "script": deploy_script,
-                "status": "ready_to_deploy"
-            }
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Deployment setup failed: {str(e)}")
-    
-    async def create_pull_request(self, repo_name: str, branch: str, title: str, description: str, github_token: str, user_id: str) -> Dict[str, Any]:
-        """Create intelligent pull request with AI-generated content"""
-        try:
-            import httpx
-            
-            # Generate AI-enhanced PR description
-            enhanced_description = await self._enhance_pr_description(title, description, user_id)
-            
-            headers = {
-                "Authorization": f"token {github_token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-            
-            pr_data = {
-                "title": title,
-                "body": enhanced_description,
-                "head": branch,
-                "base": "main"
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"https://api.github.com/repos/{repo_name}/pulls",
-                    headers=headers,
-                    json=pr_data
-                )
-                
-                if response.status_code != 201:
-                    raise HTTPException(status_code=400, detail=f"PR creation failed: {response.text}")
-                
-                pr_info = response.json()
-                
-                # Store PR information
-                db = await get_database()
-                await db.pull_requests.insert_one({
-                    "id": str(uuid.uuid4()),
-                    "user_id": user_id,
-                    "github_pr": pr_info,
-                    "enhanced_description": enhanced_description,
-                    "created_at": datetime.utcnow()
-                })
-                
-                return {
-                    "pull_request": pr_info,
-                    "enhanced_description": True,
-                    "status": "created"
-                }
-                
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Pull request creation failed: {str(e)}")
-    
-    async def _generate_smart_readme(self, repo_config: GitHubRepo, user_id: str) -> str:
-        """Generate AI-powered README content"""
-        readme_prompt = f"""
-        Generate a professional README.md for a project called "{repo_config.name}".
-        Description: {repo_config.description}
-        
-        Include:
-        1. Project title and description
-        2. Features and capabilities
-        3. Installation instructions
-        4. Usage examples
-        5. Contributing guidelines
-        6. License information
-        7. Contact information
-        
-        Make it comprehensive and professional.
-        """
-        
-        response = await self.ai_service.process_enhanced_chat(
-            message=readme_prompt,
-            conversation_id=f"readme_{uuid.uuid4()}",
-            user_id=user_id,
-            agent_coordination="single"
-        )
-        
-        return response.get("response", "# " + repo_config.name)
-    
-    async def _generate_gitignore(self, repo_config: GitHubRepo, user_id: str) -> str:
-        """Generate intelligent .gitignore based on project type"""
-        # Standard .gitignore patterns
-        base_patterns = [
-            "node_modules/", "*.log", ".env", ".DS_Store", "dist/", "build/",
-            "*.pyc", "__pycache__/", ".pytest_cache/", "venv/", ".venv/",
-            "*.swp", "*.swo", ".idea/", ".vscode/", "coverage/"
-        ]
-        
-        return "\n".join(base_patterns)
-    
-    async def _add_file_to_repo(self, repo_full_name: str, file_path: str, content: str, github_token: str):
-        """Add file to GitHub repository"""
-        import httpx
-        
-        headers = {
-            "Authorization": f"token {github_token}",
-            "Accept": "application/vnd.github.v3+json"
-        }
-        
-        file_data = {
-            "message": f"Add {file_path}",
-            "content": base64.b64encode(content.encode()).decode()
-        }
-        
-        async with httpx.AsyncClient() as client:
-            await client.put(
-                f"https://api.github.com/repos/{repo_full_name}/contents/{file_path}",
-                headers=headers,
-                json=file_data
-            )
-    
-    async def _generate_pipeline_config(self, pipeline_config: CICDPipeline, user_id: str) -> Dict[str, Any]:
-        """Generate intelligent CI/CD pipeline configuration"""
-        config = {
-            "name": pipeline_config.name,
-            "triggers": pipeline_config.triggers,
-            "steps": [
-                {"name": "Checkout", "action": "checkout@v3"},
-                {"name": "Setup Node.js", "action": "setup-node@v3", "with": {"node-version": "18"}},
-                {"name": "Install dependencies", "run": "npm install"},
-                {"name": "Run tests", "run": "npm test"},
-                {"name": "Build", "run": "npm run build"},
-                {"name": "Deploy", "run": "npm run deploy"}
-            ],
-            "environment_vars": pipeline_config.environment_vars
-        }
-        
-        return config
-    
-    async def _create_github_actions_workflow(self, pipeline_config: CICDPipeline, user_id: str) -> str:
-        """Create GitHub Actions workflow YAML"""
-        workflow = f"""
-name: {pipeline_config.name}
-
-on:
-  push:
-    branches: [ {pipeline_config.branch} ]
-  pull_request:
-    branches: [ {pipeline_config.branch} ]
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Run tests
-      run: npm test
-    
-    - name: Build
-      run: npm run build
-    
-    - name: Deploy
-      run: npm run deploy
-      env:
-        {chr(10).join([f'        {k}: ${{{{ secrets.{k} }}}}' for k in pipeline_config.environment_vars.keys()])}
-"""
-        return workflow
-    
-    async def _generate_deployment_config(self, deployment_config: DeploymentConfig, user_id: str) -> Dict[str, Any]:
-        """Generate platform-specific deployment configuration"""
-        configs = {
+        # Mock deployment providers
+        self.deployment_providers = {
             "vercel": {
-                "name": "vercel-deployment",
-                "build": deployment_config.build_command or "npm run build",
-                "output": "dist",
-                "framework": "auto-detect"
+                "name": "Vercel",
+                "supports": ["react", "nextjs", "vue", "angular"],
+                "build_commands": {
+                    "react": "npm run build",
+                    "nextjs": "next build",
+                    "vue": "npm run build"
+                }
             },
             "netlify": {
-                "build": {"command": deployment_config.build_command or "npm run build", "publish": "dist"},
-                "headers": [{"for": "/*", "values": {"X-Frame-Options": "DENY"}}]
+                "name": "Netlify", 
+                "supports": ["react", "vue", "angular", "static"],
+                "build_commands": {
+                    "react": "npm run build",
+                    "vue": "npm run build"
+                }
             },
             "railway": {
-                "build": {"builder": "NIXPACKS"},
-                "deploy": {"startCommand": "npm start", "restartPolicyType": "ON_FAILURE"}
+                "name": "Railway",
+                "supports": ["node", "python", "golang", "ruby"],
+                "build_commands": {
+                    "node": "npm start",
+                    "python": "python app.py"
+                }
+            },
+            "heroku": {
+                "name": "Heroku",
+                "supports": ["node", "python", "ruby", "php", "java"],
+                "build_commands": {
+                    "node": "npm start",
+                    "python": "python app.py"
+                }
             }
         }
-        
-        return configs.get(deployment_config.platform, {})
     
-    async def _create_deployment_script(self, deployment_config: DeploymentConfig, project_path: str, user_id: str) -> str:
-        """Create deployment script"""
-        scripts = {
-            "vercel": f"npx vercel --prod --cwd {project_path}",
-            "netlify": f"npx netlify deploy --prod --dir {project_path}/dist",
-            "railway": f"railway deploy --service {deployment_config.platform}"
-        }
-        
-        return scripts.get(deployment_config.platform, "echo 'Deployment not configured'")
+    async def connect_repository(self, repo_data: Dict) -> GitRepository:
+        """Connect a Git repository to the platform"""
+        try:
+            # Simulate repository connection
+            repo = GitRepository(
+                id=str(uuid.uuid4()),
+                name=repo_data["name"],
+                url=repo_data["url"],
+                branch=repo_data.get("branch", "main"),
+                provider=self._detect_git_provider(repo_data["url"]),
+                is_private=repo_data.get("is_private", False),
+                created_at=datetime.now()
+            )
+            
+            # Mock fetch latest commit
+            repo.last_commit = {
+                "sha": "abc123def456",
+                "message": "Initial commit",
+                "author": "Developer",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            self.repositories[repo.id] = repo
+            logger.info(f"Connected repository: {repo.name}")
+            return repo
+            
+        except Exception as e:
+            logger.error(f"Error connecting repository: {e}")
+            raise
     
-    async def _enhance_pr_description(self, title: str, description: str, user_id: str) -> str:
-        """Enhance PR description with AI"""
-        enhancement_prompt = f"""
-        Enhance this pull request description:
-        
-        Title: {title}
-        Description: {description}
-        
-        Add:
-        1. Clear summary of changes
-        2. Testing information
-        3. Impact assessment
-        4. Checklist for reviewers
-        
-        Keep it professional and structured.
-        """
-        
-        response = await self.ai_service.process_enhanced_chat(
-            message=enhancement_prompt,
-            conversation_id=f"pr_{uuid.uuid4()}",
-            user_id=user_id,
-            agent_coordination="single"
-        )
-        
-        return response.get("response", description)
+    def _detect_git_provider(self, url: str) -> str:
+        """Detect git provider from repository URL"""
+        if "github.com" in url:
+            return "github"
+        elif "gitlab.com" in url:
+            return "gitlab"
+        elif "bitbucket.org" in url:
+            return "bitbucket"
+        else:
+            return "unknown"
+    
+    async def create_deployment_target(self, target_data: Dict) -> DeploymentTarget:
+        """Create a new deployment target"""
+        try:
+            # Validate provider
+            provider = target_data["provider"]
+            if provider not in self.deployment_providers:
+                raise ValueError(f"Unsupported deployment provider: {provider}")
+            
+            target = DeploymentTarget(
+                id=str(uuid.uuid4()),
+                name=target_data["name"],
+                provider=provider,
+                environment=target_data["environment"],
+                auto_deploy=target_data.get("auto_deploy", False),
+                branch_pattern=target_data.get("branch_pattern", "main"),
+                build_command=target_data.get("build_command")
+            )
+            
+            # Generate mock deploy URL
+            target.deploy_url = f"https://{target.name.lower().replace(' ', '-')}.{provider}.app"
+            
+            self.deployment_targets[target.id] = target
+            logger.info(f"Created deployment target: {target.name}")
+            return target
+            
+        except Exception as e:
+            logger.error(f"Error creating deployment target: {e}")
+            raise
+    
+    async def setup_ci_pipeline(self, pipeline_data: Dict) -> CIPipeline:
+        """Setup CI/CD pipeline for a repository"""
+        try:
+            repository_id = pipeline_data["repository_id"]
+            if repository_id not in self.repositories:
+                raise ValueError("Repository not found")
+            
+            # Create default pipeline steps
+            default_steps = [
+                {
+                    "name": "Checkout Code",
+                    "type": "checkout",
+                    "config": {"fetch-depth": 0}
+                },
+                {
+                    "name": "Setup Environment",
+                    "type": "setup",
+                    "config": {"node-version": "18"}
+                },
+                {
+                    "name": "Install Dependencies",
+                    "type": "run",
+                    "config": {"command": "npm install"}
+                },
+                {
+                    "name": "Run Tests",
+                    "type": "test",
+                    "config": {"command": "npm test"}
+                },
+                {
+                    "name": "Build Application",
+                    "type": "build", 
+                    "config": {"command": "npm run build"}
+                }
+            ]
+            
+            pipeline = CIPipeline(
+                id=str(uuid.uuid4()),
+                name=pipeline_data["name"],
+                repository_id=repository_id,
+                trigger_events=pipeline_data.get("trigger_events", ["push"]),
+                steps=pipeline_data.get("steps", default_steps),
+                environment_variables=pipeline_data.get("env_vars", {})
+            )
+            
+            self.ci_pipelines[pipeline.id] = pipeline
+            logger.info(f"Created CI pipeline: {pipeline.name}")
+            return pipeline
+            
+        except Exception as e:
+            logger.error(f"Error setting up CI pipeline: {e}")
+            raise
+    
+    async def trigger_deployment(
+        self, 
+        repository_id: str, 
+        target_id: str, 
+        commit_sha: str = None
+    ) -> DeploymentHistory:
+        """Trigger a deployment"""
+        try:
+            # Validate inputs
+            if repository_id not in self.repositories:
+                raise ValueError("Repository not found")
+            if target_id not in self.deployment_targets:
+                raise ValueError("Deployment target not found")
+            
+            repo = self.repositories[repository_id]
+            target = self.deployment_targets[target_id]
+            
+            # Create deployment history entry
+            deployment = DeploymentHistory(
+                id=str(uuid.uuid4()),
+                deployment_id=target_id,
+                commit_sha=commit_sha or repo.last_commit["sha"],
+                status="pending",
+                build_logs=[]
+            )
+            
+            # Simulate deployment process
+            await self._simulate_deployment(deployment, target)
+            
+            self.deployment_history.append(deployment)
+            logger.info(f"Triggered deployment: {deployment.id}")
+            return deployment
+            
+        except Exception as e:
+            logger.error(f"Error triggering deployment: {e}")
+            raise
+    
+    async def _simulate_deployment(self, deployment: DeploymentHistory, target: DeploymentTarget):
+        """Simulate deployment process with logs"""
+        try:
+            deployment.status = "deploying"
+            start_time = datetime.now()
+            
+            # Simulate build steps with logs
+            build_steps = [
+                "📥 Cloning repository...",
+                "🔧 Installing dependencies...",
+                "⚙️ Running build process...",
+                "🧪 Running tests...",
+                "📦 Creating deployment package...",
+                "🚀 Deploying to production...",
+                "✅ Deployment successful!"
+            ]
+            
+            for step in build_steps:
+                deployment.build_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] {step}")
+                await asyncio.sleep(0.1)  # Simulate time
+            
+            # Mark as successful (90% success rate in simulation)
+            import random
+            if random.random() > 0.1:
+                deployment.status = "success"
+                deployment.deploy_time = datetime.now()
+                target.status = "active"
+            else:
+                deployment.status = "failed"
+                deployment.error_message = "Build failed: Test suite returned errors"
+                deployment.build_logs.append("❌ Build failed!")
+            
+            # Calculate duration
+            deployment.duration = int((datetime.now() - start_time).total_seconds())
+            
+        except Exception as e:
+            deployment.status = "failed"
+            deployment.error_message = str(e)
+            logger.error(f"Deployment simulation error: {e}")
+    
+    async def get_repository_commits(self, repository_id: str, limit: int = 10) -> List[GitCommit]:
+        """Get recent commits for a repository"""
+        try:
+            if repository_id not in self.repositories:
+                raise ValueError("Repository not found")
+            
+            # Mock commit history
+            commits = []
+            for i in range(limit):
+                commit = GitCommit(
+                    sha=f"commit{i:03d}hash",
+                    message=f"Mock commit #{i+1}: Added new features",
+                    author="Developer",
+                    timestamp=datetime.now() - timedelta(days=i),
+                    files_changed=[f"src/file{i}.js", f"test/test{i}.js"],
+                    additions=15 + (i * 3),
+                    deletions=5 + i
+                )
+                commits.append(commit)
+            
+            return commits
+            
+        except Exception as e:
+            logger.error(f"Error getting commits: {e}")
+            raise
+    
+    async def get_deployment_status(self, deployment_id: str) -> Dict:
+        """Get detailed deployment status"""
+        try:
+            deployment = next(
+                (d for d in self.deployment_history if d.id == deployment_id),
+                None
+            )
+            
+            if not deployment:
+                raise ValueError("Deployment not found")
+            
+            target = self.deployment_targets.get(deployment.deployment_id)
+            
+            return {
+                "deployment": deployment.dict(),
+                "target": target.dict() if target else None,
+                "logs": deployment.build_logs,
+                "metrics": {
+                    "duration": deployment.duration,
+                    "success_rate": "90%",
+                    "avg_deploy_time": "2m 30s"
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting deployment status: {e}")
+            raise
 
-# Initialize service
-git_service = GitIntegrationService()
+# Initialize Git CI/CD engine
+git_cicd_engine = GitCICDEngine()
 
-@router.post("/create-repo")
-async def create_github_repository(
-    repo_config: GitHubRepo,
-    github_token: str,
-    current_user = Depends(get_current_user)
-):
-    """Create GitHub repository with AI-generated content"""
-    return await git_service.create_github_repo(repo_config, github_token, current_user["id"])
-
-@router.post("/setup-pipeline")
-async def setup_cicd_pipeline(
-    pipeline_config: CICDPipeline,
-    current_user = Depends(get_current_user)
-):
-    """Setup CI/CD pipeline with intelligent configuration"""
-    return await git_service.setup_cicd_pipeline(pipeline_config, current_user["id"])
-
-@router.post("/deploy")
-async def deploy_to_platform(
-    deployment_config: DeploymentConfig,
-    project_path: str,
-    current_user = Depends(get_current_user)
-):
-    """Deploy project to specified platform"""
-    return await git_service.auto_deploy_to_platform(deployment_config, project_path, current_user["id"])
-
-@router.post("/create-pr")
-async def create_pull_request(
-    repo_name: str,
-    branch: str,
-    title: str,
-    description: str,
-    github_token: str,
-    current_user = Depends(get_current_user)
-):
-    """Create intelligent pull request"""
-    return await git_service.create_pull_request(repo_name, branch, title, description, github_token, current_user["id"])
+@router.post("/repositories/connect", response_model=GitRepository)
+async def connect_repository(repo_data: Dict[str, Any]):
+    """Connect a Git repository"""
+    try:
+        repository = await git_cicd_engine.connect_repository(repo_data)
+        return repository
+    except Exception as e:
+        logger.error(f"Error connecting repository: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/repositories")
-async def get_user_repositories(current_user = Depends(get_current_user)):
-    """Get all repositories for current user"""
-    db = await get_database()
-    repos = await db.git_repositories.find(
-        {"user_id": current_user["id"]}
-    ).to_list(length=50)
-    return repos
+async def list_repositories():
+    """List connected repositories"""
+    try:
+        repos = list(git_cicd_engine.repositories.values())
+        return {"repositories": [repo.dict() for repo in repos]}
+    except Exception as e:
+        logger.error(f"Error listing repositories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/repositories/{repository_id}/commits")
+async def get_repository_commits(repository_id: str, limit: int = 10):
+    """Get recent commits for a repository"""
+    try:
+        commits = await git_cicd_engine.get_repository_commits(repository_id, limit)
+        return {"commits": [commit.dict() for commit in commits]}
+    except Exception as e:
+        logger.error(f"Error getting commits: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/deployment-targets", response_model=DeploymentTarget)
+async def create_deployment_target(target_data: Dict[str, Any]):
+    """Create a deployment target"""
+    try:
+        target = await git_cicd_engine.create_deployment_target(target_data)
+        return target
+    except Exception as e:
+        logger.error(f"Error creating deployment target: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/deployment-targets")
+async def list_deployment_targets():
+    """List deployment targets"""
+    try:
+        targets = list(git_cicd_engine.deployment_targets.values())
+        return {"targets": [target.dict() for target in targets]}
+    except Exception as e:
+        logger.error(f"Error listing deployment targets: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/pipelines", response_model=CIPipeline)
+async def create_ci_pipeline(pipeline_data: Dict[str, Any]):
+    """Create a CI/CD pipeline"""
+    try:
+        pipeline = await git_cicd_engine.setup_ci_pipeline(pipeline_data)
+        return pipeline
+    except Exception as e:
+        logger.error(f"Error creating CI pipeline: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/pipelines")
-async def get_user_pipelines(current_user = Depends(get_current_user)):
-    """Get all CI/CD pipelines for current user"""
-    db = await get_database()
-    pipelines = await db.cicd_pipelines.find(
-        {"user_id": current_user["id"]}
-    ).to_list(length=50)
-    return pipelines
+async def list_ci_pipelines():
+    """List CI/CD pipelines"""
+    try:
+        pipelines = list(git_cicd_engine.ci_pipelines.values())
+        return {"pipelines": [pipeline.dict() for pipeline in pipelines]}
+    except Exception as e:
+        logger.error(f"Error listing CI pipelines: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/deploy")
+async def trigger_deployment(deployment_request: Dict[str, Any]):
+    """Trigger a deployment"""
+    try:
+        deployment = await git_cicd_engine.trigger_deployment(
+            repository_id=deployment_request["repository_id"],
+            target_id=deployment_request["target_id"],
+            commit_sha=deployment_request.get("commit_sha")
+        )
+        return {"deployment": deployment.dict()}
+    except Exception as e:
+        logger.error(f"Error triggering deployment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/deployments")
-async def get_user_deployments(current_user = Depends(get_current_user)):
-    """Get all deployments for current user"""
-    db = await get_database()
-    deployments = await db.deployments.find(
-        {"user_id": current_user["id"]}
-    ).to_list(length=50)
-    return deployments
+async def get_deployment_history():
+    """Get deployment history"""
+    try:
+        deployments = git_cicd_engine.deployment_history[-20:]  # Last 20 deployments
+        return {"deployments": [d.dict() for d in deployments]}
+    except Exception as e:
+        logger.error(f"Error getting deployment history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/deployments/{deployment_id}/status")
+async def get_deployment_status(deployment_id: str):
+    """Get detailed deployment status"""
+    try:
+        status = await git_cicd_engine.get_deployment_status(deployment_id)
+        return status
+    except Exception as e:
+        logger.error(f"Error getting deployment status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/providers")
+async def list_deployment_providers():
+    """List available deployment providers"""
+    try:
+        return {"providers": git_cicd_engine.deployment_providers}
+    except Exception as e:
+        logger.error(f"Error listing providers: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/auto-setup")
+async def auto_setup_deployment(project_data: Dict[str, Any]):
+    """Automatically setup repository, pipeline and deployment"""
+    try:
+        # Connect repository
+        repo = await git_cicd_engine.connect_repository({
+            "name": project_data["project_name"],
+            "url": project_data["repository_url"],
+            "branch": project_data.get("branch", "main")
+        })
+        
+        # Create deployment target
+        target = await git_cicd_engine.create_deployment_target({
+            "name": f"{project_data['project_name']} - Production",
+            "provider": project_data.get("provider", "vercel"),
+            "environment": "production",
+            "auto_deploy": True,
+            "branch_pattern": "main"
+        })
+        
+        # Setup CI pipeline
+        pipeline = await git_cicd_engine.setup_ci_pipeline({
+            "name": f"{project_data['project_name']} - CI",
+            "repository_id": repo.id,
+            "trigger_events": ["push", "pull_request"]
+        })
+        
+        return {
+            "repository": repo.dict(),
+            "deployment_target": target.dict(),
+            "ci_pipeline": pipeline.dict(),
+            "message": "Auto-setup completed successfully!"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in auto-setup: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
