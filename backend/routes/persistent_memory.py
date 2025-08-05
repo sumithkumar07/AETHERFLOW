@@ -1,436 +1,454 @@
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Dict, Optional, Any
-import uuid
-from datetime import datetime, timedelta
-import logging
-from pydantic import BaseModel
-import json
+"""
+Enhanced Memory & Context System
+Persistent project memory across sessions with intelligent context management
+"""
 
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
+import json
+from datetime import datetime, timedelta
+from services.groq_ai_service import GroqAIService
+from models.auth import get_current_user
+from models.database import get_database
+import uuid
+from collections import defaultdict
+
 router = APIRouter()
 
-# Models for Persistent Memory System
-class MemoryEntry(BaseModel):
+class ContextItem(BaseModel):
     id: str
-    user_id: str
-    project_id: Optional[str] = None
-    memory_type: str  # conversation, preference, skill, project_context, learning
-    content: Dict[str, Any]
-    importance_score: float  # 0.0 to 1.0
-    access_count: int = 0
-    last_accessed: Optional[datetime] = None
+    type: str  # conversation, decision, code_snippet, preference, insight
+    content: str
+    metadata: Dict[str, Any]
+    relevance_score: float
     created_at: datetime
-    expires_at: Optional[datetime] = None
-    tags: List[str] = []
-
-class UserPreference(BaseModel):
-    preference_type: str
-    value: Any
-    context: Optional[str] = None
-    confidence: float = 1.0
-
-class ConversationMemory(BaseModel):
-    conversation_id: str
-    key_topics: List[str]
-    decisions_made: List[Dict]
-    user_preferences_detected: List[UserPreference]
-    technical_stack_used: List[str]
-    problems_solved: List[str]
-    success_patterns: List[str]
+    last_accessed: datetime
+    access_count: int = 0
 
 class ProjectMemory(BaseModel):
     project_id: str
-    project_name: str
-    tech_stack: List[str]
-    architecture_patterns: List[str]
-    challenges_faced: List[str]
-    solutions_implemented: List[str]
-    performance_metrics: Dict[str, Any]
-    team_preferences: List[str]
-    lessons_learned: List[str]
+    context_items: List[ContextItem]
+    preferences: Dict[str, Any]
+    learning_patterns: Dict[str, Any]
+    conversation_history: List[Dict[str, Any]]
+    decision_history: List[Dict[str, Any]]
+    created_at: datetime
+    updated_at: datetime
 
-# Advanced Memory Intelligence System
-class PersistentMemoryEngine:
+class ConversationContext(BaseModel):
+    session_id: str
+    conversation_id: str
+    context_summary: str
+    key_topics: List[str]
+    user_preferences: Dict[str, Any]
+    continuation_context: str
+
+class MemoryQuery(BaseModel):
+    query: str
+    context_types: Optional[List[str]] = ["conversation", "decision", "preference", "insight"]
+    limit: Optional[int] = 10
+    relevance_threshold: Optional[float] = 0.5
+
+class PersistentMemoryService:
     def __init__(self):
-        self.memory_types = {
-            "conversation": {"retention_days": 90, "importance_threshold": 0.3},
-            "preference": {"retention_days": 365, "importance_threshold": 0.1},
-            "skill": {"retention_days": 180, "importance_threshold": 0.4},
-            "project_context": {"retention_days": 365, "importance_threshold": 0.5},
-            "learning": {"retention_days": 730, "importance_threshold": 0.6}
-        }
+        self.ai_service = GroqAIService()
+    
+    async def store_context(self, user_id: str, project_id: str, context_data: Dict[str, Any]) -> str:
+        """Store context with intelligent classification and relevance scoring"""
         
-        # In-memory storage (in production, use Redis/MongoDB)
-        self.memory_store: Dict[str, List[MemoryEntry]] = {}
-        self.user_profiles: Dict[str, Dict] = {}
-    
-    async def store_memory(self, memory: MemoryEntry) -> str:
-        """Store a memory entry with intelligent categorization"""
+        # AI-powered context analysis
+        analysis_prompt = f"""
+        Analyze this context data and provide intelligent classification:
+        
+        CONTEXT DATA: {json.dumps(context_data, indent=2)}
+        
+        Classify and score this context:
+        1. Type: conversation|decision|code_snippet|preference|insight|pattern
+        2. Relevance Score: 0.0-1.0 (how valuable for future sessions)
+        3. Key Topics: Extract 3-5 main topics
+        4. Summary: One-sentence summary
+        5. Metadata: Additional structured data
+        
+        Return JSON:
+        {{
+            "type": "classified_type",
+            "relevance_score": 0.8,
+            "key_topics": ["topic1", "topic2", "topic3"],
+            "summary": "Context summary",
+            "metadata": {{
+                "agents_involved": ["Dev", "Luna"],
+                "tech_stack": ["React", "Python"],
+                "complexity": "medium",
+                "patterns": ["architectural_decision", "user_preference"]
+            }}
+        }}
+        """
+        
         try:
-            # Calculate importance score if not provided
-            if not hasattr(memory, 'importance_score') or memory.importance_score == 0:
-                memory.importance_score = await self._calculate_importance(memory)
-            
-            # Set expiration based on memory type
-            if not memory.expires_at:
-                retention_config = self.memory_types.get(memory.memory_type)
-                if retention_config:
-                    memory.expires_at = memory.created_at + timedelta(
-                        days=retention_config["retention_days"]
-                    )
-            
-            # Store in memory
-            user_memories = self.memory_store.get(memory.user_id, [])
-            user_memories.append(memory)
-            self.memory_store[memory.user_id] = user_memories
-            
-            # Update user profile
-            await self._update_user_profile(memory)
-            
-            logger.info(f"Stored memory entry {memory.id} for user {memory.user_id}")
-            return memory.id
-            
-        except Exception as e:
-            logger.error(f"Error storing memory: {e}")
-            raise
-    
-    async def retrieve_memories(
-        self, 
-        user_id: str, 
-        memory_type: Optional[str] = None,
-        project_id: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        limit: int = 50
-    ) -> List[MemoryEntry]:
-        """Retrieve relevant memories with intelligent filtering"""
-        try:
-            user_memories = self.memory_store.get(user_id, [])
-            
-            # Filter by criteria
-            filtered_memories = []
-            for memory in user_memories:
-                # Check if expired
-                if memory.expires_at and datetime.now() > memory.expires_at:
-                    continue
-                    
-                # Filter by type
-                if memory_type and memory.memory_type != memory_type:
-                    continue
-                    
-                # Filter by project
-                if project_id and memory.project_id != project_id:
-                    continue
-                    
-                # Filter by tags
-                if tags and not any(tag in memory.tags for tag in tags):
-                    continue
-                    
-                filtered_memories.append(memory)
-            
-            # Sort by importance and recency
-            filtered_memories.sort(
-                key=lambda m: (m.importance_score, m.last_accessed or m.created_at),
-                reverse=True
+            analysis_response = await self.ai_service.generate_response(
+                analysis_prompt,
+                model="llama-3.1-70b-versatile",
+                max_tokens=500,
+                temperature=0.1
             )
             
-            # Update access count and timestamp
-            for memory in filtered_memories[:limit]:
-                memory.access_count += 1
-                memory.last_accessed = datetime.now()
+            analysis = json.loads(analysis_response)
             
-            return filtered_memories[:limit]
+            # Create context item
+            context_id = str(uuid.uuid4())
+            context_item = ContextItem(
+                id=context_id,
+                type=analysis["type"],
+                content=json.dumps(context_data),
+                metadata=analysis["metadata"],
+                relevance_score=analysis["relevance_score"],
+                created_at=datetime.utcnow(),
+                last_accessed=datetime.utcnow()
+            )
             
-        except Exception as e:
-            logger.error(f"Error retrieving memories: {e}")
-            raise
-    
-    async def _calculate_importance(self, memory: MemoryEntry) -> float:
-        """Calculate importance score based on content and context"""
-        try:
-            importance = 0.5  # base score
+            # Store in database
+            db = await get_database()
+            await db.project_memory.update_one(
+                {"project_id": project_id, "user_id": user_id},
+                {
+                    "$push": {"context_items": context_item.dict()},
+                    "$set": {"updated_at": datetime.utcnow()}
+                },
+                upsert=True
+            )
             
-            # Boost importance for certain types
-            type_boosts = {
-                "preference": 0.2,
-                "project_context": 0.3,
-                "learning": 0.4,
-                "skill": 0.15
-            }
-            importance += type_boosts.get(memory.memory_type, 0)
-            
-            # Analyze content for importance signals
-            content_str = json.dumps(memory.content).lower()
-            
-            important_keywords = [
-                "error", "bug", "solution", "optimization", "performance",
-                "architecture", "design pattern", "best practice", "lesson learned",
-                "improvement", "innovation", "breakthrough", "critical", "important"
-            ]
-            
-            keyword_matches = sum(1 for keyword in important_keywords if keyword in content_str)
-            importance += min(keyword_matches * 0.05, 0.3)
-            
-            # Project-related memories are more important
-            if memory.project_id:
-                importance += 0.1
-            
-            return min(importance, 1.0)
+            return context_id
             
         except Exception as e:
-            logger.error(f"Error calculating importance: {e}")
-            return 0.5
+            raise HTTPException(status_code=500, detail=f"Context storage error: {str(e)}")
     
-    async def _update_user_profile(self, memory: MemoryEntry):
-        """Update user profile based on memory content"""
+    async def retrieve_relevant_context(self, user_id: str, project_id: str, query: MemoryQuery) -> List[ContextItem]:
+        """Retrieve contextually relevant information using AI-powered similarity matching"""
+        
         try:
-            user_id = memory.user_id
-            profile = self.user_profiles.get(user_id, {
-                "preferences": {},
-                "skills": [],
-                "common_patterns": [],
-                "tech_stack_preferences": [],
-                "project_types": [],
-                "success_patterns": []
+            db = await get_database()
+            memory = await db.project_memory.find_one({
+                "project_id": project_id,
+                "user_id": user_id
             })
             
-            # Extract insights from memory content
-            if memory.memory_type == "preference":
-                profile["preferences"].update(memory.content)
-            elif memory.memory_type == "skill":
-                skill = memory.content.get("skill")
-                if skill and skill not in profile["skills"]:
-                    profile["skills"].append(skill)
-            elif memory.memory_type == "project_context":
-                tech_stack = memory.content.get("tech_stack", [])
-                for tech in tech_stack:
-                    if tech not in profile["tech_stack_preferences"]:
-                        profile["tech_stack_preferences"].append(tech)
+            if not memory or not memory.get("context_items"):
+                return []
             
-            self.user_profiles[user_id] = profile
+            # AI-powered context matching
+            matching_prompt = f"""
+            Find the most relevant context items for this query:
             
-        except Exception as e:
-            logger.error(f"Error updating user profile: {e}")
-    
-    async def get_contextual_memories(
-        self, 
-        user_id: str, 
-        current_context: str,
-        limit: int = 10
-    ) -> List[MemoryEntry]:
-        """Get memories relevant to current context using AI similarity"""
-        try:
-            all_memories = await self.retrieve_memories(user_id)
+            QUERY: {query.query}
+            CONTEXT_TYPES_FILTER: {query.context_types}
             
-            # Simple keyword-based relevance (in production, use embeddings)
-            context_keywords = current_context.lower().split()
-            relevant_memories = []
+            AVAILABLE CONTEXT ITEMS:
+            {json.dumps([{
+                "id": item["id"],
+                "type": item["type"],
+                "content": item["content"][:200] + "...",
+                "metadata": item["metadata"],
+                "relevance_score": item["relevance_score"]
+            } for item in memory["context_items"]], indent=2)}
             
-            for memory in all_memories:
-                content_str = json.dumps(memory.content).lower()
-                relevance_score = sum(1 for keyword in context_keywords if keyword in content_str)
-                
-                if relevance_score > 0:
-                    memory.relevance_score = relevance_score
-                    relevant_memories.append(memory)
+            Score each context item (0.0-1.0) based on relevance to the query.
+            Return JSON array of relevant item IDs with scores:
+            {{
+                "relevant_items": [
+                    {{"id": "context_id_1", "relevance": 0.9}},
+                    {{"id": "context_id_2", "relevance": 0.7}}
+                ]
+            }}
+            """
             
-            # Sort by relevance and importance
-            relevant_memories.sort(
-                key=lambda m: (getattr(m, 'relevance_score', 0), m.importance_score),
-                reverse=True
+            matching_response = await self.ai_service.generate_response(
+                matching_prompt,
+                model="llama-3.1-8b-instant",  # Fast model for matching
+                max_tokens=800,
+                temperature=0.1
             )
             
-            return relevant_memories[:limit]
+            matching_results = json.loads(matching_response)
+            
+            # Filter and sort context items
+            relevant_items = []
+            context_dict = {item["id"]: item for item in memory["context_items"]}
+            
+            for match in matching_results["relevant_items"]:
+                item_id = match["id"]
+                relevance = match["relevance"]
+                
+                if (item_id in context_dict and 
+                    relevance >= query.relevance_threshold and
+                    context_dict[item_id]["type"] in query.context_types):
+                    
+                    context_item = ContextItem(**context_dict[item_id])
+                    # Update access tracking
+                    context_item.last_accessed = datetime.utcnow()
+                    context_item.access_count += 1
+                    
+                    relevant_items.append(context_item)
+            
+            # Sort by relevance and limit results
+            relevant_items.sort(key=lambda x: x.relevance_score, reverse=True)
+            return relevant_items[:query.limit]
             
         except Exception as e:
-            logger.error(f"Error getting contextual memories: {e}")
-            return []
+            raise HTTPException(status_code=500, detail=f"Context retrieval error: {str(e)}")
     
-    async def learn_from_conversation(
-        self, 
-        user_id: str, 
-        conversation_data: ConversationMemory
-    ) -> str:
-        """Learn patterns from conversation and store insights"""
+    async def generate_conversation_context(self, user_id: str, project_id: str, current_conversation: List[Dict]) -> ConversationContext:
+        """Generate intelligent context for continuing conversations"""
+        
+        # Retrieve relevant historical context
+        memory_query = MemoryQuery(
+            query=" ".join([msg.get("content", "") for msg in current_conversation[-3:]]),
+            limit=5
+        )
+        
+        relevant_context = await self.retrieve_relevant_context(user_id, project_id, memory_query)
+        
+        # Generate continuation context
+        context_prompt = f"""
+        Create intelligent continuation context for this conversation:
+        
+        CURRENT CONVERSATION (last few messages):
+        {json.dumps(current_conversation[-5:], indent=2)}
+        
+        RELEVANT HISTORICAL CONTEXT:
+        {json.dumps([{
+            "type": ctx.type,
+            "content": ctx.content[:300] + "...",
+            "metadata": ctx.metadata
+        } for ctx in relevant_context], indent=2)}
+        
+        Generate continuation context:
+        1. Key topics from current conversation
+        2. User preferences detected
+        3. Context summary for agents
+        4. Continuation strategy
+        
+        Return JSON:
+        {{
+            "context_summary": "Comprehensive context summary",
+            "key_topics": ["topic1", "topic2", "topic3"],
+            "user_preferences": {{
+                "preferred_agents": ["Dev", "Luna"],
+                "communication_style": "detailed",
+                "technical_level": "advanced"
+            }},
+            "continuation_context": "How agents should continue this conversation"
+        }}
+        """
+        
         try:
-            # Create memory entries for different aspects
-            memories_created = []
+            context_response = await self.ai_service.generate_response(
+                context_prompt,
+                model="llama-3.1-70b-versatile",
+                max_tokens=800,
+                temperature=0.2
+            )
             
-            # Store key decisions made
-            if conversation_data.decisions_made:
-                decision_memory = MemoryEntry(
-                    id=str(uuid.uuid4()),
-                    user_id=user_id,
-                    memory_type="learning",
-                    content={
-                        "type": "decisions",
-                        "conversation_id": conversation_data.conversation_id,
-                        "decisions": conversation_data.decisions_made
-                    },
-                    importance_score=0.7,
-                    created_at=datetime.now(),
-                    tags=["decisions", "learning"]
-                )
-                await self.store_memory(decision_memory)
-                memories_created.append(decision_memory.id)
+            context_data = json.loads(context_response)
             
-            # Store user preferences detected
-            for preference in conversation_data.user_preferences_detected:
-                pref_memory = MemoryEntry(
-                    id=str(uuid.uuid4()),
-                    user_id=user_id,
-                    memory_type="preference",
-                    content={
-                        "preference_type": preference.preference_type,
-                        "value": preference.value,
-                        "context": preference.context,
-                        "confidence": preference.confidence
-                    },
-                    importance_score=0.6,
-                    created_at=datetime.now(),
-                    tags=["preference", preference.preference_type]
-                )
-                await self.store_memory(pref_memory)
-                memories_created.append(pref_memory.id)
-            
-            # Store technical patterns
-            if conversation_data.technical_stack_used:
-                tech_memory = MemoryEntry(
-                    id=str(uuid.uuid4()),
-                    user_id=user_id,
-                    memory_type="skill",
-                    content={
-                        "type": "tech_stack_usage",
-                        "technologies": conversation_data.technical_stack_used,
-                        "conversation_id": conversation_data.conversation_id
-                    },
-                    importance_score=0.5,
-                    created_at=datetime.now(),
-                    tags=["tech_stack", "skills"] + conversation_data.technical_stack_used
-                )
-                await self.store_memory(tech_memory)
-                memories_created.append(tech_memory.id)
-            
-            logger.info(f"Created {len(memories_created)} memory entries from conversation")
-            return f"Learned from conversation, created {len(memories_created)} memory entries"
+            return ConversationContext(
+                session_id=str(uuid.uuid4()),
+                conversation_id=current_conversation[0].get("conversation_id", str(uuid.uuid4())),
+                context_summary=context_data["context_summary"],
+                key_topics=context_data["key_topics"],
+                user_preferences=context_data["user_preferences"],
+                continuation_context=context_data["continuation_context"]
+            )
             
         except Exception as e:
-            logger.error(f"Error learning from conversation: {e}")
-            raise
+            raise HTTPException(status_code=500, detail=f"Context generation error: {str(e)}")
 
-# Initialize memory engine
-memory_engine = PersistentMemoryEngine()
-
-@router.post("/store")
-async def store_memory(memory_data: Dict[str, Any], user_id: str):
-    """Store a memory entry"""
-    try:
-        memory = MemoryEntry(
-            id=str(uuid.uuid4()),
-            user_id=user_id,
-            memory_type=memory_data.get("memory_type", "conversation"),
-            content=memory_data.get("content", {}),
-            importance_score=memory_data.get("importance_score", 0.5),
-            created_at=datetime.now(),
-            project_id=memory_data.get("project_id"),
-            tags=memory_data.get("tags", [])
-        )
+    async def learn_user_patterns(self, user_id: str, interaction_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Learn and adapt to user patterns over time"""
         
-        memory_id = await memory_engine.store_memory(memory)
-        return {"memory_id": memory_id, "status": "stored"}
+        learning_prompt = f"""
+        Analyze user interaction patterns and extract learning insights:
         
-    except Exception as e:
-        logger.error(f"Error storing memory: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        INTERACTION DATA: {json.dumps(interaction_data, indent=2)}
+        
+        Extract patterns:
+        1. Communication preferences
+        2. Technical expertise level  
+        3. Preferred agent interactions
+        4. Project complexity preferences
+        5. Common workflows
+        
+        Return JSON with learning insights:
+        {{
+            "communication_patterns": {{
+                "preferred_style": "detailed|concise|visual",
+                "response_length_preference": "short|medium|long",
+                "technical_depth": "basic|intermediate|advanced"
+            }},
+            "agent_preferences": {{
+                "most_used_agents": ["Dev", "Luna"],
+                "agent_interaction_style": "collaborative|sequential|specialized"
+            }},
+            "project_patterns": {{
+                "typical_complexity": "simple|medium|complex",
+                "common_tech_stacks": ["React", "Python", "FastAPI"],
+                "workflow_preferences": ["feature_first", "architecture_first"]
+            }},
+            "learning_confidence": 0.8
+        }}
+        """
+        
+        try:
+            learning_response = await self.ai_service.generate_response(
+                learning_prompt,
+                model="llama-3.1-70b-versatile",
+                max_tokens=600,
+                temperature=0.1
+            )
+            
+            learning_data = json.loads(learning_response)
+            
+            # Store learning insights
+            db = await get_database()
+            await db.user_learning.update_one(
+                {"user_id": user_id},
+                {
+                    "$set": {
+                        "learning_patterns": learning_data,
+                        "updated_at": datetime.utcnow()
+                    }
+                },
+                upsert=True
+            )
+            
+            return learning_data
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Pattern learning error: {str(e)}")
 
-@router.get("/retrieve")
-async def retrieve_memories(
-    user_id: str,
-    memory_type: Optional[str] = None,
-    project_id: Optional[str] = None,
-    limit: int = 20
+memory_service = PersistentMemoryService()
+
+@router.post("/context/store")
+async def store_context(
+    context_data: Dict[str, Any],
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
 ):
-    """Retrieve user memories with filtering"""
+    """Store context with intelligent classification"""
     try:
-        memories = await memory_engine.retrieve_memories(
-            user_id=user_id,
-            memory_type=memory_type,
-            project_id=project_id,
-            limit=limit
+        context_id = await memory_service.store_context(
+            current_user["user_id"], 
+            project_id, 
+            context_data
         )
+        return {"message": "Context stored successfully", "context_id": context_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/context/retrieve")
+async def retrieve_context(
+    query: MemoryQuery,
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Retrieve relevant context using AI-powered matching"""
+    try:
+        relevant_context = await memory_service.retrieve_relevant_context(
+            current_user["user_id"],
+            project_id,
+            query
+        )
+        return {
+            "relevant_context": [ctx.dict() for ctx in relevant_context],
+            "count": len(relevant_context)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/conversation/context")
+async def generate_conversation_context(
+    conversation_data: Dict[str, Any],
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate intelligent context for conversation continuation"""
+    try:
+        context = await memory_service.generate_conversation_context(
+            current_user["user_id"],
+            project_id,
+            conversation_data.get("messages", [])
+        )
+        return context.dict()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/memory/{project_id}")
+async def get_project_memory(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get complete project memory overview"""
+    try:
+        db = await get_database()
+        memory = await db.project_memory.find_one({
+            "project_id": project_id,
+            "user_id": current_user["user_id"]
+        })
+        
+        if not memory:
+            return {"message": "No memory found for this project"}
+        
+        # Summarize memory for overview
+        context_summary = defaultdict(int)
+        for item in memory.get("context_items", []):
+            context_summary[item["type"]] += 1
         
         return {
-            "memories": [memory.dict() for memory in memories],
-            "count": len(memories)
+            "project_id": project_id,
+            "context_summary": dict(context_summary),
+            "total_items": len(memory.get("context_items", [])),
+            "last_updated": memory.get("updated_at"),
+            "memory_health": "good"  # Could add more sophisticated health metrics
         }
-        
     except Exception as e:
-        logger.error(f"Error retrieving memories: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/contextual")
-async def get_contextual_memories(user_id: str, context: str, limit: int = 10):
-    """Get memories relevant to current context"""
+@router.post("/learn/patterns")
+async def learn_user_patterns(
+    interaction_data: Dict[str, Any],
+    current_user: dict = Depends(get_current_user)
+):
+    """Learn and adapt to user interaction patterns"""
     try:
-        memories = await memory_engine.get_contextual_memories(
-            user_id=user_id,
-            current_context=context,
-            limit=limit
+        learning_insights = await memory_service.learn_user_patterns(
+            current_user["user_id"],
+            interaction_data
         )
+        return {
+            "message": "User patterns analyzed and learned",
+            "insights": learning_insights
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/patterns")
+async def get_user_patterns(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get learned user patterns and preferences"""
+    try:
+        db = await get_database()
+        patterns = await db.user_learning.find_one({
+            "user_id": current_user["user_id"]
+        })
+        
+        if not patterns:
+            return {"message": "No patterns learned yet", "learning_patterns": {}}
         
         return {
-            "relevant_memories": [memory.dict() for memory in memories],
-            "context": context,
-            "count": len(memories)
+            "learning_patterns": patterns.get("learning_patterns", {}),
+            "last_updated": patterns.get("updated_at"),
+            "learning_status": "active"
         }
-        
     except Exception as e:
-        logger.error(f"Error getting contextual memories: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/learn-conversation")
-async def learn_from_conversation(user_id: str, conversation_data: ConversationMemory):
-    """Learn insights from a conversation"""
-    try:
-        result = await memory_engine.learn_from_conversation(user_id, conversation_data)
-        return {"result": result, "user_id": user_id}
-        
-    except Exception as e:
-        logger.error(f"Error learning from conversation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/profile")
-async def get_user_profile(user_id: str):
-    """Get user profile built from memories"""
-    try:
-        profile = memory_engine.user_profiles.get(user_id, {})
-        return {"user_id": user_id, "profile": profile}
-        
-    except Exception as e:
-        logger.error(f"Error getting user profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.delete("/cleanup")
-async def cleanup_expired_memories(user_id: Optional[str] = None):
-    """Clean up expired memories"""
-    try:
-        cleaned_count = 0
-        users_to_clean = [user_id] if user_id else list(memory_engine.memory_store.keys())
-        
-        for uid in users_to_clean:
-            user_memories = memory_engine.memory_store.get(uid, [])
-            current_time = datetime.now()
-            
-            # Filter out expired memories
-            valid_memories = [
-                m for m in user_memories 
-                if not m.expires_at or m.expires_at > current_time
-            ]
-            
-            cleaned_count += len(user_memories) - len(valid_memories)
-            memory_engine.memory_store[uid] = valid_memories
-        
-        return {"cleaned_memories": cleaned_count}
-        
-    except Exception as e:
-        logger.error(f"Error cleaning up memories: {e}")
         raise HTTPException(status_code=500, detail=str(e))
