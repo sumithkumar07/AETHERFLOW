@@ -430,7 +430,7 @@ class EnhancedTemplateEngine:
                 "Setup file storage",
                 "Start development servers"
             ],
-            is_featured=true,
+            is_featured=True,
             is_pro=False,
             created_at=datetime.now(),
             updated_at=datetime.now()
