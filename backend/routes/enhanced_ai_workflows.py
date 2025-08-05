@@ -9,7 +9,7 @@ from models.user import User
 from models.database import get_database
 from routes.auth import get_current_user
 from services.ai_service import AIService
-from services.architectural_intelligence import ArchitecturalIntelligenceService
+from services.architectural_intelligence import ArchitecturalIntelligence
 from services.smart_documentation import SmartDocumentationService
 from services.performance_optimizer import PerformanceOptimizerService
 from services.code_quality_engine import CodeQualityEngineService
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Enhanced AI workflow services
 ai_service = AIService()
-arch_service = ArchitecturalIntelligenceService()
+arch_service = ArchitecturalIntelligence()
 doc_service = SmartDocumentationService()
 perf_service = PerformanceOptimizerService()
 quality_service = CodeQualityEngineService()
