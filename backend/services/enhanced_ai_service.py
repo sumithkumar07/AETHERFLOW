@@ -68,7 +68,7 @@ Always consider user needs first and provide design rationale with your suggesti
                 "name": "Atlas",
                 "personality": "System architect focused on scalable solutions",
                 "capabilities": ["system_design", "scalability", "performance", "integration"],
-                "model": "llama-3.1-70b-versatile",  # Complex architectural decisions need best model
+                "model": "llama-3.3-70b-versatile",  # Complex architectural decisions need best model
                 "system_prompt": """You are Atlas, a system architect with expertise in scalable applications, cloud architecture, and system integration. You focus on:
 - Designing scalable, maintainable system architectures
 - Database design and optimization
