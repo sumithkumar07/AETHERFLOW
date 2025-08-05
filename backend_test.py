@@ -1690,7 +1690,7 @@ class BackendTester:
 
 if __name__ == "__main__":
     # Check if backend URL is provided
-    backend_url = sys.argv[1] if len(sys.argv) > 1 else "https://87ab0fab-ada3-4017-9dff-48fc113db631.preview.emergentagent.com"
+    backend_url = sys.argv[1] if len(sys.argv) > 1 else "https://9a5264ed-eb87-4cc0-b9e2-ec2ea2d301a1.preview.emergentagent.com"
     
     # Initialize and run tests
     tester = BackendTester(backend_url)
