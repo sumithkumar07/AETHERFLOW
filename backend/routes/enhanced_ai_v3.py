@@ -193,11 +193,14 @@ async def get_available_agents():
 
 @router.post("/chat/quick-response")
 async def quick_ai_response_with_intelligence(request: ChatRequest):
-    """Quick AI response with architectural intelligence - ULTRA OPTIMIZED FOR <2s TARGET"""
+    """Quick AI response with full intelligence integration - ULTRA OPTIMIZED FOR <2s TARGET"""
     
     try:
-        # Generate quick response with lightweight architectural intelligence
-        response = await enhanced_ai_service.quick_response_with_intelligence(request.message)
+        # Generate quick response with full intelligence integration
+        response = await enhanced_ai_service.quick_response_with_intelligence(
+            request.message, 
+            user_id=request.user_id
+        )
         
         return ChatResponse(
             content=response["content"],
@@ -205,14 +208,14 @@ async def quick_ai_response_with_intelligence(request: ChatRequest):
             agent=response.get("agent"),
             agent_role=response.get("agent_role"),
             agents=response.get("agents", []),
-            type=response.get("type", "quick_response_with_intelligence"),
+            type=response.get("type", "quick_response_with_full_intelligence"),
             timestamp=datetime.utcnow().isoformat(),
             model_used=response.get("model_used")
         )
         
     except Exception as e:
-        logger.error(f"Error in ULTRA FAST quick AI response with intelligence: {e}")
-        raise HTTPException(status_code=500, detail=f"Quick AI response with intelligence failed: {str(e)}")
+        logger.error(f"Error in ULTRA FAST quick AI response with full intelligence: {e}")
+        raise HTTPException(status_code=500, detail=f"Quick AI response with full intelligence failed: {str(e)}")
 
 @router.post("/chat/quick-response-legacy")
 async def quick_ai_response_legacy(request: ChatRequest):
