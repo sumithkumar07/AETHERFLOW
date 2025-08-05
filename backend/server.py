@@ -38,6 +38,9 @@ from routes.enhanced_ai import router as enhanced_ai_new_router
 from routes.enhanced_ai_v2 import router as enhanced_ai_v2_router
 from routes.enhanced_ai_v3 import router as enhanced_ai_v3_router
 
+# Import Phase 1 Optimized AI Routes
+from routes.optimized_ai_v4 import router as optimized_ai_v4_router
+
 from models.database import init_db
 
 # Load environment variables
