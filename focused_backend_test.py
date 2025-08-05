@@ -96,10 +96,10 @@ class FocusedBackendTester:
         response = self.make_request("GET", "/api/ai/v3/agents/available")
         if response and response.status_code == 200:
             data = response.json()
-            if "agents" in data and isinstance(data["agents"], dict):
+            if "agents" in data and isinstance(data["agents"], list):
                 agents = data["agents"]
                 expected_agents = ["Dev", "Luna", "Atlas", "Quinn", "Sage"]
-                found_agents = list(agents.keys())
+                found_agents = [agent.get("name", "") for agent in agents]
                 
                 if all(agent in found_agents for agent in expected_agents):
                     self.log_test("5 AI Agents Available", "PASS", 
@@ -110,7 +110,7 @@ class FocusedBackendTester:
                                 f"Missing agents: {missing}. Found: {found_agents}", response.status_code)
             else:
                 self.log_test("5 AI Agents Available", "FAIL", 
-                            "Invalid agents response format", response.status_code)
+                            f"Invalid agents response format. Expected list, got: {type(data.get('agents'))}", response.status_code)
         else:
             self.log_test("5 AI Agents Available", "FAIL", 
                         "Agents endpoint failed", response.status_code if response else None)
