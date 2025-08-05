@@ -49,9 +49,12 @@ from routes.conversational_debugging import router as conversational_debugging_r
 from routes.enhanced_editor import router as enhanced_editor_router
 from routes.enhanced_templates import router as enhanced_templates_router
 
-# Import NEW COMPETITIVE FEATURES
+# Import NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION
 from routes.natural_language_planning import router as natural_language_planning_router
 from routes.persistent_memory import router as persistent_memory_router
+from routes.git_cicd_enhanced import router as git_cicd_enhanced_router
+from routes.enhanced_templates_expanded import router as enhanced_templates_expanded_router  
+from routes.conversational_debugging_enhanced import router as conversational_debugging_enhanced_router
 
 from models.database import init_db
 
