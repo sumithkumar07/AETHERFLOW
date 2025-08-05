@@ -5,7 +5,7 @@ import uuid
 import logging
 from datetime import datetime
 
-from services.enhanced_ai_service import EnhancedAIService, AgentRole
+from services.enhanced_ai_service import EnhancedAIService, AgentRole, ConversationContext
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
