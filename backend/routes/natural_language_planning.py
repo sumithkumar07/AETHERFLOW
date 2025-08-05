@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 import json
 from datetime import datetime, timedelta
 from services.groq_ai_service import GroqAIService
-from models.auth import get_current_user
+from routes.auth import get_current_user
 from models.database import get_database
 import uuid
 
