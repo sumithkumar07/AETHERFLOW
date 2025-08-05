@@ -114,6 +114,9 @@ app.include_router(enhanced_ai_new_router, prefix="/api/ai/v2", tags=["Enhanced 
 app.include_router(enhanced_ai_v2_router, prefix="/api/ai/v2/enhanced", tags=["Enhanced AI v2 Advanced"])
 app.include_router(enhanced_ai_v3_router, prefix="/api/ai/v3", tags=["Enhanced AI v3 Multi-Agent"])
 
+# Include Phase 1 Optimized AI Routes - Enterprise Performance
+app.include_router(optimized_ai_v4_router, prefix="/api/ai", tags=["Optimized AI v4 - Enterprise"])
+
 # Include additional missing routers
 app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advanced AI"])
 app.include_router(enterprise_router, prefix="/api/enterprise", tags=["Enterprise"])
