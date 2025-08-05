@@ -1,24 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  SparklesIcon,
   ChatBubbleLeftRightIcon,
   FolderIcon,
-  CpuChipIcon,
-  ChartBarIcon,
+  DocumentDuplicateIcon,
   Cog6ToothIcon,
+  HomeIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-  MoonIcon,
-  SunIcon,
-  MagnifyingGlassIcon,
-  CommandLineIcon,
-  BoltIcon,
-  DocumentDuplicateIcon,
-  RocketLaunchIcon
+  SparklesIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
