@@ -55,7 +55,7 @@ async def enhanced_ai_chat(request: ChatRequest):
                 initial_context=request.message
             )
         
-        # Process the message with enhanced AI
+        # Process the message with enhanced AI V3 with architectural intelligence
         response = await enhanced_ai_service.enhance_conversation(
             session_id=session_id,
             user_message=request.message,
