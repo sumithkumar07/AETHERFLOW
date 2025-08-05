@@ -68,13 +68,17 @@ class PuterAIService {
         console.log('🎉 Puter.js AI Service initialized - FREE unlimited AI access available!');
         return true;
       } else {
-        console.warn('⚠️ Puter.js not loaded - loading dynamically...');
-        await this.loadPuterScript();
-        return this.initialize(); // Retry after loading
+        console.warn('⚠️ Puter.js not available - skipping for faster startup');
+        // For production readiness, we'll skip PuterAI to avoid blocking app startup
+        // This can be enabled later when the service is confirmed to be stable
+        this.isAvailable = false;
+        this.initialized = true;
+        return false;
       }
     } catch (error) {
       console.error('❌ Failed to initialize Puter.js AI Service:', error);
       this.isAvailable = false;
+      this.initialized = true;
       return false;
     }
   }
