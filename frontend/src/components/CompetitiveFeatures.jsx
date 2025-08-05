@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   RocketLaunchIcon, 
   CommandLineIcon, 
-  BrainIcon,
+  CpuChipIcon,
   BugAntIcon,
   CodeBracketIcon,
   RectangleStackIcon,
