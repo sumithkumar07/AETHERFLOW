@@ -446,6 +446,12 @@ const EnhancedHome = () => {
           </motion.div>
         </div>
       </section>
+      
+      {/* Competitive Features Modal */}
+      <CompetitiveFeatures 
+        isVisible={showCompetitiveFeatures} 
+        onClose={() => setShowCompetitiveFeatures(false)} 
+      />
     </div>
   )
 }
