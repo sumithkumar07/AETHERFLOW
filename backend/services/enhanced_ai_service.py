@@ -477,3 +477,324 @@ Conversation history:
             del self.conversation_contexts[session_id]
         
         logger.info(f"Cleaned up {len(sessions_to_remove)} old conversation contexts")
+
+    async def get_enhanced_agents(self) -> List[Dict[str, Any]]:
+        """Get list of available enhanced AI agents with their capabilities"""
+        
+        agents = []
+        for role, config in self.agent_configs.items():
+            agents.append({
+                "id": role.value,
+                "name": config["name"],
+                "role": role.value,
+                "personality": config["personality"],
+                "capabilities": config["capabilities"],
+                "model": config["model"],
+                "specialties": config["capabilities"],
+                "available": True,
+                "enhanced": True
+            })
+        
+        return agents
+
+    async def get_available_models(self) -> List[Dict[str, Any]]:
+        """Get list of available Groq models with enhanced information"""
+        
+        models = [
+            {
+                "id": "llama-3.3-70b-versatile",
+                "name": "Llama 3.3 70B Versatile",
+                "provider": "Groq",
+                "context_length": 131072,
+                "cost_per_1m_tokens": 0.59,
+                "speed": "fast",
+                "use_case": "Complex reasoning, development, architecture",
+                "enhanced": True
+            },
+            {
+                "id": "llama-3.1-8b-instant",
+                "name": "Llama 3.1 8B Instant",
+                "provider": "Groq",
+                "context_length": 131072,
+                "cost_per_1m_tokens": 0.05,
+                "speed": "ultra-fast",
+                "use_case": "Quick responses, simple tasks",
+                "enhanced": True
+            },
+            {
+                "id": "mixtral-8x7b-32768",
+                "name": "Mixtral 8x7B",
+                "provider": "Groq",
+                "context_length": 32768,
+                "cost_per_1m_tokens": 0.27,
+                "speed": "fast",
+                "use_case": "Balanced performance, general purpose",
+                "enhanced": True
+            },
+            {
+                "id": "llama-3.2-3b-preview",
+                "name": "Llama 3.2 3B Preview",
+                "provider": "Groq",
+                "context_length": 131072,
+                "cost_per_1m_tokens": 0.06,
+                "speed": "ultra-fast",
+                "use_case": "Lightweight tasks, cost-effective",
+                "enhanced": True
+            }
+        ]
+        
+        return models
+
+    async def process_enhanced_message(
+        self,
+        message: str,
+        agent: str = "developer",
+        context: List[Dict] = None,
+        user_id: str = None,
+        project_id: str = None,
+        conversation_id: str = None,
+        model: str = None
+    ) -> Dict[str, Any]:
+        """Process a message with enhanced AI capabilities"""
+        
+        try:
+            # Map agent string to AgentRole enum
+            agent_mapping = {
+                "developer": AgentRole.DEVELOPER,
+                "designer": AgentRole.DESIGNER,
+                "architect": AgentRole.ARCHITECT,
+                "tester": AgentRole.TESTER,
+                "project_manager": AgentRole.PROJECT_MANAGER,
+                "senior_developer": AgentRole.DEVELOPER,
+                "ui_ux_designer": AgentRole.DESIGNER,
+                "qa_engineer": AgentRole.TESTER,
+                "integration_specialist": AgentRole.ARCHITECT,
+                "business_analyst": AgentRole.PROJECT_MANAGER
+            }
+            
+            agent_role = agent_mapping.get(agent.lower(), AgentRole.DEVELOPER)
+            
+            # Use conversation ID as session ID
+            session_id = conversation_id or f"session_{user_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+            
+            # Initialize or get conversation context
+            if session_id not in self.conversation_contexts:
+                await self.initialize_conversation(session_id, user_id or "unknown", project_id, message)
+            
+            # Process message with enhanced AI
+            response = await self.enhance_conversation(session_id, message)
+            
+            # Generate additional enhancements
+            suggestions = await self._generate_smart_suggestions(message, agent, response.get("content", ""))
+            agent_insights = await self._generate_agent_insights(agent_role, message)
+            next_actions = await self._generate_next_actions(message, response.get("content", ""))
+            collaboration_opportunities = await self._detect_collaboration_opportunities(message, agent_role)
+            
+            return {
+                "response": response.get("content", "I apologize, but I'm having trouble processing your request right now."),
+                "agent": response.get("agent", agent),
+                "model_used": response.get("model_used", model or "llama-3.1-8b-instant"),
+                "confidence": response.get("confidence", 0.9),
+                "suggestions": suggestions,
+                "agent_insights": agent_insights,
+                "next_actions": next_actions,
+                "collaboration_opportunities": collaboration_opportunities,
+                "metadata": {
+                    "session_id": session_id,
+                    "agent_role": agent_role.value,
+                    "enhanced_processing": True,
+                    "response_type": response.get("type", "single_agent")
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in process_enhanced_message: {e}")
+            return {
+                "response": "I apologize, but I encountered an error while processing your request. Please try again.",
+                "agent": agent,
+                "model_used": model or "llama-3.1-8b-instant",
+                "error": str(e),
+                "enhanced_processing": False
+            }
+
+    async def _generate_smart_suggestions(self, message: str, agent: str, response: str) -> List[Dict[str, Any]]:
+        """Generate smart suggestions based on the conversation"""
+        
+        suggestions = []
+        message_lower = message.lower()
+        
+        # Code-related suggestions
+        if any(word in message_lower for word in ['code', 'function', 'api', 'bug', 'implementation']):
+            suggestions.extend([
+                {"type": "code_review", "text": "Request code review", "icon": "🔍"},
+                {"type": "testing", "text": "Add test cases", "icon": "🧪"},
+                {"type": "documentation", "text": "Generate documentation", "icon": "📚"}
+            ])
+        
+        # Design-related suggestions
+        if any(word in message_lower for word in ['ui', 'design', 'layout', 'user', 'interface']):
+            suggestions.extend([
+                {"type": "prototype", "text": "Create prototype", "icon": "🎨"},
+                {"type": "user_testing", "text": "Plan user testing", "icon": "👥"},
+                {"type": "accessibility", "text": "Check accessibility", "icon": "♿"}
+            ])
+        
+        # Project management suggestions
+        if any(word in message_lower for word in ['project', 'plan', 'timeline', 'task']):
+            suggestions.extend([
+                {"type": "breakdown", "text": "Break into tasks", "icon": "📋"},
+                {"type": "timeline", "text": "Create timeline", "icon": "📅"},
+                {"type": "resources", "text": "Estimate resources", "icon": "📊"}
+            ])
+        
+        # Always include some general suggestions
+        suggestions.extend([
+            {"type": "clarify", "text": "Ask for clarification", "icon": "❓"},
+            {"type": "example", "text": "Show example", "icon": "💡"},
+            {"type": "alternatives", "text": "Explore alternatives", "icon": "🔄"}
+        ])
+        
+        return suggestions[:6]  # Return top 6 suggestions
+
+    async def _generate_agent_insights(self, agent_role: AgentRole, message: str) -> List[str]:
+        """Generate insights from the agent's perspective"""
+        
+        agent_config = self.agent_configs[agent_role]
+        insights = []
+        
+        if agent_role == AgentRole.DEVELOPER:
+            insights = [
+                "Consider code maintainability and scalability",
+                "Follow established design patterns",
+                "Implement proper error handling"
+            ]
+        elif agent_role == AgentRole.DESIGNER:
+            insights = [
+                "Focus on user experience and usability",
+                "Ensure design consistency across components",
+                "Consider accessibility requirements"
+            ]
+        elif agent_role == AgentRole.ARCHITECT:
+            insights = [
+                "Think about system scalability",
+                "Consider integration points and dependencies",
+                "Plan for future extensibility"
+            ]
+        elif agent_role == AgentRole.TESTER:
+            insights = [
+                "Identify potential edge cases",
+                "Consider automation opportunities",
+                "Plan comprehensive test coverage"
+            ]
+        elif agent_role == AgentRole.PROJECT_MANAGER:
+            insights = [
+                "Break down complex tasks into manageable steps",
+                "Consider resource allocation and timeline",
+                "Identify potential risks and dependencies"
+            ]
+        
+        return insights
+
+    async def _generate_next_actions(self, message: str, response: str) -> List[Dict[str, Any]]:
+        """Generate suggested next actions"""
+        
+        actions = []
+        message_lower = message.lower()
+        
+        if "create" in message_lower or "build" in message_lower:
+            actions.append({"action": "start_implementation", "description": "Begin implementation", "priority": "high"})
+        
+        if "design" in message_lower:
+            actions.append({"action": "create_mockup", "description": "Create design mockup", "priority": "medium"})
+        
+        if "test" in message_lower:
+            actions.append({"action": "write_tests", "description": "Write test cases", "priority": "high"})
+        
+        if "plan" in message_lower:
+            actions.append({"action": "create_roadmap", "description": "Create project roadmap", "priority": "medium"})
+        
+        # Always include some general next actions
+        actions.extend([
+            {"action": "continue_discussion", "description": "Continue discussion", "priority": "low"},
+            {"action": "document_decisions", "description": "Document key decisions", "priority": "medium"}
+        ])
+        
+        return actions[:4]  # Return top 4 actions
+
+    async def _detect_collaboration_opportunities(self, message: str, current_agent: AgentRole) -> List[Dict[str, Any]]:
+        """Detect opportunities for multi-agent collaboration"""
+        
+        opportunities = []
+        message_lower = message.lower()
+        
+        # Suggest collaboration based on message content
+        if current_agent == AgentRole.DEVELOPER:
+            if any(word in message_lower for word in ['ui', 'design', 'user experience']):
+                opportunities.append({
+                    "agent": "designer",
+                    "reason": "UI/UX expertise needed",
+                    "benefit": "Ensure user-friendly design"
+                })
+            if any(word in message_lower for word in ['test', 'bug', 'quality']):
+                opportunities.append({
+                    "agent": "tester",
+                    "reason": "Quality assurance input needed",
+                    "benefit": "Comprehensive testing strategy"
+                })
+        
+        elif current_agent == AgentRole.DESIGNER:
+            if any(word in message_lower for word in ['implement', 'code', 'technical']):
+                opportunities.append({
+                    "agent": "developer",
+                    "reason": "Technical implementation guidance needed",
+                    "benefit": "Feasible design solutions"
+                })
+        
+        elif current_agent == AgentRole.ARCHITECT:
+            if any(word in message_lower for word in ['user', 'interface', 'experience']):
+                opportunities.append({
+                    "agent": "designer",
+                    "reason": "User experience perspective needed",
+                    "benefit": "User-centric architecture"
+                })
+        
+        return opportunities
+
+    async def get_conversation_analytics(self, user_id: str) -> Dict[str, Any]:
+        """Get conversation analytics for a user"""
+        
+        # Basic analytics from conversation contexts
+        user_contexts = [ctx for ctx in self.conversation_contexts.values() if ctx.user_id == user_id]
+        
+        if not user_contexts:
+            return {
+                "total_conversations": 0,
+                "most_used_agent": None,
+                "avg_messages_per_conversation": 0,
+                "collaboration_rate": 0
+            }
+        
+        # Calculate analytics
+        total_conversations = len(user_contexts)
+        agent_usage = {}
+        total_messages = 0
+        collaborative_conversations = 0
+        
+        for ctx in user_contexts:
+            total_messages += len(ctx.conversation_history)
+            
+            if ctx.collaboration_mode:
+                collaborative_conversations += 1
+            
+            for agent in ctx.active_agents:
+                agent_usage[agent.value] = agent_usage.get(agent.value, 0) + 1
+        
+        most_used_agent = max(agent_usage.items(), key=lambda x: x[1])[0] if agent_usage else None
+        
+        return {
+            "total_conversations": total_conversations,
+            "most_used_agent": most_used_agent,
+            "avg_messages_per_conversation": total_messages / total_conversations if total_conversations > 0 else 0,
+            "collaboration_rate": collaborative_conversations / total_conversations if total_conversations > 0 else 0,
+            "agent_usage": agent_usage
+        }
