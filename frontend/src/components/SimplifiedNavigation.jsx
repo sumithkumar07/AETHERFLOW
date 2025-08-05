@@ -23,150 +23,71 @@ const SimplifiedNavigation = () => {
   const { isAuthenticated, user, logout } = useAuthStore()
   const { theme, toggleTheme } = useThemeStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
-  const handleLogout = () => {
-    logout()
+  // Handle scroll for navigation background
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // SIMPLIFIED 4-CATEGORY NAVIGATION
+  const mainNavItems = [
+    {
+      name: 'Home',
+      href: '/',
+      icon: HomeIcon,
+      description: 'Welcome & Overview',
+      public: true
+    },
+    {
+      name: 'AI Chat',
+      href: '/chat',
+      icon: ChatBubbleLeftRightIcon,
+      description: 'Enhanced AI Conversations',
+      protected: true,
+      primary: true
+    },
+    {
+      name: 'Projects',
+      href: '/projects',
+      icon: FolderIcon,
+      description: 'Your Development Projects',
+      protected: true
+    },
+    {
+      name: 'Templates',
+      href: '/templates',
+      icon: DocumentDuplicateIcon,
+      description: 'Quick Start Templates',
+      public: true
+    }
+  ]
+
+  const secondaryNavItems = [
+    {
+      name: 'Settings',
+      href: '/settings',
+      icon: Cog6ToothIcon,
+      protected: true
+    }
+  ]
+
+  const handleLogout = async () => {
+    await logout()
     navigate('/')
+    setMobileMenuOpen(false)
   }
 
-  // Simplified navigation structure - 4 main categories instead of 9
-  const authenticatedNavigation = [
-    // Core AI Features
-    {
-      category: 'ai',
-      title: 'AI Workspace',
-      items: [
-        { name: 'AI Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, badge: 'ENHANCED', primary: true },
-        { name: 'AI Agents', href: '/agents', icon: CpuChipIcon, badge: 'SMART' },
-        { name: 'Projects', href: '/projects', icon: FolderIcon, badge: 'AI' }
-      ]
-    },
-    // Development Tools
-    {
-      category: 'development',
-      title: 'Development',
-      items: [
-        { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon },
-        { name: 'Deploy', href: '/deploy', icon: RocketLaunchIcon, badge: 'FAST' },
-        { name: 'Advanced', href: '/advanced', icon: BoltIcon, badge: 'PRO' }
-      ]
-    },
-    // Analytics & Insights  
-    {
-      category: 'insights',
-      title: 'Insights',
-      items: [
-        { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, badge: 'LIVE' },
-        { name: 'Performance', href: '/performance', icon: BoltIcon, badge: 'REAL-TIME' },
-        { name: 'Workflows', href: '/workflows', icon: SparklesIcon }
-      ]
-    },
-    // Account & Settings
-    {
-      category: 'account',
-      title: 'Account',
-      items: [
-        { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
-        { name: 'Subscription', href: '/subscription', icon: SparklesIcon, badge: 'PREMIUM' }
-      ]
+  const isActive = (href) => {
+    if (href === '/') {
+      return location.pathname === '/'
     }
-  ]
-
-  const publicNavigation = [
-    { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon, primary: true }
-  ]
-
-  const isCurrentPage = (href) => {
-    if (href === '/chat' && location.pathname.startsWith('/chat')) {
-      return true
-    }
-    return location.pathname === href
+    return location.pathname.startsWith(href)
   }
-
-  // Quick access items for desktop header
-  const quickAccessItems = isAuthenticated ? [
-    { name: 'AI Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, badge: 'AI' },
-    { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, badge: 'LIVE' },
-    { name: 'AI Agents', href: '/agents', icon: CpuChipIcon, badge: 'SMART' }
-  ] : []
-
-  // Don't show navigation on login/signup pages
-  if (location.pathname === '/login' || location.pathname === '/signup') {
-    return null
-  }
-
-  const NavItem = ({ item, isMobile = false, isQuickAccess = false }) => {
-    const Icon = item.icon
-    const isActive = isCurrentPage(item.href)
-    
-    const baseClasses = `flex items-center space-x-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden`
-    
-    const activeClasses = isActive
-      ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/40 dark:to-purple-900/40 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200/50 dark:ring-blue-800/50 shadow-lg'
-      : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 hover:shadow-md'
-
-    const quickAccessClasses = isQuickAccess
-      ? 'px-4 py-2.5 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 hover:shadow-lg'
-      : ''
-
-    return (
-      <Link
-        to={item.href}
-        onClick={() => isMobile && setMobileMenuOpen(false)}
-        className={`${baseClasses} ${quickAccessClasses || activeClasses}`}
-      >
-        {/* Background animation */}
-        {isActive && !isQuickAccess && (
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
-        
-        <div className="relative z-10 flex items-center space-x-3 w-full">
-          <Icon className={`w-4 h-4 transition-all duration-300 group-hover:scale-110 ${
-            isActive ? 'text-blue-600 dark:text-blue-400' : ''
-          } ${isQuickAccess ? 'w-5 h-5' : ''}`} />
-          
-          <span className={`flex-1 ${item.primary ? 'font-semibold' : ''}`}>
-            {item.name}
-          </span>
-          
-          {item.badge && (
-            <motion.span 
-              className={`px-2 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
-                item.badge === 'ENHANCED' || item.badge === 'AI' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' :
-                item.badge === 'LIVE' || item.badge === 'REAL-TIME' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse shadow-lg' :
-                item.badge === 'SMART' || item.badge === 'PRO' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' :
-                item.badge === 'FAST' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' :
-                item.badge === 'PREMIUM' ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg' :
-                'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg'
-              }`}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {item.badge}
-            </motion.span>
-          )}
-        </div>
-      </Link>
-    )
-  }
-
-  const CategorySection = ({ category, isMobile = false }) => (
-    <div className="space-y-2">
-      <h4 className="px-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-        {category.title}
-      </h4>
-      <div className="space-y-1">
-        {category.items.map((item) => (
-          <NavItem key={item.name} item={item} isMobile={isMobile} />
-        ))}
-      </div>
-    </div>
-  )
 
   return (
     <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border-b border-gray-200/30 dark:border-gray-700/30 sticky top-0 z-50 shadow-sm">
