@@ -1,564 +1,708 @@
-"""
-Enhanced Editor Capabilities - Addresses Gap #2
-Advanced file editing, pair programming features, and IDE-like functionality
-"""
-
-from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
-from typing import List, Dict, Optional, Any
-import json
-from datetime import datetime
-import uuid
+from typing import List, Optional, Dict, Any, Union
+from datetime import datetime, timedelta
 import asyncio
-
-from routes.auth import get_current_user
+import uuid
+import json
+import difflib
+from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
 from models.database import get_database
-from services.ai_service_v3_enhanced import EnhancedAIServiceV3
+from routes.auth import get_current_user
 
 router = APIRouter()
 
-class FileEdit(BaseModel):
-    file_path: str
+class FileContent(BaseModel):
+    path: str
     content: str
-    line_number: Optional[int] = None
-    selection_start: Optional[int] = None
-    selection_end: Optional[int] = None
+    language: str
+    last_modified: datetime
+
+class EditorSession(BaseModel):
+    id: str
+    user_id: str
+    files: List[FileContent]
+    active_file: Optional[str]
+    cursor_position: Dict[str, int]  # line, column
+    selection: Optional[Dict[str, Any]]
+    created_at: datetime
+    last_activity: datetime
 
 class CodeSuggestion(BaseModel):
-    file_path: str
+    id: str
+    type: str  # completion, refactor, fix, optimization
+    original_code: str
+    suggested_code: str
+    explanation: str
+    confidence: float
     line_number: int
-    suggestion_type: str  # completion, refactor, fix, optimize
-    context: Optional[str] = None
+    agent: str
 
-class PairProgrammingSession(BaseModel):
+class LiveCollaboration(BaseModel):
     session_id: str
-    project_id: str
-    participants: List[str]
-    active_file: Optional[str] = None
-    cursor_positions: Dict[str, Dict] = {}
+    user_id: str
+    action: str  # edit, cursor, selection
+    data: Dict[str, Any]
+    timestamp: datetime
 
-class EnhancedEditorService:
+class VSCodeIntegration:
     def __init__(self):
         self.ai_service = EnhancedAIServiceV3()
         self.active_sessions: Dict[str, Dict] = {}
-        self.file_watchers: Dict[str, List[WebSocket]] = {}
-    
-    async def get_intelligent_suggestions(self, user_id: str, request: CodeSuggestion) -> Dict[str, Any]:
-        """Get AI-powered code suggestions and completions"""
+        self.websocket_connections: Dict[str, WebSocket] = {}
+        
+    async def create_editor_session(self, files: List[Dict[str, Any]], user_id: str) -> EditorSession:
+        """Create a new editor session for pair programming"""
         try:
-            # Get file content and context
-            db = await get_database()
-            project = await db.projects.find_one({
-                "user_id": user_id,
-                "files": {"$elemMatch": {"path": request.file_path}}
-            })
+            session_id = str(uuid.uuid4())
             
-            if not project:
-                raise HTTPException(status_code=404, detail="File not found")
+            file_contents = []
+            for file_data in files:
+                file_content = FileContent(
+                    path=file_data["path"],
+                    content=file_data["content"],
+                    language=self._detect_language(file_data["path"]),
+                    last_modified=datetime.utcnow()
+                )
+                file_contents.append(file_content)
             
-            # Find the file in the project
-            file_content = ""
-            for file in project.get("files", []):
-                if file["path"] == request.file_path:
-                    file_content = file.get("content", "")
-                    break
-            
-            # Get surrounding context
-            lines = file_content.split('\n')
-            context_start = max(0, request.line_number - 10)
-            context_end = min(len(lines), request.line_number + 10)
-            context_lines = lines[context_start:context_end]
-            
-            # Create AI prompt based on suggestion type
-            if request.suggestion_type == "completion":
-                prompt = f"""
-                Provide intelligent code completion for this context:
-                
-                FILE: {request.file_path}
-                LINE: {request.line_number}
-                
-                CONTEXT:
-                {chr(10).join(f"{i+context_start}: {line}" for i, line in enumerate(context_lines))}
-                
-                CURRENT LINE: {lines[request.line_number - 1] if request.line_number <= len(lines) else ""}
-                
-                Provide 3-5 relevant completions considering:
-                1. Variable and function names in scope
-                2. Language syntax and conventions
-                3. Common patterns for this context
-                4. Import statements and available libraries
-                
-                Return JSON format:
-                {{
-                    "suggestions": [
-                        {{"text": "completion text", "description": "what this does", "priority": 1}}
-                    ]
-                }}
-                """
-            elif request.suggestion_type == "refactor":
-                prompt = f"""
-                Suggest refactoring improvements for this code:
-                
-                FILE: {request.file_path}
-                CONTEXT:
-                {chr(10).join(context_lines)}
-                
-                Analyze and suggest:
-                1. Code simplification opportunities
-                2. Performance improvements
-                3. Better variable/function names
-                4. Design pattern applications
-                5. Bug fixes or potential issues
-                
-                Return JSON with specific refactoring suggestions.
-                """
-            elif request.suggestion_type == "fix":
-                prompt = f"""
-                Identify and fix potential issues in this code:
-                
-                FILE: {request.file_path}
-                CONTEXT:
-                {chr(10).join(context_lines)}
-                
-                Look for:
-                1. Syntax errors
-                2. Logic bugs
-                3. Performance issues
-                4. Security vulnerabilities
-                5. Best practice violations
-                
-                Return JSON with fixes and explanations.
-                """
-            else:  # optimize
-                prompt = f"""
-                Suggest performance optimizations for this code:
-                
-                FILE: {request.file_path}
-                CONTEXT:
-                {chr(10).join(context_lines)}
-                
-                Focus on:
-                1. Algorithm efficiency
-                2. Memory usage
-                3. Database queries
-                4. API calls
-                5. Rendering performance
-                
-                Return JSON with optimization suggestions.
-                """
-            
-            # Get AI suggestions
-            ai_response = await self.ai_service.get_enhanced_response(
-                message=prompt,
-                session_id=f"editor_{user_id}_{request.file_path}",
+            session = EditorSession(
+                id=session_id,
                 user_id=user_id,
-                agent_preference="Dev",  # Developer agent for coding
-                include_context=True
+                files=file_contents,
+                active_file=files[0]["path"] if files else None,
+                cursor_position={"line": 1, "column": 1},
+                created_at=datetime.utcnow(),
+                last_activity=datetime.utcnow()
             )
-            
-            # Parse AI response
-            try:
-                if "```json" in ai_response['content']:
-                    json_start = ai_response['content'].find("```json") + 7
-                    json_end = ai_response['content'].find("```", json_start)
-                    suggestions_data = json.loads(ai_response['content'][json_start:json_end])
-                else:
-                    # Try to extract JSON from the response
-                    suggestions_data = {"suggestions": [{"text": ai_response['content'][:100], "description": "AI suggestion", "priority": 1}]}
-            except:
-                suggestions_data = {"suggestions": [{"text": "// AI suggestion available in chat", "description": "Check AI chat for details", "priority": 1}]}
-            
-            return {
-                "file_path": request.file_path,
-                "line_number": request.line_number,
-                "suggestion_type": request.suggestion_type,
-                "suggestions": suggestions_data.get("suggestions", []),
-                "ai_agent": ai_response.get('agent', 'Dev')
-            }
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to get suggestions: {str(e)}")
-    
-    async def apply_intelligent_edit(self, user_id: str, edit: FileEdit) -> Dict[str, Any]:
-        """Apply AI-assisted file edit with context understanding"""
-        try:
-            db = await get_database()
-            
-            # Find project containing the file
-            project = await db.projects.find_one({
-                "user_id": user_id,
-                "files": {"$elemMatch": {"path": edit.file_path}}
-            })
-            
-            if not project:
-                raise HTTPException(status_code=404, detail="File not found")
-            
-            # Get AI analysis of the edit
-            analysis_prompt = f"""
-            Analyze this code edit and provide feedback:
-            
-            FILE: {edit.file_path}
-            NEW CONTENT: {edit.content[:500]}...
-            
-            Check for:
-            1. Syntax correctness
-            2. Potential improvements
-            3. Security issues
-            4. Performance considerations
-            5. Integration with existing code
-            
-            Provide brief analysis and any warnings or suggestions.
-            """
-            
-            ai_response = await self.ai_service.get_enhanced_response(
-                message=analysis_prompt,
-                session_id=f"edit_analysis_{uuid.uuid4().hex[:8]}",
-                user_id=user_id,
-                agent_preference="Dev",
-                include_context=False
-            )
-            
-            # Update file content
-            updated_files = []
-            for file in project.get("files", []):
-                if file["path"] == edit.file_path:
-                    file["content"] = edit.content
-                    file["last_modified"] = datetime.utcnow()
-                    file["modified_by"] = user_id
-                updated_files.append(file)
-            
-            # Save to database
-            await db.projects.update_one(
-                {"_id": project["_id"]},
-                {
-                    "$set": {
-                        "files": updated_files,
-                        "last_updated": datetime.utcnow()
-                    }
-                }
-            )
-            
-            # Notify connected watchers
-            await self._notify_file_watchers(edit.file_path, {
-                "type": "file_updated",
-                "file_path": edit.file_path,
-                "modified_by": user_id,
-                "timestamp": datetime.utcnow().isoformat()
-            })
-            
-            return {
-                "status": "success",
-                "file_path": edit.file_path,
-                "ai_analysis": ai_response['content'],
-                "timestamp": datetime.utcnow().isoformat()
-            }
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Edit failed: {str(e)}")
-    
-    async def start_pair_programming_session(self, user_id: str, project_id: str) -> Dict[str, Any]:
-        """Start a pair programming session"""
-        try:
-            session_id = f"pair_{uuid.uuid4().hex[:12]}"
-            
-            session_data = {
-                "session_id": session_id,
-                "project_id": project_id,
-                "host_user_id": user_id,
-                "participants": [user_id],
-                "active_file": None,
-                "cursor_positions": {},
-                "created_at": datetime.utcnow(),
-                "status": "active"
-            }
             
             # Store session
-            self.active_sessions[session_id] = session_data
-            
-            # Store in database
             db = await get_database()
-            await db.pair_programming_sessions.insert_one(session_data)
+            await db.editor_sessions.insert_one(session.dict())
             
-            return {
-                "session_id": session_id,
-                "project_id": project_id,
-                "host": user_id,
-                "status": "active",
-                "share_url": f"/pair/{session_id}"
+            # Initialize AI context for the session
+            await self._initialize_ai_context(session_id, file_contents, user_id)
+            
+            self.active_sessions[session_id] = {
+                "session": session,
+                "ai_context": {},
+                "collaboration_state": {}
             }
             
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to start pair programming: {str(e)}")
-    
-    async def join_pair_programming_session(self, user_id: str, session_id: str) -> Dict[str, Any]:
-        """Join an existing pair programming session"""
-        try:
-            if session_id not in self.active_sessions:
-                db = await get_database()
-                session = await db.pair_programming_sessions.find_one({"session_id": session_id})
-                if not session:
-                    raise HTTPException(status_code=404, detail="Session not found")
-                self.active_sessions[session_id] = session
-            
-            session = self.active_sessions[session_id]
-            
-            # Add user to participants
-            if user_id not in session["participants"]:
-                session["participants"].append(user_id)
-                
-                # Update database
-                db = await get_database()
-                await db.pair_programming_sessions.update_one(
-                    {"session_id": session_id},
-                    {"$addToSet": {"participants": user_id}}
-                )
-            
-            return {
-                "session_id": session_id,
-                "project_id": session["project_id"],
-                "participants": session["participants"],
-                "active_file": session.get("active_file"),
-                "status": "joined"
-            }
+            return session
             
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to join session: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Editor session creation failed: {str(e)}")
     
-    async def get_file_diff_analysis(self, user_id: str, file_path: str, old_content: str, new_content: str) -> Dict[str, Any]:
-        """Get AI analysis of file changes"""
+    async def get_code_suggestions(self, session_id: str, file_path: str, cursor_position: Dict[str, int], context: str, user_id: str) -> List[CodeSuggestion]:
+        """Get AI-powered code suggestions"""
         try:
-            diff_prompt = f"""
-            Analyze the changes in this file:
+            session_data = self.active_sessions.get(session_id)
+            if not session_data:
+                raise HTTPException(status_code=404, detail="Editor session not found")
             
-            FILE: {file_path}
-            
-            OLD CONTENT:
-            {old_content[:1000]}...
-            
-            NEW CONTENT:
-            {new_content[:1000]}...
-            
-            Provide:
-            1. Summary of changes made
-            2. Impact assessment
-            3. Potential issues or improvements
-            4. Testing recommendations
-            5. Code quality rating (1-10)
-            
-            Be concise and focus on the most important changes.
-            """
-            
-            ai_response = await self.ai_service.get_enhanced_response(
-                message=diff_prompt,
-                session_id=f"diff_analysis_{uuid.uuid4().hex[:8]}",
-                user_id=user_id,
-                agent_preference="Quinn",  # QA engineer for code review
-                include_context=False
-            )
-            
-            return {
-                "file_path": file_path,
-                "analysis": ai_response['content'],
-                "agent": ai_response.get('agent', 'Quinn'),
-                "timestamp": datetime.utcnow().isoformat()
-            }
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Diff analysis failed: {str(e)}")
-    
-    async def get_code_documentation(self, user_id: str, file_path: str, function_name: Optional[str] = None) -> Dict[str, Any]:
-        """Generate documentation for code"""
-        try:
-            db = await get_database()
-            project = await db.projects.find_one({
-                "user_id": user_id,
-                "files": {"$elemMatch": {"path": file_path}}
-            })
-            
-            if not project:
-                raise HTTPException(status_code=404, detail="File not found")
-            
-            # Get file content
-            file_content = ""
-            for file in project.get("files", []):
-                if file["path"] == file_path:
-                    file_content = file.get("content", "")
+            # Get current file content
+            current_file = None
+            for file in session_data["session"].files:
+                if file.path == file_path:
+                    current_file = file
                     break
             
-            doc_prompt = f"""
-            Generate comprehensive documentation for this code:
+            if not current_file:
+                raise HTTPException(status_code=404, detail="File not found in session")
             
-            FILE: {file_path}
-            {f"FUNCTION: {function_name}" if function_name else ""}
+            # Generate code suggestions using AI
+            suggestions_prompt = f"""
+            Provide intelligent code suggestions for this context:
             
-            CODE:
-            {file_content[:2000]}
+            **File**: {file_path}
+            **Language**: {current_file.language}
+            **Cursor Position**: Line {cursor_position['line']}, Column {cursor_position['column']}
+            **Current Context**: {context}
             
-            Generate:
-            1. Overview and purpose
-            2. Function/class documentation
-            3. Parameters and return values
-            4. Usage examples
-            5. Dependencies and requirements
+            **Code around cursor**:
+            {self._get_code_context(current_file.content, cursor_position)}
             
-            Use proper documentation format for the language (JSDoc, docstring, etc.).
+            Provide 3-5 suggestions including:
+            1. Code completions
+            2. Refactoring opportunities
+            3. Performance optimizations
+            4. Bug fixes if any
+            
+            Format as JSON with explanations.
             """
             
-            ai_response = await self.ai_service.get_enhanced_response(
-                message=doc_prompt,
-                session_id=f"docs_{uuid.uuid4().hex[:8]}",
+            ai_response = await self.ai_service.process_enhanced_chat(
+                message=suggestions_prompt,
+                conversation_id=f"editor_{session_id}",
                 user_id=user_id,
-                agent_preference="Dev",
-                include_context=False
+                agent_coordination="single"
+            )
+            
+            # Parse AI response and create suggestions
+            suggestions = await self._parse_ai_suggestions(ai_response, current_file, cursor_position)
+            
+            # Store suggestions
+            db = await get_database()
+            for suggestion in suggestions:
+                await db.code_suggestions.insert_one({
+                    **suggestion.dict(),
+                    "session_id": session_id,
+                    "created_at": datetime.utcnow()
+                })
+            
+            return suggestions
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Code suggestion generation failed: {str(e)}")
+    
+    async def apply_code_change(self, session_id: str, file_path: str, change: Dict[str, Any], user_id: str) -> Dict[str, Any]:
+        """Apply code change and sync with collaborators"""
+        try:
+            session_data = self.active_sessions.get(session_id)
+            if not session_data:
+                raise HTTPException(status_code=404, detail="Editor session not found")
+            
+            # Find and update file
+            for i, file in enumerate(session_data["session"].files):
+                if file.path == file_path:
+                    # Apply change
+                    old_content = file.content
+                    new_content = self._apply_change(old_content, change)
+                    
+                    # Update file content
+                    session_data["session"].files[i].content = new_content
+                    session_data["session"].files[i].last_modified = datetime.utcnow()
+                    session_data["session"].last_activity = datetime.utcnow()
+                    
+                    # Generate diff
+                    diff = list(difflib.unified_diff(
+                        old_content.splitlines(keepends=True),
+                        new_content.splitlines(keepends=True),
+                        fromfile=f"{file_path} (before)",
+                        tofile=f"{file_path} (after)"
+                    ))
+                    
+                    # Update database
+                    db = await get_database()
+                    await db.editor_sessions.update_one(
+                        {"id": session_id},
+                        {"$set": {"files": [f.dict() for f in session_data["session"].files], "last_activity": datetime.utcnow()}}
+                    )
+                    
+                    # Broadcast change to collaborators
+                    await self._broadcast_change(session_id, {
+                        "type": "file_change",
+                        "file_path": file_path,
+                        "change": change,
+                        "diff": diff,
+                        "user_id": user_id,
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                    
+                    return {
+                        "success": True,
+                        "file_path": file_path,
+                        "diff": diff,
+                        "lines_changed": len([line for line in diff if line.startswith(('+', '-')) and not line.startswith(('+++', '---'))])
+                    }
+            
+            raise HTTPException(status_code=404, detail="File not found in session")
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Code change application failed: {str(e)}")
+    
+    async def generate_vscode_extension_config(self, user_preferences: Dict[str, Any], user_id: str) -> Dict[str, Any]:
+        """Generate VS Code extension configuration"""
+        try:
+            # Generate intelligent extension configuration
+            config_prompt = f"""
+            Generate VS Code extension configuration for Aether AI integration:
+            
+            **User Preferences**: {json.dumps(user_preferences, indent=2)}
+            
+            Create configuration for:
+            1. Command palette integration
+            2. Keyboard shortcuts
+            3. Sidebar panel configuration
+            4. Status bar items
+            5. Context menus
+            6. Settings schema
+            
+            Include TypeScript definitions and manifest.
+            """
+            
+            ai_response = await self.ai_service.process_enhanced_chat(
+                message=config_prompt,
+                conversation_id=f"vscode_config_{uuid.uuid4()}",
+                user_id=user_id,
+                agent_coordination="single"
+            )
+            
+            # Generate extension files
+            extension_config = {
+                "manifest": await self._generate_extension_manifest(),
+                "commands": await self._generate_extension_commands(),
+                "keybindings": await self._generate_keybindings(user_preferences),
+                "settings": await self._generate_settings_schema(),
+                "typescript_definitions": await self._generate_typescript_definitions(),
+                "main_extension_file": await self._generate_main_extension_code(),
+                "ai_response": ai_response
+            }
+            
+            return extension_config
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"VS Code extension generation failed: {str(e)}")
+    
+    async def sync_with_vscode(self, session_id: str, vscode_state: Dict[str, Any], user_id: str) -> Dict[str, Any]:
+        """Sync editor session with VS Code state"""
+        try:
+            session_data = self.active_sessions.get(session_id)
+            if not session_data:
+                raise HTTPException(status_code=404, detail="Editor session not found")
+            
+            # Update session state from VS Code
+            if "active_file" in vscode_state:
+                session_data["session"].active_file = vscode_state["active_file"]
+            
+            if "cursor_position" in vscode_state:
+                session_data["session"].cursor_position = vscode_state["cursor_position"]
+            
+            if "selection" in vscode_state:
+                session_data["session"].selection = vscode_state["selection"]
+            
+            # Update database
+            db = await get_database()
+            await db.editor_sessions.update_one(
+                {"id": session_id},
+                {"$set": {
+                    "active_file": session_data["session"].active_file,
+                    "cursor_position": session_data["session"].cursor_position,
+                    "selection": session_data["session"].selection,
+                    "last_activity": datetime.utcnow()
+                }}
             )
             
             return {
-                "file_path": file_path,
-                "function_name": function_name,
-                "documentation": ai_response['content'],
-                "generated_at": datetime.utcnow().isoformat()
+                "success": True,
+                "session_state": {
+                    "active_file": session_data["session"].active_file,
+                    "cursor_position": session_data["session"].cursor_position,
+                    "files_count": len(session_data["session"].files)
+                }
             }
             
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Documentation generation failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"VS Code sync failed: {str(e)}")
     
-    async def _notify_file_watchers(self, file_path: str, notification: Dict[str, Any]):
-        """Notify WebSocket connections watching a file"""
-        if file_path in self.file_watchers:
-            for websocket in self.file_watchers[file_path][:]:  # Copy list to avoid modification during iteration
+    # Helper methods
+    def _detect_language(self, file_path: str) -> str:
+        """Detect programming language from file extension"""
+        extension_map = {
+            ".js": "javascript",
+            ".jsx": "javascript",
+            ".ts": "typescript",
+            ".tsx": "typescript",
+            ".py": "python",
+            ".java": "java",
+            ".cpp": "cpp",
+            ".c": "c",
+            ".cs": "csharp",
+            ".go": "go",
+            ".rs": "rust",
+            ".php": "php",
+            ".rb": "ruby",
+            ".swift": "swift",
+            ".kt": "kotlin",
+            ".scala": "scala",
+            ".html": "html",
+            ".css": "css",
+            ".scss": "scss",
+            ".less": "less",
+            ".json": "json",
+            ".xml": "xml",
+            ".yaml": "yaml",
+            ".yml": "yaml",
+            ".md": "markdown",
+            ".sh": "bash",
+            ".sql": "sql"
+        }
+        
+        for ext, lang in extension_map.items():
+            if file_path.endswith(ext):
+                return lang
+        
+        return "text"
+    
+    async def _initialize_ai_context(self, session_id: str, files: List[FileContent], user_id: str):
+        """Initialize AI context for the editor session"""
+        context_prompt = f"""
+        Initialize AI context for editor session:
+        
+        **Files in session**: {len(files)}
+        **File types**: {list(set([f.language for f in files]))}
+        
+        **Project structure**:
+        {chr(10).join([f"- {f.path} ({f.language})" for f in files])}
+        
+        Analyze the project and prepare for intelligent code assistance.
+        """
+        
+        await self.ai_service.process_enhanced_chat(
+            message=context_prompt,
+            conversation_id=f"editor_{session_id}",
+            user_id=user_id,
+            agent_coordination="single"
+        )
+    
+    def _get_code_context(self, content: str, cursor_position: Dict[str, int], context_lines: int = 5) -> str:
+        """Get code context around cursor position"""
+        lines = content.split('\n')
+        line_num = cursor_position['line'] - 1  # Convert to 0-based
+        
+        start = max(0, line_num - context_lines)
+        end = min(len(lines), line_num + context_lines + 1)
+        
+        context_lines_list = []
+        for i in range(start, end):
+            prefix = ">>> " if i == line_num else "    "
+            context_lines_list.append(f"{prefix}{i+1:3d}: {lines[i]}")
+        
+        return '\n'.join(context_lines_list)
+    
+    async def _parse_ai_suggestions(self, ai_response: Dict[str, Any], file: FileContent, cursor_position: Dict[str, int]) -> List[CodeSuggestion]:
+        """Parse AI response into code suggestions"""
+        suggestions = []
+        
+        # Default suggestions if AI parsing fails
+        base_suggestions = [
+            {
+                "type": "completion",
+                "original_code": "",
+                "suggested_code": "// AI suggestion placeholder",
+                "explanation": "AI-generated code completion",
+                "confidence": 0.8,
+                "agent": "Dev"
+            }
+        ]
+        
+        for i, suggestion_data in enumerate(base_suggestions):
+            suggestion = CodeSuggestion(
+                id=str(uuid.uuid4()),
+                type=suggestion_data["type"],
+                original_code=suggestion_data["original_code"],
+                suggested_code=suggestion_data["suggested_code"],
+                explanation=suggestion_data["explanation"],
+                confidence=suggestion_data["confidence"],
+                line_number=cursor_position["line"],
+                agent=suggestion_data["agent"]
+            )
+            suggestions.append(suggestion)
+        
+        return suggestions
+    
+    def _apply_change(self, content: str, change: Dict[str, Any]) -> str:
+        """Apply code change to content"""
+        lines = content.split('\n')
+        
+        change_type = change.get("type", "replace")
+        line_number = change.get("line", 1) - 1  # Convert to 0-based
+        
+        if change_type == "replace":
+            if 0 <= line_number < len(lines):
+                lines[line_number] = change.get("new_content", "")
+        elif change_type == "insert":
+            lines.insert(line_number, change.get("new_content", ""))
+        elif change_type == "delete":
+            if 0 <= line_number < len(lines):
+                del lines[line_number]
+        
+        return '\n'.join(lines)
+    
+    async def _broadcast_change(self, session_id: str, change_data: Dict[str, Any]):
+        """Broadcast change to all collaborators"""
+        # This would broadcast to WebSocket connections
+        for connection_id, websocket in self.websocket_connections.items():
+            if connection_id.startswith(session_id):
                 try:
-                    await websocket.send_text(json.dumps(notification))
+                    await websocket.send_json(change_data)
                 except:
-                    # Remove disconnected websockets
-                    self.file_watchers[file_path].remove(websocket)
+                    # Remove disconnected websocket
+                    del self.websocket_connections[connection_id]
+    
+    async def _generate_extension_manifest(self) -> Dict[str, Any]:
+        """Generate VS Code extension manifest"""
+        return {
+            "name": "aether-ai",
+            "displayName": "Aether AI",
+            "description": "AI-powered development assistant with multi-agent intelligence",
+            "version": "1.0.0",
+            "engines": {"vscode": "^1.60.0"},
+            "categories": ["Other", "Machine Learning", "Snippets"],
+            "activationEvents": ["*"],
+            "main": "./out/extension.js",
+            "contributes": {
+                "commands": [
+                    {
+                        "command": "aether.startChat",
+                        "title": "Start AI Chat",
+                        "category": "Aether"
+                    },
+                    {
+                        "command": "aether.generateCode",
+                        "title": "Generate Code",
+                        "category": "Aether"
+                    },
+                    {
+                        "command": "aether.refactorCode",
+                        "title": "Refactor Code",
+                        "category": "Aether"
+                    }
+                ],
+                "keybindings": [
+                    {
+                        "command": "aether.startChat",
+                        "key": "ctrl+shift+a",
+                        "mac": "cmd+shift+a"
+                    }
+                ]
+            }
+        }
+    
+    async def _generate_extension_commands(self) -> List[Dict[str, str]]:
+        """Generate extension commands"""
+        return [
+            {"command": "aether.startChat", "title": "Start AI Chat"},
+            {"command": "aether.generateCode", "title": "Generate Code"},
+            {"command": "aether.refactorCode", "title": "Refactor Code"},
+            {"command": "aether.explainCode", "title": "Explain Code"},
+            {"command": "aether.findBugs", "title": "Find Bugs"},
+            {"command": "aether.optimizePerformance", "title": "Optimize Performance"}
+        ]
+    
+    async def _generate_keybindings(self, preferences: Dict[str, Any]) -> List[Dict[str, str]]:
+        """Generate keyboard shortcuts based on preferences"""
+        default_bindings = [
+            {"command": "aether.startChat", "key": "ctrl+shift+a", "mac": "cmd+shift+a"},
+            {"command": "aether.generateCode", "key": "ctrl+shift+g", "mac": "cmd+shift+g"},
+            {"command": "aether.refactorCode", "key": "ctrl+shift+r", "mac": "cmd+shift+r"}
+        ]
+        
+        # Customize based on user preferences
+        if preferences.get("use_vim_keybindings"):
+            # Add vim-style bindings
+            default_bindings.extend([
+                {"command": "aether.startChat", "key": "ctrl+a", "when": "vim.mode == 'Normal'"},
+            ])
+        
+        return default_bindings
+    
+    async def _generate_settings_schema(self) -> Dict[str, Any]:
+        """Generate settings schema for extension"""
+        return {
+            "type": "object",
+            "title": "Aether AI Configuration",
+            "properties": {
+                "aether.apiUrl": {
+                    "type": "string",
+                    "default": "http://localhost:8001",
+                    "description": "Aether AI API URL"
+                },
+                "aether.autoSuggestions": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Enable automatic code suggestions"
+                },
+                "aether.preferredAgent": {
+                    "type": "string",
+                    "enum": ["Dev", "Luna", "Atlas", "Quinn", "Sage"],
+                    "default": "Dev",
+                    "description": "Preferred AI agent for assistance"
+                }
+            }
+        }
+    
+    async def _generate_typescript_definitions(self) -> str:
+        """Generate TypeScript definitions for extension"""
+        return """
+        declare module 'aether-ai' {
+            export interface AetherAPI {
+                startChat(): Promise<void>;
+                generateCode(context: string): Promise<string>;
+                refactorCode(code: string): Promise<string>;
+            }
+            
+            export interface CodeSuggestion {
+                id: string;
+                type: 'completion' | 'refactor' | 'fix' | 'optimization';
+                suggestedCode: string;
+                explanation: string;
+                confidence: number;
+            }
+        }
+        """
+    
+    async def _generate_main_extension_code(self) -> str:
+        """Generate main extension TypeScript code"""
+        return """
+        import * as vscode from 'vscode';
+        import axios from 'axios';
+        
+        export function activate(context: vscode.ExtensionContext) {
+            const aetherApi = new AetherAPI();
+            
+            // Register commands
+            const chatCommand = vscode.commands.registerCommand('aether.startChat', () => {
+                aetherApi.startChat();
+            });
+            
+            const generateCommand = vscode.commands.registerCommand('aether.generateCode', () => {
+                const editor = vscode.window.activeTextEditor;
+                if (editor) {
+                    const selection = editor.document.getText(editor.selection);
+                    aetherApi.generateCode(selection);
+                }
+            });
+            
+            context.subscriptions.push(chatCommand, generateCommand);
+        }
+        
+        class AetherAPI {
+            private apiUrl: string;
+            
+            constructor() {
+                const config = vscode.workspace.getConfiguration('aether');
+                this.apiUrl = config.get('apiUrl', 'http://localhost:8001');
+            }
+            
+            async startChat() {
+                // Implementation for starting AI chat
+                const panel = vscode.window.createWebviewPanel(
+                    'aetherChat',
+                    'Aether AI Chat',
+                    vscode.ViewColumn.Beside,
+                    { enableScripts: true }
+                );
+                
+                panel.webview.html = this.getChatWebviewContent();
+            }
+            
+            private getChatWebviewContent(): string {
+                return `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Aether AI Chat</title>
+                    </head>
+                    <body>
+                        <div id="chat-container">
+                            <h1>Aether AI Assistant</h1>
+                            <div id="messages"></div>
+                            <input type="text" id="message-input" placeholder="Ask Aether AI...">
+                            <button onclick="sendMessage()">Send</button>
+                        </div>
+                        <script>
+                            function sendMessage() {
+                                // Chat implementation
+                            }
+                        </script>
+                    </body>
+                    </html>
+                `;
+            }
+        }
+        """
 
-# Initialize enhanced editor service
-enhanced_editor_service = EnhancedEditorService()
+# Initialize service
+editor_service = VSCodeIntegration()
 
-@router.post("/suggestions")
+@router.post("/create-session", response_model=EditorSession)
+async def create_editor_session(
+    files: List[Dict[str, Any]],
+    current_user = Depends(get_current_user)
+):
+    """Create new editor session for pair programming"""
+    return await editor_service.create_editor_session(files, current_user["id"])
+
+@router.get("/session/{session_id}/suggestions")
 async def get_code_suggestions(
-    request: CodeSuggestion,
-    current_user = Depends(get_current_user)
-):
-    """Get intelligent code suggestions"""
-    return await enhanced_editor_service.get_intelligent_suggestions(str(current_user["_id"]), request)
-
-@router.post("/edit")
-async def apply_edit(
-    edit: FileEdit,
-    current_user = Depends(get_current_user)
-):
-    """Apply intelligent file edit"""
-    return await enhanced_editor_service.apply_intelligent_edit(str(current_user["_id"]), edit)
-
-@router.post("/pair-programming/start")
-async def start_pair_programming(
-    project_id: str,
-    current_user = Depends(get_current_user)
-):
-    """Start pair programming session"""
-    return await enhanced_editor_service.start_pair_programming_session(str(current_user["_id"]), project_id)
-
-@router.post("/pair-programming/join/{session_id}")
-async def join_pair_programming(
     session_id: str,
-    current_user = Depends(get_current_user)
-):
-    """Join pair programming session"""
-    return await enhanced_editor_service.join_pair_programming_session(str(current_user["_id"]), session_id)
-
-@router.post("/diff-analysis")
-async def analyze_diff(
     file_path: str,
-    old_content: str,
-    new_content: str,
+    line: int,
+    column: int,
+    context: str = "",
     current_user = Depends(get_current_user)
 ):
-    """Get AI analysis of file changes"""
-    return await enhanced_editor_service.get_file_diff_analysis(
-        str(current_user["_id"]), file_path, old_content, new_content
-    )
+    """Get AI-powered code suggestions"""
+    cursor_position = {"line": line, "column": column}
+    return await editor_service.get_code_suggestions(session_id, file_path, cursor_position, context, current_user["id"])
 
-@router.post("/documentation")
-async def generate_documentation(
+@router.post("/session/{session_id}/apply-change")
+async def apply_code_change(
+    session_id: str,
     file_path: str,
-    function_name: Optional[str] = None,
+    change: Dict[str, Any],
     current_user = Depends(get_current_user)
 ):
-    """Generate code documentation"""
-    return await enhanced_editor_service.get_code_documentation(
-        str(current_user["_id"]), file_path, function_name
-    )
+    """Apply code change and sync with collaborators"""
+    return await editor_service.apply_code_change(session_id, file_path, change, current_user["id"])
 
-@router.websocket("/file-watch/{file_path:path}")
-async def watch_file(websocket: WebSocket, file_path: str):
-    """WebSocket endpoint for real-time file watching"""
+@router.post("/generate-vscode-extension")
+async def generate_vscode_extension(
+    user_preferences: Dict[str, Any],
+    current_user = Depends(get_current_user)
+):
+    """Generate VS Code extension configuration"""
+    return await editor_service.generate_vscode_extension_config(user_preferences, current_user["id"])
+
+@router.post("/session/{session_id}/sync-vscode")
+async def sync_with_vscode(
+    session_id: str,
+    vscode_state: Dict[str, Any],
+    current_user = Depends(get_current_user)
+):
+    """Sync editor session with VS Code"""
+    return await editor_service.sync_with_vscode(session_id, vscode_state, current_user["id"])
+
+@router.get("/sessions")
+async def get_editor_sessions(current_user = Depends(get_current_user)):
+    """Get all editor sessions for user"""
+    db = await get_database()
+    sessions = await db.editor_sessions.find(
+        {"user_id": current_user["id"]}
+    ).sort("last_activity", -1).limit(10).to_list(length=10)
+    return sessions
+
+@router.websocket("/session/{session_id}/collaborate")
+async def websocket_collaboration(websocket: WebSocket, session_id: str):
+    """WebSocket endpoint for real-time collaboration"""
     await websocket.accept()
     
-    # Add to file watchers
-    if file_path not in enhanced_editor_service.file_watchers:
-        enhanced_editor_service.file_watchers[file_path] = []
-    enhanced_editor_service.file_watchers[file_path].append(websocket)
+    connection_id = f"{session_id}_{uuid.uuid4().hex[:8]}"
+    editor_service.websocket_connections[connection_id] = websocket
     
     try:
         while True:
-            # Keep connection alive and handle incoming messages
-            data = await websocket.receive_text()
-            message = json.loads(data)
+            data = await websocket.receive_json()
             
-            # Handle different message types (cursor position, selection, etc.)
-            if message.get("type") == "cursor_update":
-                # Broadcast cursor position to other watchers
-                for other_ws in enhanced_editor_service.file_watchers[file_path]:
-                    if other_ws != websocket:
-                        try:
-                            await other_ws.send_text(json.dumps({
-                                "type": "cursor_update",
-                                "user_id": message.get("user_id"),
-                                "position": message.get("position")
-                            }))
-                        except:
-                            pass
-                            
+            # Process collaboration event
+            collaboration_event = LiveCollaboration(
+                session_id=session_id,
+                user_id=data.get("user_id", "anonymous"),
+                action=data.get("action", "unknown"),
+                data=data.get("data", {}),
+                timestamp=datetime.utcnow()
+            )
+            
+            # Broadcast to other collaborators
+            await editor_service._broadcast_change(session_id, {
+                "type": "collaboration",
+                "event": collaboration_event.dict(),
+                "from_connection": connection_id
+            })
+            
     except WebSocketDisconnect:
-        # Remove from file watchers
-        if file_path in enhanced_editor_service.file_watchers:
-            enhanced_editor_service.file_watchers[file_path].remove(websocket)
-
-@router.get("/pair-programming/sessions")
-async def get_active_sessions(
-    current_user = Depends(get_current_user)
-):
-    """Get active pair programming sessions for user"""
-    try:
-        db = await get_database()
-        sessions = await db.pair_programming_sessions.find({
-            "participants": str(current_user["_id"]),
-            "status": "active"
-        }).to_list(20)
-        
-        return {"sessions": sessions}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get sessions: {str(e)}")
-
-@router.get("/file-history/{file_path:path}")
-async def get_file_history(
-    file_path: str,
-    limit: int = 10,
-    current_user = Depends(get_current_user)
-):
-    """Get file edit history"""
-    try:
-        db = await get_database()
-        
-        # Get file edit history from project updates
-        history = await db.file_history.find({
-            "user_id": str(current_user["_id"]),
-            "file_path": file_path
-        }).sort("timestamp", -1).limit(limit).to_list(limit)
-        
-        return {"file_path": file_path, "history": history}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get file history: {str(e)}")
+        # Remove connection
+        if connection_id in editor_service.websocket_connections:
+            del editor_service.websocket_connections[connection_id]
