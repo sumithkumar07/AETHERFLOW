@@ -4,8 +4,8 @@
     "passed": 7,
     "failed": 5,
     "skipped": 0,
-    "total_time": 24.19744873046875,
-    "avg_response_time": 2.19962477684021,
+    "total_time": 21.059298038482666,
+    "avg_response_time": 1.9143309159712358,
     "fast_responses": 5,
     "performance_percentage": 45.45454545454545
   },
@@ -15,72 +15,72 @@
       "status": "PASS",
       "details": "Successfully authenticated as demo@aicodestudio.com",
       "response_code": 200,
-      "response_time": 0.49568796157836914,
-      "timestamp": "2025-08-05T10:29:52.365320"
+      "response_time": 0.4962024688720703,
+      "timestamp": "2025-08-05T10:32:16.959032"
     },
     {
       "test": "/api/ai/v2/enhanced-agents",
       "status": "PASS",
       "details": "Found 5 agents: Dev, Luna, Atlas, Quinn, Sage",
       "response_code": 200,
-      "response_time": 0.04256844520568848,
-      "timestamp": "2025-08-05T10:29:52.408054"
+      "response_time": 0.04575490951538086,
+      "timestamp": "2025-08-05T10:32:17.004942"
     },
     {
       "test": "/api/ai/v2/enhanced-models",
       "status": "FAIL",
       "details": "Expected 4 Groq models, found: Llama 3.3 70B Versatile, Llama 3.1 8B Instant, Mixtral 8x7B, Llama 3.2 3B Preview",
       "response_code": 200,
-      "response_time": 0.042839765548706055,
-      "timestamp": "2025-08-05T10:29:52.451046"
+      "response_time": 0.042932748794555664,
+      "timestamp": "2025-08-05T10:32:17.048030"
     },
     {
       "test": "Multi-Agent E-commerce Coordination",
       "status": "PASS",
       "details": "Response received but limited agent coordination, Performance: GOOD",
       "response_code": 200,
-      "response_time": 2.626807928085327,
-      "timestamp": "2025-08-05T10:29:55.078012"
+      "response_time": 2.6168160438537598,
+      "timestamp": "2025-08-05T10:32:19.664999"
     },
     {
       "test": "Intelligent Agent Handoffs",
       "status": "PASS",
       "details": "Handoff to design agent detected",
       "response_code": 200,
-      "response_time": 5.166833877563477,
-      "timestamp": "2025-08-05T10:30:00.245032"
+      "response_time": 3.044891357421875,
+      "timestamp": "2025-08-05T10:32:22.710112"
     },
     {
       "test": "Context Preservation During Handoffs",
       "status": "PASS",
       "details": "Context preserved across agent handoff",
       "response_code": 200,
-      "response_time": 3.499824285507202,
-      "timestamp": "2025-08-05T10:30:03.745016"
+      "response_time": 2.945751190185547,
+      "timestamp": "2025-08-05T10:32:25.656036"
     },
     {
       "test": "Performance Test 1",
       "status": "FAIL",
-      "details": "Response time: 3.79s (target: <2.0s)",
+      "details": "Response time: 3.68s (target: <2.0s)",
       "response_code": 200,
-      "response_time": 3.7917730808258057,
-      "timestamp": "2025-08-05T10:30:07.536913"
+      "response_time": 3.6758649349212646,
+      "timestamp": "2025-08-05T10:32:29.332012"
     },
     {
       "test": "Performance Test 2",
       "status": "FAIL",
-      "details": "Response time: 3.18s (target: <2.0s)",
+      "details": "Response time: 2.94s (target: <2.0s)",
       "response_code": 200,
-      "response_time": 3.1789815425872803,
-      "timestamp": "2025-08-05T10:30:10.715998"
+      "response_time": 2.940833806991577,
+      "timestamp": "2025-08-05T10:32:32.272957"
     },
     {
       "test": "Performance Test 3",
       "status": "FAIL",
-      "details": "Response time: 4.28s (target: <2.0s)",
+      "details": "Response time: 4.18s (target: <2.0s)",
       "response_code": 200,
-      "response_time": 4.2838709354400635,
-      "timestamp": "2025-08-05T10:30:14.999981"
+      "response_time": 4.182873725891113,
+      "timestamp": "2025-08-05T10:32:36.455952"
     },
     {
       "test": "Overall Performance Assessment",
@@ -88,23 +88,23 @@
       "details": "Only 0/3 responses under 2s (0.0%)",
       "response_code": null,
       "response_time": null,
-      "timestamp": "2025-08-05T10:30:15.000044"
+      "timestamp": "2025-08-05T10:32:36.456017"
     },
     {
       "test": "Token Usage Tracking",
       "status": "PASS",
-      "details": "Tokens used: 3749/0",
+      "details": "Tokens used: 6412/0",
       "response_code": 200,
-      "response_time": 0.5337979793548584,
-      "timestamp": "2025-08-05T10:30:15.533943"
+      "response_time": 0.5328164100646973,
+      "timestamp": "2025-08-05T10:32:36.988960"
     },
     {
       "test": "Trial System Integration",
       "status": "PASS",
       "details": "Trial active: True, Days remaining: 6",
       "response_code": 200,
-      "response_time": 0.5328867435455322,
-      "timestamp": "2025-08-05T10:30:16.066964"
+      "response_time": 0.5329024791717529,
+      "timestamp": "2025-08-05T10:32:37.521997"
     }
   ]
 }
