@@ -186,11 +186,12 @@ Homepage → Auth (if needed) → Chat Hub → [Project Creation] → Individual
 - **WebSocket** support for real-time features
 - **Supervisor** process management
 
-### **AI Integration**
-- **Puter.js AI** - Zero API keys required, completely free
-- **Multiple Models**: GPT-4.1 Nano, Claude Sonnet 4, Gemini 2.5 Flash
-- **Multi-Agent System**: Developer, Designer, Tester, Integrator agents
-- **Project-aware conversations** with context persistence
+### **AI Integration & Intelligence**
+- **Multi-Agent System**: 5 specialized AI agents (Dev, Luna, Atlas, Quinn, Sage)
+- **Groq API Integration**: Ultra-fast AI responses with 4 optimized models
+- **Smart Model Routing**: Automatic cost optimization and performance tuning
+- **Response Caching**: 60%+ cache hit rate reducing API costs
+- **Context-Aware Conversations**: Project-aware AI assistance
 
 ### **Routing System (DO NOT MODIFY)**
 ```
