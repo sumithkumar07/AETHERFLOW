@@ -107,6 +107,7 @@ app.include_router(subscription_router, prefix="/api/subscription", tags=["Subsc
 
 # Include new enhanced AI router with better capabilities
 app.include_router(enhanced_ai_new_router, prefix="/api/ai/v2", tags=["Enhanced AI v2"])
+app.include_router(enhanced_ai_v2_router, prefix="/api/ai/v2/enhanced", tags=["Enhanced AI v2 Advanced"])
 
 # Include additional missing routers
 app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advanced AI"])
