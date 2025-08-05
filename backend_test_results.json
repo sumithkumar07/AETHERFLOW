@@ -4,8 +4,8 @@
     "passed": 0,
     "failed": 16,
     "skipped": 20,
-    "duration": 1.2319438457489014,
-    "timestamp": "2025-08-05T17:13:02.506545"
+    "duration": 0.2572295665740967,
+    "timestamp": "2025-08-05T17:45:13.281383"
   },
   "results": [
     {
@@ -13,252 +13,252 @@
       "status": "FAIL",
       "details": "Non-JSON response: <!doctype html>\n<html lang=\"en\">\n  <head>\n    <script type=\"module\">import { injectIntoGlobalHook } from \"/@react-refresh\";\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () => {};\nwindow.$Refres",
       "response_code": 200,
-      "timestamp": "2025-08-05T17:13:02.347403"
+      "timestamp": "2025-08-05T17:45:13.129305"
     },
     {
       "test": "Detailed Health Check",
       "status": "FAIL",
       "details": "Health endpoint not accessible",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.359507"
+      "timestamp": "2025-08-05T17:45:13.140078"
     },
     {
       "test": "User Registration",
       "status": "FAIL",
       "details": "Registration endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.370519"
+      "timestamp": "2025-08-05T17:45:13.183870"
     },
     {
       "test": "Demo User Login",
       "status": "FAIL",
       "details": "Login failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.382767"
+      "timestamp": "2025-08-05T17:45:13.193245"
     },
     {
       "test": "Enhanced AI v2 Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.382819"
+      "timestamp": "2025-08-05T17:45:13.193304"
     },
     {
       "test": "Enhanced Conversation Management Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.382831"
+      "timestamp": "2025-08-05T17:45:13.193318"
     },
     {
       "test": "Intelligent Agent Coordination Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.382841"
+      "timestamp": "2025-08-05T17:45:13.193328"
     },
     {
       "test": "Enhanced AI Error Handling Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.382853"
+      "timestamp": "2025-08-05T17:45:13.193353"
     },
     {
       "test": "Auto-Trial Creation on Registration",
       "status": "FAIL",
       "details": "User registration failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.393197"
+      "timestamp": "2025-08-05T17:45:13.201051"
     },
     {
       "test": "AI Chat Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.393254"
+      "timestamp": "2025-08-05T17:45:13.201100"
     },
     {
       "test": "Project Management Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.393267"
+      "timestamp": "2025-08-05T17:45:13.201113"
     },
     {
       "test": "Get Templates",
       "status": "FAIL",
       "details": "Templates endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.402206"
+      "timestamp": "2025-08-05T17:45:13.213049"
     },
     {
       "test": "Get Featured Templates",
       "status": "FAIL",
       "details": "Featured templates endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.411323"
+      "timestamp": "2025-08-05T17:45:13.220800"
     },
     {
       "test": "Get Specific Template",
       "status": "FAIL",
       "details": "Specific template endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.420824"
+      "timestamp": "2025-08-05T17:45:13.228105"
     },
     {
       "test": "Get Subscription Plans",
       "status": "FAIL",
       "details": "Plans endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.431099"
+      "timestamp": "2025-08-05T17:45:13.234711"
     },
     {
       "test": "Subscription System Test",
       "status": "SKIP",
       "details": "No authentication token for user-specific tests",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.431143"
+      "timestamp": "2025-08-05T17:45:13.234742"
     },
     {
       "test": "AI Chat Usage Tracking Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.431164"
+      "timestamp": "2025-08-05T17:45:13.234764"
     },
     {
       "test": "Database Models Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.431175"
+      "timestamp": "2025-08-05T17:45:13.234775"
     },
     {
       "test": "Multi-Agent System Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.431185"
+      "timestamp": "2025-08-05T17:45:13.234786"
     },
     {
       "test": "Advanced AI Features Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.431195"
+      "timestamp": "2025-08-05T17:45:13.234796"
     },
     {
       "test": "Analytics Dashboard",
       "status": "FAIL",
       "details": "Analytics dashboard endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.451211"
+      "timestamp": "2025-08-05T17:45:13.240584"
     },
     {
       "test": "Real-time Analytics",
       "status": "FAIL",
       "details": "Real-time analytics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.460071"
+      "timestamp": "2025-08-05T17:45:13.246928"
     },
     {
       "test": "Predictive Analytics",
       "status": "FAIL",
       "details": "Predictive analytics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469699"
+      "timestamp": "2025-08-05T17:45:13.254678"
     },
     {
       "test": "Collaboration Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469755"
+      "timestamp": "2025-08-05T17:45:13.254717"
     },
     {
       "test": "Security Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469768"
+      "timestamp": "2025-08-05T17:45:13.254731"
     },
     {
       "test": "Advanced Services Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469778"
+      "timestamp": "2025-08-05T17:45:13.254742"
     },
     {
       "test": "Cutting-Edge Features Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469787"
+      "timestamp": "2025-08-05T17:45:13.254752"
     },
     {
       "test": "Enterprise Features Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469796"
+      "timestamp": "2025-08-05T17:45:13.254764"
     },
     {
       "test": "Agents System Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469805"
+      "timestamp": "2025-08-05T17:45:13.254774"
     },
     {
       "test": "Integrations Marketplace Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469815"
+      "timestamp": "2025-08-05T17:45:13.254784"
     },
     {
       "test": "WebSocket Connection",
       "status": "SKIP",
       "details": "websocket-client not installed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.469999"
+      "timestamp": "2025-08-05T17:45:13.254968"
     },
     {
       "test": "Experimental Sandbox Test",
       "status": "SKIP",
       "details": "No authentication token available",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.470019"
+      "timestamp": "2025-08-05T17:45:13.254987"
     },
     {
       "test": "Get Supported Diagram Types",
       "status": "FAIL",
       "details": "Supported diagram types endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.479375"
+      "timestamp": "2025-08-05T17:45:13.261386"
     },
     {
       "test": "Get Diagram Examples",
       "status": "FAIL",
       "details": "Diagram examples endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.487903"
+      "timestamp": "2025-08-05T17:45:13.268677"
     },
     {
       "test": "Get Community Statistics",
       "status": "FAIL",
       "details": "Community statistics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.497597"
+      "timestamp": "2025-08-05T17:45:13.275286"
     },
     {
       "test": "Get Trending Content",
       "status": "FAIL",
       "details": "Trending content endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T17:13:02.506295"
+      "timestamp": "2025-08-05T17:45:13.281121"
     }
   ]
 }
