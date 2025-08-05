@@ -4,8 +4,8 @@
     "passed": 38,
     "failed": 47,
     "skipped": 1,
-    "duration": 22.652400255203247,
-    "timestamp": "2025-08-05T15:01:06.292024"
+    "duration": 22.35574221611023,
+    "timestamp": "2025-08-05T16:20:22.477660"
   },
   "results": [
     {
@@ -13,602 +13,602 @@
       "status": "FAIL",
       "details": "Non-JSON response: <!doctype html>\n<html lang=\"en\">\n  <head>\n    <script type=\"module\">import { injectIntoGlobalHook } from \"/@react-refresh\";\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () => {};\nwindow.$Refres",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:43.749758"
+      "timestamp": "2025-08-05T16:20:00.223698"
     },
     {
       "test": "Detailed Health Check",
       "status": "PASS",
       "details": "Services: {'database': 'connected', 'ai': 'available', 'multimodal': 'ready', 'voice': 'enabled'}",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:43.760430"
+      "timestamp": "2025-08-05T16:20:00.237179"
     },
     {
       "test": "User Registration",
       "status": "PASS",
-      "details": "User created: testuser2100@example.com",
+      "details": "User created: testuser5900@example.com",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:45.524329"
+      "timestamp": "2025-08-05T16:20:01.961180"
     },
     {
       "test": "Demo User Login",
       "status": "PASS",
       "details": "Token received for demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:46.024459"
+      "timestamp": "2025-08-05T16:20:02.454680"
     },
     {
       "test": "Get User Profile",
       "status": "PASS",
       "details": "Profile retrieved: demo@aicodestudio.com",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:46.314727"
+      "timestamp": "2025-08-05T16:20:02.710810"
     },
     {
       "test": "Advanced Chat with Multi-Agent Coordination",
       "status": "FAIL",
       "details": "Advanced chat endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:46.809790"
+      "timestamp": "2025-08-05T16:20:03.200631"
     },
     {
       "test": "Multi-Agent Chat Workflow",
       "status": "PASS",
-      "details": "Workflow created: workflow_20250805_150047_8326, 4 agents assigned",
+      "details": "Workflow created: workflow_20250805_162003_1065, 4 agents assigned",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:47.064204"
+      "timestamp": "2025-08-05T16:20:03.452522"
     },
     {
       "test": "Coordination Status",
       "status": "PASS",
       "details": "Status: active, Progress: 0.0%",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:47.316326"
+      "timestamp": "2025-08-05T16:20:03.705926"
     },
     {
       "test": "Conversation Analysis",
       "status": "PASS",
       "details": "Analysis completed with 1 insights, 0 suggested actions",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:47.571449"
+      "timestamp": "2025-08-05T16:20:03.955725"
     },
     {
       "test": "Intelligent Suggestions",
       "status": "PASS",
       "details": "Generated 3 intelligent suggestions",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:47.821450"
+      "timestamp": "2025-08-05T16:20:04.205364"
     },
     {
       "test": "Agent Capabilities",
       "status": "PASS",
       "details": "Found 5 agents with 5 coordination features",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:47.831031"
+      "timestamp": "2025-08-05T16:20:04.214230"
     },
     {
       "test": "Enhanced Conversation Context",
       "status": "FAIL",
       "details": "Enhanced conversation management failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:48.364315"
+      "timestamp": "2025-08-05T16:20:04.743422"
     },
     {
       "test": "Task Requirement Analysis",
       "status": "PASS",
       "details": "Complexity: 0.9, Skills: 2, Collaborative: True",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:48.616826"
+      "timestamp": "2025-08-05T16:20:04.992820"
     },
     {
       "test": "Multi-Agent Workflow Coordination",
       "status": "PASS",
       "details": "Task breakdown: 3 phases, Execution order: 3 steps",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:48.616870"
+      "timestamp": "2025-08-05T16:20:04.992866"
     },
     {
       "test": "Invalid Conversation Analysis Handling",
       "status": "FAIL",
       "details": "Did not handle invalid request properly",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:48.867689"
+      "timestamp": "2025-08-05T16:20:05.241834"
     },
     {
       "test": "Invalid Coordination Status Handling",
       "status": "FAIL",
       "details": "Did not handle invalid workflow ID properly",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:49.118142"
+      "timestamp": "2025-08-05T16:20:05.491148"
     },
     {
       "test": "Malformed Advanced Chat Handling",
       "status": "FAIL",
       "details": "Did not handle malformed request properly",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:49.616706"
+      "timestamp": "2025-08-05T16:20:06.021120"
     },
     {
       "test": "Auto-Trial Creation on Registration",
       "status": "PASS",
       "details": "Trial created for new user: Account created with 7-day free trial!",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:51.329170"
+      "timestamp": "2025-08-05T16:20:07.769059"
     },
     {
       "test": "Trial Status API",
       "status": "PASS",
       "details": "Trial active with 6 days remaining",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:51.825898"
+      "timestamp": "2025-08-05T16:20:08.258077"
     },
     {
       "test": "Subscription Plans with Trial Config",
       "status": "PASS",
       "details": "Basic plan includes trial: 50K tokens/week for 7 days",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:51.834546"
+      "timestamp": "2025-08-05T16:20:08.265309"
     },
     {
       "test": "Trial Limits Verification",
       "status": "PASS",
       "details": "Trial user has correct limits: 50000 tokens",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:52.343684"
+      "timestamp": "2025-08-05T16:20:08.753066"
     },
     {
       "test": "Trial Conversion",
       "status": "FAIL",
       "details": "Trial conversion endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:52.593609"
+      "timestamp": "2025-08-05T16:20:09.002593"
     },
     {
       "test": "AI Chat Message",
       "status": "FAIL",
       "details": "AI chat endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:53.085412"
+      "timestamp": "2025-08-05T16:20:09.491763"
     },
     {
       "test": "AI Models",
       "status": "PASS",
       "details": "Found 4 AI models",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:53.093898"
+      "timestamp": "2025-08-05T16:20:09.499247"
     },
     {
       "test": "AI Agents",
       "status": "PASS",
       "details": "Found 5 AI agents",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:53.102229"
+      "timestamp": "2025-08-05T16:20:09.511063"
     },
     {
       "test": "AI Status",
       "status": "PASS",
       "details": "AI service status: offline",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:53.111660"
+      "timestamp": "2025-08-05T16:20:09.519739"
     },
     {
       "test": "Get Conversations",
       "status": "PASS",
       "details": "Found 20 conversations",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:54.087267"
+      "timestamp": "2025-08-05T16:20:10.494601"
     },
     {
       "test": "Create Project",
       "status": "PASS",
       "details": "Project created: Test Project",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:54.866970"
+      "timestamp": "2025-08-05T16:20:11.233921"
     },
     {
       "test": "Get Projects",
       "status": "PASS",
-      "details": "Found 6 projects",
+      "details": "Found 7 projects",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:55.599115"
+      "timestamp": "2025-08-05T16:20:11.962907"
     },
     {
       "test": "Get Templates",
       "status": "PASS",
       "details": "Found 6 templates",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:56.089693"
+      "timestamp": "2025-08-05T16:20:12.451392"
     },
     {
       "test": "Get Featured Templates",
       "status": "FAIL",
       "details": "Featured templates endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:56.338399"
+      "timestamp": "2025-08-05T16:20:12.739460"
     },
     {
       "test": "Get Specific Template",
       "status": "PASS",
       "details": "Template: React Starter Kit",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:56.607426"
+      "timestamp": "2025-08-05T16:20:12.987084"
     },
     {
       "test": "Get Subscription Plans",
       "status": "PASS",
       "details": "All 3 plans with correct pricing: Basic $19, Professional $49, Enterprise $179",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:56.615058"
+      "timestamp": "2025-08-05T16:20:12.994603"
     },
     {
       "test": "Create Basic Subscription",
       "status": "FAIL",
       "details": "Subscription creation failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:56.864794"
+      "timestamp": "2025-08-05T16:20:13.283519"
     },
     {
       "test": "Get Current Subscription",
       "status": "PASS",
       "details": "Current plan: basic, Status: trialing",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:57.354916"
+      "timestamp": "2025-08-05T16:20:13.775682"
     },
     {
       "test": "Get Usage Statistics",
       "status": "FAIL",
       "details": "Usage statistics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:57.885492"
+      "timestamp": "2025-08-05T16:20:14.303687"
     },
     {
       "test": "Get Usage Warnings",
       "status": "PASS",
       "details": "Found 0 usage warnings",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:58.375385"
+      "timestamp": "2025-08-05T16:20:14.791681"
     },
     {
       "test": "Check Usage Limits",
       "status": "FAIL",
       "details": "Usage check endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:58.625432"
+      "timestamp": "2025-08-05T16:20:15.042007"
     },
     {
       "test": "Upgrade Subscription",
       "status": "FAIL",
       "details": "Subscription upgrade failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:00:58.875796"
+      "timestamp": "2025-08-05T16:20:15.290551"
     },
     {
       "test": "Get Billing History",
       "status": "PASS",
       "details": "Found 1 billing events",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:00:59.611315"
+      "timestamp": "2025-08-05T16:20:16.018137"
     },
     {
       "test": "AI Chat with Usage Tracking",
       "status": "FAIL",
       "details": "AI chat with usage tracking failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:00.271880"
+      "timestamp": "2025-08-05T16:20:16.505932"
     },
     {
       "test": "Rate Limiting Test",
       "status": "FAIL",
       "details": "Unexpected response on request 1",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:00.802556"
+      "timestamp": "2025-08-05T16:20:16.993926"
     },
     {
       "test": "Subscriptions Collection",
       "status": "FAIL",
       "details": "Subscription data missing required fields",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:01.295145"
+      "timestamp": "2025-08-05T16:20:17.482035"
     },
     {
       "test": "Usage Records Collection",
       "status": "FAIL",
       "details": "Usage records collection not accessible",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:01.786819"
+      "timestamp": "2025-08-05T16:20:18.006076"
     },
     {
       "test": "Billing Events Collection",
       "status": "PASS",
       "details": "Billing events collection working - 1 events",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:02.517969"
+      "timestamp": "2025-08-05T16:20:18.734214"
     },
     {
       "test": "Agent Capabilities",
       "status": "FAIL",
       "details": "Agent capabilities endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.525757"
+      "timestamp": "2025-08-05T16:20:18.782228"
     },
     {
       "test": "AI Chat Stream",
       "status": "FAIL",
       "details": "AI chat streaming endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.533703"
+      "timestamp": "2025-08-05T16:20:18.789564"
     },
     {
       "test": "Advanced AI Features",
       "status": "FAIL",
       "details": "Advanced AI features endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.582335"
+      "timestamp": "2025-08-05T16:20:18.837279"
     },
     {
       "test": "Architectural Intelligence",
       "status": "FAIL",
       "details": "Architectural intelligence failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.590645"
+      "timestamp": "2025-08-05T16:20:18.844756"
     },
     {
       "test": "Smart Documentation",
       "status": "FAIL",
       "details": "Smart documentation failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.599344"
+      "timestamp": "2025-08-05T16:20:18.852468"
     },
     {
       "test": "Analytics Dashboard",
       "status": "FAIL",
       "details": "Analytics dashboard endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.607871"
+      "timestamp": "2025-08-05T16:20:18.901396"
     },
     {
       "test": "Real-time Analytics",
       "status": "FAIL",
       "details": "Real-time analytics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.658570"
+      "timestamp": "2025-08-05T16:20:18.908962"
     },
     {
       "test": "Predictive Analytics",
       "status": "FAIL",
       "details": "Predictive analytics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.667833"
+      "timestamp": "2025-08-05T16:20:18.915703"
     },
     {
       "test": "Collaboration Status",
       "status": "FAIL",
       "details": "Collaboration status failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.716604"
+      "timestamp": "2025-08-05T16:20:18.964387"
     },
     {
       "test": "Active Collaborators",
       "status": "FAIL",
       "details": "Active collaborators failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.725270"
+      "timestamp": "2025-08-05T16:20:18.972505"
     },
     {
       "test": "Workflow Automation",
       "status": "FAIL",
       "details": "Workflow automation failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.734278"
+      "timestamp": "2025-08-05T16:20:18.981740"
     },
     {
       "test": "Automation Dashboard",
       "status": "FAIL",
       "details": "Automation dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.784660"
+      "timestamp": "2025-08-05T16:20:19.031301"
     },
     {
       "test": "Security Dashboard",
       "status": "FAIL",
       "details": "Security dashboard failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.794881"
+      "timestamp": "2025-08-05T16:20:19.038700"
     },
     {
       "test": "Compliance Status",
       "status": "FAIL",
       "details": "Compliance status failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.803406"
+      "timestamp": "2025-08-05T16:20:19.045437"
     },
     {
       "test": "Threat Analysis",
       "status": "FAIL",
       "details": "Threat analysis failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.851791"
+      "timestamp": "2025-08-05T16:20:19.092843"
     },
     {
       "test": "Security Audits",
       "status": "FAIL",
       "details": "Security audits failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.860098"
+      "timestamp": "2025-08-05T16:20:19.100030"
     },
     {
       "test": "Visual Programming Tools",
       "status": "FAIL",
       "details": "Visual programming tools failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.908381"
+      "timestamp": "2025-08-05T16:20:19.107356"
     },
     {
       "test": "Plugin Ecosystem",
       "status": "FAIL",
       "details": "Plugin ecosystem failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.916480"
+      "timestamp": "2025-08-05T16:20:19.115312"
     },
     {
       "test": "Video Services",
       "status": "FAIL",
       "details": "Video services failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.926175"
+      "timestamp": "2025-08-05T16:20:19.163274"
     },
     {
       "test": "SEO Services",
       "status": "FAIL",
       "details": "SEO services failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:02.977294"
+      "timestamp": "2025-08-05T16:20:19.171790"
     },
     {
       "test": "Internationalization",
       "status": "FAIL",
       "details": "Internationalization failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:03.026401"
+      "timestamp": "2025-08-05T16:20:19.220385"
     },
     {
       "test": "Experimental Features",
       "status": "FAIL",
       "details": "Experimental features failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:03.034703"
+      "timestamp": "2025-08-05T16:20:19.227747"
     },
     {
       "test": "Theme Intelligence",
       "status": "FAIL",
       "details": "Theme intelligence failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:03.044489"
+      "timestamp": "2025-08-05T16:20:19.275101"
     },
     {
       "test": "Code Quality Engine",
       "status": "FAIL",
       "details": "Code quality engine failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:03.052301"
+      "timestamp": "2025-08-05T16:20:19.281978"
     },
     {
       "test": "Workspace Intelligence",
       "status": "FAIL",
       "details": "Workspace intelligence failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:03.101383"
+      "timestamp": "2025-08-05T16:20:19.289467"
     },
     {
       "test": "Enterprise Integrations",
       "status": "PASS",
       "details": "Found 3 integrations",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:03.385380"
+      "timestamp": "2025-08-05T16:20:19.585408"
     },
     {
       "test": "Compliance Dashboard",
       "status": "PASS",
       "details": "Compliance dashboard accessible",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:03.634873"
+      "timestamp": "2025-08-05T16:20:19.834035"
     },
     {
       "test": "Automation Dashboard",
       "status": "PASS",
       "details": "Automation dashboard accessible",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:03.884455"
+      "timestamp": "2025-08-05T16:20:20.081924"
     },
     {
       "test": "Get Agents",
       "status": "PASS",
       "details": "Found 2 agents",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:04.133724"
+      "timestamp": "2025-08-05T16:20:20.371350"
     },
     {
       "test": "Orchestration Status",
       "status": "PASS",
       "details": "Orchestration system accessible",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:04.383119"
+      "timestamp": "2025-08-05T16:20:20.620291"
     },
     {
       "test": "Get Agent Teams",
       "status": "PASS",
       "details": "Found 3 teams",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:04.632634"
+      "timestamp": "2025-08-05T16:20:20.908883"
     },
     {
       "test": "Get Available Integrations",
       "status": "PASS",
       "details": "Found 12 integrations",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:05.605710"
+      "timestamp": "2025-08-05T16:20:21.895310"
     },
     {
       "test": "Get Integration Categories",
       "status": "PASS",
       "details": "Found 7 categories",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:05.613718"
+      "timestamp": "2025-08-05T16:20:21.903146"
     },
     {
       "test": "Get Popular Integrations",
       "status": "FAIL",
       "details": "Popular integrations endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:06.116561"
+      "timestamp": "2025-08-05T16:20:22.390861"
     },
     {
       "test": "WebSocket Connection",
       "status": "SKIP",
       "details": "websocket-client not installed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:06.117060"
+      "timestamp": "2025-08-05T16:20:22.391293"
     },
     {
       "test": "Get Available Experiments",
       "status": "FAIL",
       "details": "Available experiments endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:06.125351"
+      "timestamp": "2025-08-05T16:20:22.399321"
     },
     {
       "test": "Create Sandbox",
       "status": "FAIL",
       "details": "Sandbox creation failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:06.174466"
+      "timestamp": "2025-08-05T16:20:22.406915"
     },
     {
       "test": "Get Supported Diagram Types",
       "status": "PASS",
       "details": "Found 5 diagram types",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:06.183149"
+      "timestamp": "2025-08-05T16:20:22.414673"
     },
     {
       "test": "Get Diagram Examples",
       "status": "PASS",
       "details": "Found 2 diagram examples",
       "response_code": 200,
-      "timestamp": "2025-08-05T15:01:06.233544"
+      "timestamp": "2025-08-05T16:20:22.462659"
     },
     {
       "test": "Get Community Statistics",
       "status": "FAIL",
       "details": "Community statistics endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:06.241448"
+      "timestamp": "2025-08-05T16:20:22.469865"
     },
     {
       "test": "Get Trending Content",
       "status": "FAIL",
       "details": "Trending content endpoint failed",
       "response_code": null,
-      "timestamp": "2025-08-05T15:01:06.291630"
+      "timestamp": "2025-08-05T16:20:22.477319"
     }
   ]
 }
