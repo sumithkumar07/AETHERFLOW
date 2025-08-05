@@ -23,10 +23,13 @@ class ConversationContext:
     session_id: str
     user_id: str
     project_id: Optional[str] = None
-    active_agents: List[AgentRole] = None
-    conversation_history: List[Dict] = None
+    active_agents: List[AgentRole] = field(default_factory=lambda: [AgentRole.DEVELOPER])
+    conversation_history: List[Dict] = field(default_factory=list)
     current_focus: Optional[str] = None
     collaboration_mode: bool = False
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    last_activity: datetime = field(default_factory=datetime.utcnow)
+    performance_metrics: Dict[str, Any] = field(default_factory=dict)
 
 class EnhancedAIService:
     """Enhanced AI Service with multi-agent coordination and intelligent conversation management"""
