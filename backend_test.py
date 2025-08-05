@@ -1589,6 +1589,13 @@ class BackendTester:
         self.test_health_endpoints()
         self.test_authentication_system()
         
+        # PRIORITY: Enhanced AI v2 Testing (as requested in review)
+        print("\n🎯 PRIORITY: Testing Enhanced AI v2 Features...")
+        self.test_enhanced_ai_v2_features()
+        self.test_enhanced_conversation_management()
+        self.test_intelligent_agent_coordination()
+        self.test_enhanced_ai_error_handling()
+        
         # Run 7-day trial system tests (PRIORITY - as requested in review)
         self.test_7_day_trial_system()
         
