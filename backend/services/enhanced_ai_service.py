@@ -278,15 +278,15 @@ Always focus on practical next steps and clear deliverables."""
         user_message: str, 
         agent: AgentRole
     ) -> Dict[str, Any]:
-        """Generate response from a single agent"""
+        """Generate response from a single agent - OPTIMIZED FOR SPEED"""
         
         agent_config = self.agent_configs[agent]
         
-        # Build conversation history for context
+        # Build conversation history for context - REDUCED FOR SPEED
         messages = [{"role": "system", "content": agent_config["system_prompt"]}]
         
-        # Add recent conversation history (last 5 messages for context)
-        recent_history = context.conversation_history[-10:] if context.conversation_history else []
+        # 🚀 PERFORMANCE FIX: Reduce context history from 10 to 3 messages for speed
+        recent_history = context.conversation_history[-3:] if context.conversation_history else []
         for msg in recent_history:
             if msg["role"] in ["user", "assistant"]:
                 messages.append({"role": msg["role"], "content": msg["content"]})
@@ -299,7 +299,7 @@ Always focus on practical next steps and clear deliverables."""
                 model=agent_config["model"],
                 messages=messages,
                 temperature=0.7,
-                max_tokens=1500,
+                max_tokens=1000,  # 🚀 REDUCED from 1500 for faster responses
                 top_p=0.9,
                 stream=False
             )
