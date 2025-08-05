@@ -276,19 +276,28 @@ async def quick_ai_response_legacy(request: ChatRequest):
 
 @router.post("/architecture/analyze")
 async def analyze_architectural_requirements(request: ChatRequest):
-    """Analyze architectural requirements for a given message/project"""
+    """Analyze architectural requirements for a given message/project with full intelligence"""
     
     try:
-        analysis = await enhanced_ai_service.architectural_intelligence.analyze_architectural_requirements(
+        analysis = await enhanced_ai_service.architectural_layer.analyze_before_response(
             request.message, 
-            context=[]  # Could be expanded to include project context
+            request.session_id or None,
+            {"user_id": request.user_id or "anonymous"}
         )
         
         return {
             "message": request.message,
-            "architectural_analysis": analysis,
+            "architectural_analysis": {
+                "architecture_patterns": analysis.architecture_patterns,
+                "scalability_analysis": analysis.scalability_analysis,
+                "performance_implications": analysis.performance_implications,
+                "long_term_roadmap": analysis.long_term_roadmap,
+                "cost_optimization": analysis.cost_optimization,
+                "security_considerations": analysis.security_considerations,
+                "intelligence_level": analysis.intelligence_level.value
+            },
             "timestamp": datetime.utcnow().isoformat(),
-            "intelligence_version": "v3_enhanced"
+            "intelligence_version": "v3_upgraded_full_intelligence"
         }
         
     except Exception as e:
