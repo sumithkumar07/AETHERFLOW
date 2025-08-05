@@ -15,43 +15,36 @@ logger = logging.getLogger(__name__)
 
 @router.get("/")
 async def get_templates(
-    category: Optional[str] = None,
-    featured: Optional[bool] = None,
-    search: Optional[str] = None,
-    limit: int = 20
+    category: Optional[str] = Query(None, description="Filter by category"),
+    search: Optional[str] = Query(None, description="Search query"),
+    difficulty: Optional[str] = Query(None, description="Filter by difficulty"),
+    limit: Optional[int] = Query(20, description="Limit results")
 ):
-    """Get available templates"""
+    """Get templates with enhanced filtering and search"""
     try:
-        db = await get_database()
+        # Use enhanced template library
+        if search or category or difficulty:
+            templates = enhanced_template_library.search_templates(
+                query=search,
+                category=category,
+                difficulty=difficulty
+            )
+        else:
+            templates = enhanced_template_library.get_all_templates()
         
-        # Check if templates collection has data, if not, seed it
-        template_count = await db.templates.count_documents({})
-        if template_count == 0:
-            await seed_templates(db)
-        
-        # Build query
-        query = {}
-        if category:
-            query["category"] = category
-        if featured is not None:
-            query["featured"] = featured
-        if search:
-            query["$text"] = {"$search": search}
-        
-        templates_cursor = db.templates.find(query).limit(limit)
-        templates = await templates_cursor.to_list(length=limit)
-        
-        for template in templates:
-            template["id"] = str(template["_id"])
-            template["_id"] = str(template["_id"])
+        # Apply limit
+        if limit:
+            templates = templates[:limit]
         
         return {
             "templates": templates,
-            "total": len(templates)
+            "total": len(enhanced_template_library.get_all_templates()),
+            "filtered": len(templates),
+            "categories": enhanced_template_library.get_categories()
         }
         
     except Exception as e:
-        logger.error(f"Templates fetch error: {e}")
+        logger.error(f"Template fetch error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch templates")
 
 @router.get("/categories")
