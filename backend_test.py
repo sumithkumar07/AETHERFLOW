@@ -1138,44 +1138,300 @@ class BackendTester:
         else:
             self.log_test("Agent Capabilities", "FAIL", "Agent capabilities endpoint failed", response.status_code if response else None)
         
-    def test_websocket_connection(self):
-        """Test WebSocket connection (basic connectivity test)"""
-        print("🔌 Testing WebSocket Connection...")
+    def test_enhanced_ai_v2_features(self):
+        """Test Enhanced AI v2 features with advanced capabilities"""
+        print("🚀 Testing Enhanced AI v2 Features...")
         
-        # Note: This is a basic test - full WebSocket testing would require websocket client
-        try:
-            import websocket
+        if not self.auth_token:
+            self.log_test("Enhanced AI v2 Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test 1: Advanced Chat with Multi-Agent Coordination
+        print("🤖 Testing Advanced Chat with Multi-Agent Coordination...")
+        advanced_chat_request = {
+            "message": "I need to build a comprehensive React todo application with user authentication, real-time updates, and mobile responsiveness. Please provide a complete solution with testing strategy.",
+            "model": "llama-3.1-70b-versatile",
+            "agent": "developer",
+            "project_id": "test_project_123",
+            "conversation_id": "conv_test_123",
+            "context": [
+                {"role": "user", "content": "Previous context about React development"},
+                {"role": "assistant", "content": "I can help with React development"}
+            ],
+            "preferences": {"detailed_responses": True, "include_examples": True},
+            "enable_coordination": True,
+            "multi_agent_mode": True
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/advanced-chat", advanced_chat_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            required_fields = ["response", "agent", "model_used", "suggestions", "agent_insights", 
+                             "next_actions", "collaboration_opportunities", "metadata", "conversation_id"]
             
-            def on_open(ws):
-                self.log_test("WebSocket Connection", "PASS", "WebSocket connection established")
-                ws.close()
+            if all(field in data for field in required_fields):
+                # Check for enhanced features
+                metadata = data.get("metadata", {})
+                if (metadata.get("advanced_processing_v2") and 
+                    "task_analysis" in metadata and 
+                    "tokens_used" in metadata):
+                    self.log_test("Advanced Chat with Multi-Agent Coordination", "PASS", 
+                                f"Enhanced AI response with {len(data.get('suggestions', []))} suggestions, "
+                                f"{len(data.get('next_actions', []))} next actions, "
+                                f"agent: {data.get('agent')}, tokens: {metadata.get('tokens_used')}", response.status_code)
+                else:
+                    self.log_test("Advanced Chat with Multi-Agent Coordination", "FAIL", 
+                                "Missing enhanced v2 features in metadata", response.status_code)
+            else:
+                missing_fields = [field for field in required_fields if field not in data]
+                self.log_test("Advanced Chat with Multi-Agent Coordination", "FAIL", 
+                            f"Missing required fields: {missing_fields}", response.status_code)
+        else:
+            self.log_test("Advanced Chat with Multi-Agent Coordination", "FAIL", 
+                        "Advanced chat endpoint failed", response.status_code if response else None)
+        
+        # Test 2: Multi-Agent Chat Workflow
+        print("🤝 Testing Multi-Agent Chat Workflow...")
+        multi_agent_request = {
+            "message": "Create a complete e-commerce platform with payment integration, inventory management, and admin dashboard",
+            "task_complexity": "complex",
+            "preferred_agents": ["developer", "designer", "tester", "integrator"],
+            "project_id": "ecommerce_project",
+            "conversation_id": "multi_agent_conv"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/multi-agent-chat", multi_agent_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("workflow_id" in data and "agents_assigned" in data and 
+                "coordination_plan" in data and "next_steps" in data):
+                workflow_id = data["workflow_id"]
+                agents_count = len(data["agents_assigned"])
+                self.log_test("Multi-Agent Chat Workflow", "PASS", 
+                            f"Workflow created: {workflow_id}, {agents_count} agents assigned", response.status_code)
+                
+                # Store workflow_id for coordination status test
+                self.test_workflow_id = workflow_id
+            else:
+                self.log_test("Multi-Agent Chat Workflow", "FAIL", 
+                            "Missing workflow coordination data", response.status_code)
+        else:
+            self.log_test("Multi-Agent Chat Workflow", "FAIL", 
+                        "Multi-agent chat endpoint failed", response.status_code if response else None)
+        
+        # Test 3: Coordination Status
+        if hasattr(self, 'test_workflow_id'):
+            print("📊 Testing Coordination Status...")
+            response = self.make_request("GET", f"/api/ai/v2/enhanced/coordination-status/{self.test_workflow_id}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if ("workflow_id" in data and "status" in data and "progress" in data):
+                    self.log_test("Coordination Status", "PASS", 
+                                f"Status: {data.get('status')}, Progress: {data.get('progress')}", response.status_code)
+                else:
+                    self.log_test("Coordination Status", "FAIL", 
+                                "Missing coordination status data", response.status_code)
+            else:
+                self.log_test("Coordination Status", "FAIL", 
+                            "Coordination status endpoint failed", response.status_code if response else None)
+        
+        # Test 4: Conversation Analysis
+        print("🔍 Testing Conversation Analysis...")
+        analysis_request = {
+            "conversation_id": "conv_test_123",
+            "analysis_depth": "deep"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/conversation-analysis", analysis_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("insights" in data and "suggested_actions" in data and "analysis_timestamp" in data):
+                insights_count = len(data.get("insights", {}))
+                actions_count = len(data.get("suggested_actions", []))
+                self.log_test("Conversation Analysis", "PASS", 
+                            f"Analysis completed with {insights_count} insights, {actions_count} suggested actions", response.status_code)
+            else:
+                self.log_test("Conversation Analysis", "FAIL", 
+                            "Missing conversation analysis data", response.status_code)
+        else:
+            self.log_test("Conversation Analysis", "FAIL", 
+                        "Conversation analysis endpoint failed", response.status_code if response else None)
+        
+        # Test 5: Intelligent Suggestions
+        print("💡 Testing Intelligent Suggestions...")
+        response = self.make_request("GET", "/api/ai/v2/enhanced/intelligent-suggestions?context=React development&agent=developer&complexity=high")
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("suggestions" in data and "user_context" in data and "generated_at" in data):
+                suggestions_count = len(data.get("suggestions", []))
+                self.log_test("Intelligent Suggestions", "PASS", 
+                            f"Generated {suggestions_count} intelligent suggestions", response.status_code)
+            else:
+                self.log_test("Intelligent Suggestions", "FAIL", 
+                            "Missing intelligent suggestions data", response.status_code)
+        else:
+            self.log_test("Intelligent Suggestions", "FAIL", 
+                        "Intelligent suggestions endpoint failed", response.status_code if response else None)
+        
+        # Test 6: Agent Capabilities
+        print("🎯 Testing Agent Capabilities...")
+        response = self.make_request("GET", "/api/ai/v2/enhanced/agent-capabilities")
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("agent_capabilities" in data and "total_agents" in data and "coordination_features" in data):
+                total_agents = data.get("total_agents", 0)
+                coordination_features = data.get("coordination_features", {})
+                enhanced_features_count = sum(1 for feature, enabled in coordination_features.items() if enabled)
+                self.log_test("Agent Capabilities", "PASS", 
+                            f"Found {total_agents} agents with {enhanced_features_count} coordination features", response.status_code)
+            else:
+                self.log_test("Agent Capabilities", "FAIL", 
+                            "Missing agent capabilities data", response.status_code)
+        else:
+            self.log_test("Agent Capabilities", "FAIL", 
+                        "Agent capabilities endpoint failed", response.status_code if response else None)
+
+    def test_enhanced_conversation_management(self):
+        """Test enhanced conversation management features"""
+        print("💬 Testing Enhanced Conversation Management...")
+        
+        if not self.auth_token:
+            self.log_test("Enhanced Conversation Management Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test conversation context enhancement through advanced chat
+        conversation_test_request = {
+            "message": "Help me optimize the performance of my React application. It's loading slowly and users are complaining.",
+            "model": "llama-3.1-70b-versatile",
+            "agent": "developer",
+            "conversation_id": "perf_optimization_conv",
+            "context": [
+                {"role": "user", "content": "I have a React app with performance issues"},
+                {"role": "assistant", "content": "I can help optimize React performance"}
+            ],
+            "enable_coordination": True
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/advanced-chat", conversation_test_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("conversation_quality" in data and "metadata" in data):
+                conversation_quality = data.get("conversation_quality", {})
+                if conversation_quality:
+                    self.log_test("Enhanced Conversation Context", "PASS", 
+                                f"Conversation quality assessment completed", response.status_code)
+                else:
+                    self.log_test("Enhanced Conversation Context", "FAIL", 
+                                "Empty conversation quality data", response.status_code)
+            else:
+                self.log_test("Enhanced Conversation Context", "FAIL", 
+                            "Missing conversation quality assessment", response.status_code)
+        else:
+            self.log_test("Enhanced Conversation Context", "FAIL", 
+                        "Enhanced conversation management failed", response.status_code if response else None)
+
+    def test_intelligent_agent_coordination(self):
+        """Test intelligent agent coordination system"""
+        print("🧠 Testing Intelligent Agent Coordination...")
+        
+        if not self.auth_token:
+            self.log_test("Intelligent Agent Coordination Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test complex task requiring multiple agents
+        complex_task_request = {
+            "message": "I need to build a complete SaaS platform with user management, subscription billing, real-time notifications, analytics dashboard, and mobile app. Include security best practices, scalability considerations, and comprehensive testing strategy.",
+            "task_complexity": "complex",
+            "preferred_agents": [],  # Let system choose optimal agents
+            "project_id": "saas_platform_project"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/multi-agent-chat", complex_task_request)
+        if response and response.status_code == 200:
+            data = response.json()
             
-            def on_error(ws, error):
-                self.log_test("WebSocket Connection", "FAIL", f"WebSocket error: {error}")
-            
-            ws = websocket.WebSocketApp(f"ws://localhost:8001/ws/test-client",
-                                      on_open=on_open,
-                                      on_error=on_error)
-            # Use a simple run with timeout handling
-            import threading
-            import time
-            
-            def run_ws():
-                ws.run_forever()
-            
-            thread = threading.Thread(target=run_ws)
-            thread.daemon = True
-            thread.start()
-            thread.join(timeout=5)
-            
-            if thread.is_alive():
-                ws.close()
-                self.log_test("WebSocket Connection", "FAIL", "WebSocket connection timeout")
-            
-        except ImportError:
-            self.log_test("WebSocket Connection", "SKIP", "websocket-client not installed")
-        except Exception as e:
-            self.log_test("WebSocket Connection", "FAIL", f"WebSocket test failed: {e}")
+            # Verify intelligent coordination features
+            if ("task_analysis" in data and "coordination_plan" in data and "agent_recommendation" in data):
+                task_analysis = data.get("task_analysis", {})
+                coordination_plan = data.get("coordination_plan", {})
+                
+                # Check task analysis quality
+                if ("complexity" in task_analysis and "required_skills" in task_analysis and 
+                    "collaborative" in task_analysis):
+                    complexity = task_analysis.get("complexity", 0)
+                    skills_count = len(task_analysis.get("required_skills", []))
+                    collaborative = task_analysis.get("collaborative", False)
+                    
+                    self.log_test("Task Requirement Analysis", "PASS", 
+                                f"Complexity: {complexity}, Skills: {skills_count}, Collaborative: {collaborative}", response.status_code)
+                else:
+                    self.log_test("Task Requirement Analysis", "FAIL", 
+                                "Incomplete task analysis", response.status_code)
+                
+                # Check coordination plan quality
+                if ("task_breakdown" in coordination_plan and "execution_order" in coordination_plan):
+                    task_breakdown = coordination_plan.get("task_breakdown", [])
+                    execution_order = coordination_plan.get("execution_order", [])
+                    
+                    self.log_test("Multi-Agent Workflow Coordination", "PASS", 
+                                f"Task breakdown: {len(task_breakdown)} phases, Execution order: {len(execution_order)} steps", response.status_code)
+                else:
+                    self.log_test("Multi-Agent Workflow Coordination", "FAIL", 
+                                "Incomplete coordination plan", response.status_code)
+            else:
+                self.log_test("Intelligent Agent Coordination", "FAIL", 
+                            "Missing coordination intelligence features", response.status_code)
+        else:
+            self.log_test("Intelligent Agent Coordination", "FAIL", 
+                        "Agent coordination system failed", response.status_code if response else None)
+
+    def test_enhanced_ai_error_handling(self):
+        """Test error handling and robustness of enhanced AI features"""
+        print("🛡️ Testing Enhanced AI Error Handling...")
+        
+        if not self.auth_token:
+            self.log_test("Enhanced AI Error Handling Test", "SKIP", "No authentication token available")
+            return
+        
+        # Test 1: Invalid conversation analysis request
+        invalid_analysis_request = {
+            "conversation_id": "non_existent_conversation",
+            "analysis_depth": "invalid_depth"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/conversation-analysis", invalid_analysis_request)
+        if response and response.status_code in [400, 404, 500]:
+            self.log_test("Invalid Conversation Analysis Handling", "PASS", 
+                        f"Properly handled invalid request", response.status_code)
+        else:
+            self.log_test("Invalid Conversation Analysis Handling", "FAIL", 
+                        "Did not handle invalid request properly", response.status_code if response else None)
+        
+        # Test 2: Invalid coordination status request
+        response = self.make_request("GET", "/api/ai/v2/enhanced/coordination-status/invalid_workflow_id")
+        if response and response.status_code in [400, 404, 500]:
+            self.log_test("Invalid Coordination Status Handling", "PASS", 
+                        f"Properly handled invalid workflow ID", response.status_code)
+        else:
+            self.log_test("Invalid Coordination Status Handling", "FAIL", 
+                        "Did not handle invalid workflow ID properly", response.status_code if response else None)
+        
+        # Test 3: Malformed advanced chat request
+        malformed_request = {
+            "message": "",  # Empty message
+            "model": "invalid_model",
+            "agent": "non_existent_agent"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v2/enhanced/advanced-chat", malformed_request)
+        if response and response.status_code in [400, 422, 500]:
+            self.log_test("Malformed Advanced Chat Handling", "PASS", 
+                        f"Properly handled malformed request", response.status_code)
+        else:
+            self.log_test("Malformed Advanced Chat Handling", "FAIL", 
+                        "Did not handle malformed request properly", response.status_code if response else None)
+
+    def test_websocket_connection(self):
         """Test WebSocket connection (basic connectivity test)"""
         print("🔌 Testing WebSocket Connection...")
         
