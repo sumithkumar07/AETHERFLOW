@@ -180,24 +180,11 @@ async def remove_agent_from_conversation(session_id: str, agent_role: str):
 
 @router.get("/agents/available")
 async def get_available_agents():
-    """Get list of all available AI agents with their capabilities"""
+    """Get list of all available AI agents with their enhanced capabilities including architectural intelligence"""
     
     try:
-        agents = []
-        
-        for role, config in enhanced_ai_service.agent_configs.items():
-            agents.append({
-                "role": role.value,
-                "name": config["name"],
-                "personality": config["personality"],
-                "capabilities": config["capabilities"],
-                "model": config["model"]
-            })
-        
-        return {
-            "agents": agents,
-            "total_agents": len(agents)
-        }
+        agents_data = await enhanced_ai_service.get_available_agents()
+        return agents_data
         
     except Exception as e:
         logger.error(f"Error getting available agents: {e}")
