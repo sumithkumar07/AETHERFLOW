@@ -13,7 +13,7 @@ import os
 from models.conversation import Conversation, Message, MessageRole
 from models.project import Project
 
-class EnhancedAIServiceV4:
+class EnhancedAIService:
     def __init__(self):
         self.groq_client = AsyncGroq(api_key=os.getenv('GROQ_API_KEY'))
         self.conversation_cache = {}
