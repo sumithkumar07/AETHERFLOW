@@ -564,7 +564,7 @@ Conversation history:
         conversation_id: str = None,
         model: str = None
     ) -> Dict[str, Any]:
-        """Process a message with enhanced AI capabilities"""
+        """Process a message with enhanced AI capabilities - OPTIMIZED FOR SPEED"""
         
         try:
             # Map agent string to AgentRole enum
@@ -593,11 +593,28 @@ Conversation history:
             # Process message with enhanced AI
             response = await self.enhance_conversation(session_id, message)
             
-            # Generate additional enhancements
-            suggestions = await self._generate_smart_suggestions(message, agent, response.get("content", ""))
-            agent_insights = await self._generate_agent_insights(agent_role, message)
-            next_actions = await self._generate_next_actions(message, response.get("content", ""))
-            collaboration_opportunities = await self._detect_collaboration_opportunities(message, agent_role)
+            # 🚀 PERFORMANCE FIX: Run enhancements in parallel instead of sequential
+            enhancement_tasks = [
+                self._generate_smart_suggestions(message, agent, response.get("content", "")),
+                self._generate_agent_insights(agent_role, message),
+                self._generate_next_actions(message, response.get("content", "")),
+                self._detect_collaboration_opportunities(message, agent_role)
+            ]
+            
+            # Execute all enhancements in parallel for speed
+            suggestions, agent_insights, next_actions, collaboration_opportunities = await asyncio.gather(
+                *enhancement_tasks, return_exceptions=True
+            )
+            
+            # Handle any exceptions in enhancements
+            if isinstance(suggestions, Exception):
+                suggestions = []
+            if isinstance(agent_insights, Exception):
+                agent_insights = []
+            if isinstance(next_actions, Exception):
+                next_actions = []
+            if isinstance(collaboration_opportunities, Exception):
+                collaboration_opportunities = []
             
             return {
                 "response": response.get("content", "I apologize, but I'm having trouble processing your request right now."),
@@ -612,7 +629,8 @@ Conversation history:
                     "session_id": session_id,
                     "agent_role": agent_role.value,
                     "enhanced_processing": True,
-                    "response_type": response.get("type", "single_agent")
+                    "response_type": response.get("type", "single_agent"),
+                    "optimized_for_speed": True
                 }
             }
             
