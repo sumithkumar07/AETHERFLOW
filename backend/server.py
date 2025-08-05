@@ -55,6 +55,7 @@ from routes.persistent_memory import router as persistent_memory_router
 from routes.git_cicd_enhanced import router as git_cicd_enhanced_router
 from routes.enhanced_templates_expanded import router as enhanced_templates_expanded_router  
 from routes.conversational_debugging_enhanced import router as conversational_debugging_enhanced_router
+from routes.competitive_features_api import router as competitive_features_api_router
 
 from models.database import init_db
 
