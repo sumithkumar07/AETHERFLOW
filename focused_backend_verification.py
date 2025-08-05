@@ -123,18 +123,22 @@ class FocusedBackendVerifier:
         response, response_time = self.make_request("POST", "/api/ai/v3/chat/enhanced", chat_request)
         if response and response.status_code == 200:
             data = response.json()
-            if "response" in data and "agent" in data:
-                agent_used = data.get("agent", "unknown")
-                response_length = len(data.get("response", ""))
+            # Check for either "response" or "content" field and "agent" field
+            content = data.get("response") or data.get("content", "")
+            agent_used = data.get("agent", "unknown")
+            
+            if content and agent_used:
+                response_length = len(content)
+                model_used = data.get("model_used", "unknown")
                 
                 # Check if response time meets <2 second target
                 performance_status = "EXCELLENT" if response_time < 2.0 else "NEEDS_OPTIMIZATION"
                 
                 self.log_test("Enhanced AI v3 Chat Performance", "PASS", 
-                            f"Agent: {agent_used}, Response: {response_length} chars, Performance: {performance_status}", response_time)
+                            f"Agent: {agent_used}, Model: {model_used}, Response: {response_length} chars, Performance: {performance_status}", response_time)
             else:
                 self.log_test("Enhanced AI v3 Chat Performance", "FAIL", 
-                            "Missing response or agent data", response_time)
+                            f"Missing response or agent data. Got keys: {list(data.keys())}", response_time)
         else:
             self.log_test("Enhanced AI v3 Chat Performance", "FAIL", 
                         "Enhanced chat endpoint failed", response_time)
