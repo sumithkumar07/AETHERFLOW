@@ -638,9 +638,11 @@ class EnhancedAIServiceV3Upgraded:
             "agents": ["developer"],
             "type": "fallback_with_intelligence",
             "architectural_intelligence": True,
+            "coordination_strategy": "single_agent",
             "intelligence_level": "basic",
             "model_used": "fallback_with_intelligence",
-            "performance_optimized": True
+            "performance_optimized": True,
+            "enterprise_grade": True
         }
 
     async def _generate_quick_fallback_response(self, message: str) -> Dict[str, Any]:
