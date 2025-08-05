@@ -6,7 +6,7 @@ import asyncio
 import uuid
 import json
 import difflib
-from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
+from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3Upgraded
 from models.database import get_database
 from routes.auth import get_current_user
 
@@ -47,7 +47,7 @@ class LiveCollaboration(BaseModel):
 
 class VSCodeIntegration:
     def __init__(self):
-        self.ai_service = EnhancedAIServiceV3()
+        self.ai_service = EnhancedAIServiceV3Upgraded()
         self.active_sessions: Dict[str, Dict] = {}
         self.websocket_connections: Dict[str, WebSocket] = {}
         
