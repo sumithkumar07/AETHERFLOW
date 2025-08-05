@@ -5,13 +5,14 @@ import uuid
 import logging
 from datetime import datetime
 
-from services.enhanced_ai_service_v2 import EnhancedAIServiceV2, AgentRole, ConversationContext
+from services.enhanced_ai_service_v3 import EnhancedAIServiceV3, AgentRole
+from services.enhanced_ai_service_v2 import ConversationContext
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Initialize the enhanced AI service V2 with performance optimizations
-enhanced_ai_service = EnhancedAIServiceV2()
+# Initialize the enhanced AI service V3 with performance optimizations
+enhanced_ai_service = EnhancedAIServiceV3()
 
 class ChatRequest(BaseModel):
     message: str
