@@ -204,7 +204,30 @@ async def get_available_agents():
         raise HTTPException(status_code=500, detail=f"Failed to get available agents: {str(e)}")
 
 @router.post("/chat/quick-response")
-async def quick_ai_response(request: ChatRequest):
+async def quick_ai_response_with_intelligence(request: ChatRequest):
+    """Quick AI response with architectural intelligence - ULTRA OPTIMIZED FOR <2s TARGET"""
+    
+    try:
+        # Generate quick response with lightweight architectural intelligence
+        response = await enhanced_ai_service.quick_response_with_intelligence(request.message)
+        
+        return ChatResponse(
+            content=response["content"],
+            session_id=f"quick_{uuid.uuid4().hex[:8]}",
+            agent=response.get("agent"),
+            agent_role=response.get("agent_role"),
+            agents=response.get("agents", []),
+            type=response.get("type", "quick_response_with_intelligence"),
+            timestamp=datetime.utcnow().isoformat(),
+            model_used=response.get("model_used")
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in ULTRA FAST quick AI response with intelligence: {e}")
+        raise HTTPException(status_code=500, detail=f"Quick AI response with intelligence failed: {str(e)}")
+
+@router.post("/chat/quick-response-legacy")
+async def quick_ai_response_legacy(request: ChatRequest):
     """Quick AI response without session management - ULTRA OPTIMIZED FOR <2s TARGET"""
     
     try:
