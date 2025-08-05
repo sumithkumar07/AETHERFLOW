@@ -482,13 +482,15 @@ class EnhancedAIServiceV3Upgraded:
             active_agents=[AgentRole.DEVELOPER],  # Default agent
             conversation_history=[],
             collaboration_mode=False,
-            project_id=project_id,
-            intelligence_context={
-                "architectural_preferences": [],
-                "scale_indicators": [],
-                "learning_velocity": 0.5
-            }
+            project_id=project_id
         )
+        
+        # Add intelligence context separately
+        self.conversation_contexts[session_id].intelligence_context = {
+            "architectural_preferences": [],
+            "scale_indicators": [],
+            "learning_velocity": 0.5
+        }
 
     async def _update_conversation_context(
         self, 
