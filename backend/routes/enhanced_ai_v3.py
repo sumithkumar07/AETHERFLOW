@@ -39,7 +39,7 @@ class ConversationSummaryResponse(BaseModel):
 
 @router.post("/chat/enhanced", response_model=ChatResponse)
 async def enhanced_ai_chat(request: ChatRequest):
-    """Enhanced AI chat with multi-agent coordination and intelligent conversation management"""
+    """Enhanced AI chat with full intelligence integration and multi-agent coordination"""
     
     try:
         # Generate session ID if not provided
@@ -55,11 +55,12 @@ async def enhanced_ai_chat(request: ChatRequest):
                 initial_context=request.message
             )
         
-        # Process the message with enhanced AI V3 with architectural intelligence
+        # Process the message with UPGRADED enhanced AI V3 with full intelligence integration
         response = await enhanced_ai_service.enhance_conversation(
             session_id=session_id,
             user_message=request.message,
-            include_context=request.include_context
+            include_context=request.include_context,
+            user_id=user_id  # Pass user_id for personalized intelligence
         )
         
         return ChatResponse(
@@ -68,14 +69,14 @@ async def enhanced_ai_chat(request: ChatRequest):
             agent=response.get("agent"),
             agent_role=response.get("agent_role"),
             agents=response.get("agents", []),
-            type=response.get("type", "single_agent"),
+            type=response.get("type", "architecturally_enhanced_with_full_intelligence"),
             timestamp=datetime.utcnow().isoformat(),
             model_used=response.get("model_used")
         )
         
     except Exception as e:
-        logger.error(f"Error in enhanced AI chat: {e}")
-        raise HTTPException(status_code=500, detail=f"Enhanced AI chat failed: {str(e)}")
+        logger.error(f"UPGRADED Enhanced AI chat failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Enhanced AI chat with full intelligence failed: {str(e)}")
 
 @router.get("/chat/{session_id}/summary", response_model=ConversationSummaryResponse)
 async def get_conversation_summary(session_id: str):
