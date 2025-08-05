@@ -1,936 +1,767 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any, Union
-from datetime import datetime, timedelta
-import asyncio
+from fastapi import APIRouter, HTTPException, Depends
+from typing import List, Dict, Optional, Any
 import uuid
-import json
-from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
-from models.database import get_database
-from routes.auth import get_current_user
+from datetime import datetime
+import logging
+from pydantic import BaseModel
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# Enhanced Models for Template System
 class TemplateCategory(BaseModel):
     id: str
     name: str
     description: str
     icon: str
+    color: str
     template_count: int
 
-class Template(BaseModel):
+class TemplateAuthor(BaseModel):
+    id: str
+    name: str
+    avatar: str
+    bio: str
+    verified: bool
+    social_links: Dict[str, str]
+
+class TemplateMetrics(BaseModel):
+    downloads: int
+    rating: float
+    reviews_count: int
+    stars: int
+    forks: int
+    last_updated: datetime
+
+class EnhancedTemplate(BaseModel):
     id: str
     name: str
     description: str
-    category: str
+    long_description: str
+    category_id: str
+    author: TemplateAuthor
+    tags: List[str]
     tech_stack: List[str]
     difficulty: str  # beginner, intermediate, advanced, expert
-    estimated_time: str
-    features: List[str]
+    estimated_setup_time: str  # "5-10 minutes", "30-60 minutes", etc.
+    metrics: TemplateMetrics
     preview_images: List[str]
-    github_url: Optional[str]
-    demo_url: Optional[str]
-    download_count: int
-    rating: float
-    tags: List[str]
+    live_demo_url: Optional[str] = None
+    github_url: Optional[str] = None
+    documentation_url: Optional[str] = None
+    features: List[str]
+    requirements: List[str]
+    installation_steps: List[str]
+    is_featured: bool = False
+    is_pro: bool = False
+    price: Optional[float] = None
     created_at: datetime
     updated_at: datetime
-    creator: str
 
-class TemplateFile(BaseModel):
-    path: str
-    content: str
-    type: str  # file, directory
-    language: Optional[str]
-
-class ProjectTemplate(BaseModel):
-    id: str
-    template_id: str
-    user_id: str
-    project_name: str
-    customizations: Dict[str, Any]
-    files: List[TemplateFile]
-    status: str  # generating, ready, error
-    created_at: datetime
-
-class EnhancedTemplateService:
+# Enhanced Template System
+class EnhancedTemplateEngine:
     def __init__(self):
-        self.ai_service = EnhancedAIServiceV3()
+        # Initialize categories
+        self.categories = self._initialize_categories()
         
-    async def initialize_templates(self) -> List[Template]:
-        """Initialize comprehensive template library"""
-        try:
-            templates = [
-                # Web Applications
-                Template(
-                    id="react-ts-starter",
-                    name="React TypeScript Starter",
-                    description="Modern React application with TypeScript, Tailwind CSS, and essential development tools",
-                    category="web-apps",
-                    tech_stack=["React", "TypeScript", "Tailwind CSS", "Vite", "ESLint", "Prettier"],
-                    difficulty="beginner",
-                    estimated_time="15-30 minutes",
-                    features=["Hot reload", "TypeScript support", "Responsive design", "Dark mode", "Component library"],
-                    preview_images=["/templates/react-ts-preview.png"],
-                    download_count=1250,
-                    rating=4.8,
-                    tags=["react", "typescript", "frontend", "modern"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                Template(
-                    id="vue-nuxt-app",
-                    name="Vue.js with Nuxt.js",
-                    description="Full-stack Vue application with Nuxt.js for SSR and modern development",
-                    category="web-apps",
-                    tech_stack=["Vue.js", "Nuxt.js", "TypeScript", "Pinia", "Tailwind CSS"],
-                    difficulty="intermediate",
-                    estimated_time="30-45 minutes",
-                    features=["Server-side rendering", "Auto-routing", "State management", "SEO optimized"],
-                    preview_images=["/templates/vue-nuxt-preview.png"],
-                    download_count=890,
-                    rating=4.7,
-                    tags=["vue", "nuxt", "ssr", "typescript"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                Template(
-                    id="angular-material",
-                    name="Angular with Material Design",
-                    description="Enterprise Angular application with Material UI and best practices",
-                    category="web-apps",
-                    tech_stack=["Angular", "Angular Material", "TypeScript", "RxJS", "NgRx"],
-                    difficulty="advanced",
-                    estimated_time="45-60 minutes",
-                    features=["Material Design", "State management", "Reactive programming", "Enterprise patterns"],
-                    preview_images=["/templates/angular-material-preview.png"],
-                    download_count=654,
-                    rating=4.6,
-                    tags=["angular", "material", "enterprise", "typescript"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # E-commerce
-                Template(
-                    id="nextjs-ecommerce",
-                    name="Next.js E-commerce Store",
-                    description="Complete e-commerce solution with Next.js, Stripe integration, and admin panel",
-                    category="e-commerce",
-                    tech_stack=["Next.js", "React", "Stripe", "Prisma", "Tailwind CSS", "NextAuth"],
-                    difficulty="expert",
-                    estimated_time="2-3 hours",
-                    features=["Payment processing", "Admin dashboard", "Product management", "User authentication", "Order tracking"],
-                    preview_images=["/templates/nextjs-ecommerce-preview.png"],
-                    download_count=2150,
-                    rating=4.9,
-                    tags=["ecommerce", "stripe", "nextjs", "fullstack"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Mobile Apps
-                Template(
-                    id="react-native-starter",
-                    name="React Native App",
-                    description="Cross-platform mobile app with React Native and modern navigation",
-                    category="mobile",
-                    tech_stack=["React Native", "TypeScript", "React Navigation", "Redux Toolkit", "Expo"],
-                    difficulty="intermediate",
-                    estimated_time="45-60 minutes",
-                    features=["Cross-platform", "Navigation", "State management", "Push notifications"],
-                    preview_images=["/templates/react-native-preview.png"],
-                    download_count=1876,
-                    rating=4.7,
-                    tags=["mobile", "react-native", "cross-platform"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                Template(
-                    id="flutter-app",
-                    name="Flutter Mobile App",
-                    description="Beautiful Flutter application with Material Design and state management",
-                    category="mobile",
-                    tech_stack=["Flutter", "Dart", "Provider", "Material Design", "Firebase"],
-                    difficulty="intermediate",
-                    estimated_time="45-60 minutes",
-                    features=["Material Design", "State management", "Firebase integration", "Responsive UI"],
-                    preview_images=["/templates/flutter-preview.png"],
-                    download_count=1432,
-                    rating=4.6,
-                    tags=["flutter", "dart", "mobile", "firebase"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Backend APIs
-                Template(
-                    id="fastapi-microservice",
-                    name="FastAPI Microservice",
-                    description="Production-ready FastAPI microservice with authentication, database, and documentation",
-                    category="backend",
-                    tech_stack=["FastAPI", "Python", "PostgreSQL", "Docker", "JWT", "SQLAlchemy"],
-                    difficulty="advanced",
-                    estimated_time="60-90 minutes",
-                    features=["JWT authentication", "Database ORM", "API documentation", "Docker deployment", "Testing suite"],
-                    preview_images=["/templates/fastapi-preview.png"],
-                    download_count=3241,
-                    rating=4.8,
-                    tags=["api", "fastapi", "microservice", "python"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                Template(
-                    id="nodejs-graphql",
-                    name="Node.js GraphQL API",
-                    description="Scalable GraphQL API with Node.js, Apollo Server, and MongoDB",
-                    category="backend",
-                    tech_stack=["Node.js", "GraphQL", "Apollo Server", "MongoDB", "TypeScript", "Express"],
-                    difficulty="advanced",
-                    estimated_time="60-90 minutes",
-                    features=["GraphQL schema", "Real-time subscriptions", "Database integration", "Type safety"],
-                    preview_images=["/templates/nodejs-graphql-preview.png"],
-                    download_count=1987,
-                    rating=4.7,
-                    tags=["nodejs", "graphql", "apollo", "mongodb"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # AI/ML Templates
-                Template(
-                    id="python-ml-pipeline",
-                    name="Python ML Pipeline",
-                    description="Complete machine learning pipeline with data processing, training, and deployment",
-                    category="ai-ml",
-                    tech_stack=["Python", "Scikit-learn", "Pandas", "NumPy", "Jupyter", "Docker"],
-                    difficulty="expert",
-                    estimated_time="2-3 hours",
-                    features=["Data preprocessing", "Model training", "Evaluation metrics", "Deployment ready"],
-                    preview_images=["/templates/ml-pipeline-preview.png"],
-                    download_count=876,
-                    rating=4.5,
-                    tags=["machine-learning", "python", "data-science"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # DevOps
-                Template(
-                    id="kubernetes-deployment",
-                    name="Kubernetes Deployment",
-                    description="Complete Kubernetes deployment with CI/CD, monitoring, and scaling",
-                    category="devops",
-                    tech_stack=["Kubernetes", "Docker", "Helm", "Prometheus", "Grafana", "GitHub Actions"],
-                    difficulty="expert",
-                    estimated_time="3-4 hours",
-                    features=["Auto-scaling", "Monitoring", "CI/CD pipeline", "Load balancing"],
-                    preview_images=["/templates/kubernetes-preview.png"],
-                    download_count=543,
-                    rating=4.4,
-                    tags=["kubernetes", "devops", "deployment", "monitoring"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Content Management
-                Template(
-                    id="strapi-cms",
-                    name="Strapi Headless CMS",
-                    description="Headless CMS with Strapi, custom content types, and API generation",
-                    category="cms",
-                    tech_stack=["Strapi", "Node.js", "React", "PostgreSQL", "GraphQL"],
-                    difficulty="intermediate",
-                    estimated_time="45-60 minutes",
-                    features=["Content management", "REST & GraphQL APIs", "Admin panel", "Role-based access"],
-                    preview_images=["/templates/strapi-preview.png"],
-                    download_count=1234,
-                    rating=4.6,
-                    tags=["cms", "strapi", "headless", "content"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Analytics & Dashboards
-                Template(
-                    id="react-analytics-dashboard",
-                    name="Analytics Dashboard",
-                    description="Modern analytics dashboard with charts, real-time data, and responsive design",
-                    category="analytics",
-                    tech_stack=["React", "D3.js", "Chart.js", "Material-UI", "WebSocket", "Express"],
-                    difficulty="advanced",
-                    estimated_time="90-120 minutes",
-                    features=["Real-time charts", "Data visualization", "Responsive design", "Export functionality"],
-                    preview_images=["/templates/analytics-dashboard-preview.png"],
-                    download_count=1654,
-                    rating=4.8,
-                    tags=["analytics", "dashboard", "charts", "visualization"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Productivity Tools
-                Template(
-                    id="task-management-app",
-                    name="Task Management System",
-                    description="Complete task management application with teams, projects, and collaboration",
-                    category="productivity",
-                    tech_stack=["React", "Node.js", "MongoDB", "Socket.io", "Material-UI", "JWT"],
-                    difficulty="advanced",
-                    estimated_time="2-3 hours",
-                    features=["Team collaboration", "Project management", "Real-time updates", "File attachments"],
-                    preview_images=["/templates/task-management-preview.png"],
-                    download_count=2876,
-                    rating=4.7,
-                    tags=["productivity", "collaboration", "management", "real-time"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Blog Platforms
-                Template(
-                    id="gatsby-blog",
-                    name="Gatsby Blog Platform",
-                    description="Static blog with Gatsby, MDX support, and optimized performance",
-                    category="blog",
-                    tech_stack=["Gatsby", "React", "GraphQL", "MDX", "Tailwind CSS", "Netlify CMS"],
-                    difficulty="intermediate",
-                    estimated_time="60-90 minutes",
-                    features=["Static generation", "MDX support", "SEO optimized", "CMS integration"],
-                    preview_images=["/templates/gatsby-blog-preview.png"],
-                    download_count=1543,
-                    rating=4.6,
-                    tags=["blog", "gatsby", "static", "mdx"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Fintech
-                Template(
-                    id="fintech-dashboard",
-                    name="Fintech Dashboard",
-                    description="Financial dashboard with real-time market data, portfolio tracking, and analytics",
-                    category="fintech",
-                    tech_stack=["React", "TypeScript", "D3.js", "WebSocket", "Express", "Redis"],
-                    difficulty="expert",
-                    estimated_time="3-4 hours",
-                    features=["Real-time data", "Portfolio tracking", "Risk analytics", "Trading interface"],
-                    preview_images=["/templates/fintech-dashboard-preview.png"],
-                    download_count=987,
-                    rating=4.9,
-                    tags=["fintech", "finance", "trading", "analytics"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # SaaS Starters
-                Template(
-                    id="saas-starter-kit",
-                    name="SaaS Starter Kit",
-                    description="Complete SaaS application with authentication, billing, and multi-tenancy",
-                    category="saas",
-                    tech_stack=["Next.js", "React", "Stripe", "Prisma", "NextAuth", "Tailwind CSS"],
-                    difficulty="expert",
-                    estimated_time="4-5 hours",
-                    features=["User authentication", "Subscription billing", "Multi-tenancy", "Admin dashboard"],
-                    preview_images=["/templates/saas-starter-preview.png"],
-                    download_count=3456,
-                    rating=4.9,
-                    tags=["saas", "billing", "authentication", "multi-tenant"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Real-time Applications
-                Template(
-                    id="realtime-chat-app",
-                    name="Real-time Chat Application",
-                    description="Modern chat application with real-time messaging, file sharing, and video calls",
-                    category="real-time",
-                    tech_stack=["React", "Socket.io", "Node.js", "WebRTC", "MongoDB", "Material-UI"],
-                    difficulty="advanced",
-                    estimated_time="2-3 hours",
-                    features=["Real-time messaging", "File sharing", "Video calls", "Group chats"],
-                    preview_images=["/templates/chat-app-preview.png"],
-                    download_count=2134,
-                    rating=4.8,
-                    tags=["chat", "real-time", "webrtc", "messaging"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Gaming
-                Template(
-                    id="web-game-engine",
-                    name="Web Game Engine",
-                    description="2D game engine with physics, audio, and multiplayer support",
-                    category="gaming",
-                    tech_stack=["JavaScript", "Canvas API", "WebGL", "Socket.io", "Web Audio API"],
-                    difficulty="expert",
-                    estimated_time="4-6 hours",
-                    features=["2D physics", "Audio system", "Multiplayer", "Asset management"],
-                    preview_images=["/templates/game-engine-preview.png"],
-                    download_count=765,
-                    rating=4.5,
-                    tags=["gaming", "engine", "multiplayer", "webgl"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # IoT
-                Template(
-                    id="iot-dashboard",
-                    name="IoT Device Dashboard",
-                    description="IoT device management dashboard with real-time monitoring and control",
-                    category="iot",
-                    tech_stack=["React", "MQTT", "InfluxDB", "Grafana", "Node.js", "WebSocket"],
-                    difficulty="expert",
-                    estimated_time="3-4 hours",
-                    features=["Device monitoring", "Real-time data", "Control interface", "Alert system"],
-                    preview_images=["/templates/iot-dashboard-preview.png"],
-                    download_count=432,
-                    rating=4.4,
-                    tags=["iot", "monitoring", "mqtt", "real-time"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Blockchain
-                Template(
-                    id="defi-dapp",
-                    name="DeFi DApp",
-                    description="Decentralized finance application with smart contracts and Web3 integration",
-                    category="blockchain",
-                    tech_stack=["React", "Solidity", "Web3.js", "Hardhat", "IPFS", "MetaMask"],
-                    difficulty="expert",
-                    estimated_time="5-6 hours",
-                    features=["Smart contracts", "Wallet integration", "Token swapping", "Yield farming"],
-                    preview_images=["/templates/defi-dapp-preview.png"],
-                    download_count=345,
-                    rating=4.3,
-                    tags=["blockchain", "defi", "web3", "smart-contracts"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Learning Management
-                Template(
-                    id="lms-platform",
-                    name="Learning Management System",
-                    description="Complete LMS with courses, assessments, and progress tracking",
-                    category="education",
-                    tech_stack=["React", "Node.js", "MongoDB", "Video.js", "Socket.io", "JWT"],
-                    difficulty="expert",
-                    estimated_time="4-5 hours",
-                    features=["Course management", "Video streaming", "Assessments", "Progress tracking"],
-                    preview_images=["/templates/lms-preview.png"],
-                    download_count=1876,
-                    rating=4.7,
-                    tags=["education", "lms", "courses", "learning"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Healthcare
-                Template(
-                    id="telehealth-platform",
-                    name="Telehealth Platform",
-                    description="HIPAA-compliant telehealth platform with video consultations and patient management",
-                    category="healthcare",
-                    tech_stack=["React", "Node.js", "WebRTC", "PostgreSQL", "JWT", "Stripe"],
-                    difficulty="expert",
-                    estimated_time="5-6 hours",
-                    features=["Video consultations", "Patient records", "Appointment scheduling", "HIPAA compliance"],
-                    preview_images=["/templates/telehealth-preview.png"],
-                    download_count=654,
-                    rating=4.6,
-                    tags=["healthcare", "telehealth", "hipaa", "webrtc"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                ),
-                
-                # Security
-                Template(
-                    id="security-audit-tool",
-                    name="Security Audit Tool",
-                    description="Comprehensive security audit tool with vulnerability scanning and reporting",
-                    category="security",
-                    tech_stack=["Python", "Flask", "PostgreSQL", "Celery", "Redis", "Docker"],
-                    difficulty="expert",
-                    estimated_time="4-5 hours",
-                    features=["Vulnerability scanning", "Security reports", "Compliance checks", "Risk assessment"],
-                    preview_images=["/templates/security-audit-preview.png"],
-                    download_count=321,
-                    rating=4.5,
-                    tags=["security", "audit", "vulnerability", "compliance"],
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                    creator="Aether AI"
-                )
-            ]
-            
-            # Store templates in database
-            db = await get_database()
-            
-            # Clear existing templates
-            await db.templates.delete_many({})
-            
-            # Insert new templates
-            template_dicts = [template.dict() for template in templates]
-            await db.templates.insert_many(template_dicts)
-            
-            return templates
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Template initialization failed: {str(e)}")
-    
-    async def get_template_categories(self) -> List[TemplateCategory]:
-        """Get all template categories with counts"""
-        try:
-            categories = [
-                TemplateCategory(id="web-apps", name="Web Applications", description="Modern web applications and SPAs", icon="🌐", template_count=3),
-                TemplateCategory(id="e-commerce", name="E-commerce", description="Online stores and marketplaces", icon="🛒", template_count=1),
-                TemplateCategory(id="mobile", name="Mobile Apps", description="Cross-platform mobile applications", icon="📱", template_count=2),
-                TemplateCategory(id="backend", name="Backend APIs", description="RESTful and GraphQL APIs", icon="⚙️", template_count=2),
-                TemplateCategory(id="ai-ml", name="AI & Machine Learning", description="ML pipelines and AI applications", icon="🤖", template_count=1),
-                TemplateCategory(id="devops", name="DevOps", description="Deployment and infrastructure", icon="🚀", template_count=1),
-                TemplateCategory(id="cms", name="Content Management", description="CMS and content platforms", icon="📝", template_count=1),
-                TemplateCategory(id="analytics", name="Analytics", description="Dashboards and data visualization", icon="📊", template_count=1),
-                TemplateCategory(id="productivity", name="Productivity", description="Task and project management", icon="✅", template_count=1),
-                TemplateCategory(id="blog", name="Blogs & Content", description="Blog platforms and content sites", icon="📰", template_count=1),
-                TemplateCategory(id="fintech", name="Fintech", description="Financial and trading applications", icon="💰", template_count=1),
-                TemplateCategory(id="saas", name="SaaS Starters", description="Software as a Service platforms", icon="☁️", template_count=1),
-                TemplateCategory(id="real-time", name="Real-time Apps", description="Chat and live applications", icon="⚡", template_count=1),
-                TemplateCategory(id="gaming", name="Gaming", description="Game engines and interactive apps", icon="🎮", template_count=1),
-                TemplateCategory(id="iot", name="IoT", description="Internet of Things dashboards", icon="🔗", template_count=1),
-                TemplateCategory(id="blockchain", name="Blockchain", description="Web3 and DeFi applications", icon="⛓️", template_count=1),
-                TemplateCategory(id="education", name="Education", description="Learning management systems", icon="🎓", template_count=1),
-                TemplateCategory(id="healthcare", name="Healthcare", description="Medical and health platforms", icon="🏥", template_count=1),
-                TemplateCategory(id="security", name="Security", description="Security and audit tools", icon="🔒", template_count=1)
-            ]
-            
-            return categories
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Category retrieval failed: {str(e)}")
-    
-    async def generate_custom_template(self, requirements: Dict[str, Any], user_id: str) -> ProjectTemplate:
-        """Generate custom template based on user requirements"""
-        try:
-            template_id = str(uuid.uuid4())
-            
-            # Generate template using AI
-            generation_prompt = f"""
-            Generate a custom project template based on these requirements:
-            
-            **Requirements**: {json.dumps(requirements, indent=2)}
-            
-            Create:
-            1. Project structure with files and folders
-            2. Package.json or requirements.txt
-            3. Configuration files
-            4. Sample code for main features
-            5. README with setup instructions
-            6. Docker configuration if needed
-            
-            Make it production-ready and well-documented.
-            """
-            
-            ai_response = await self.ai_service.process_enhanced_chat(
-                message=generation_prompt,
-                conversation_id=f"template_gen_{template_id}",
-                user_id=user_id,
-                agent_coordination="collaborative"
-            )
-            
-            # Generate template files
-            files = await self._generate_template_files(requirements, ai_response)
-            
-            project_template = ProjectTemplate(
-                id=template_id,
-                template_id="custom",
-                user_id=user_id,
-                project_name=requirements.get("name", "Custom Project"),
-                customizations=requirements,
-                files=files,
-                status="ready",
-                created_at=datetime.utcnow()
-            )
-            
-            # Store in database
-            db = await get_database()
-            await db.project_templates.insert_one(project_template.dict())
-            
-            return project_template
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Custom template generation failed: {str(e)}")
-    
-    async def customize_template(self, template_id: str, customizations: Dict[str, Any], user_id: str) -> ProjectTemplate:
-        """Customize existing template with user preferences"""
-        try:
-            db = await get_database()
-            
-            # Get base template
-            base_template = await db.templates.find_one({"id": template_id})
-            if not base_template:
-                raise HTTPException(status_code=404, detail="Template not found")
-            
-            project_id = str(uuid.uuid4())
-            
-            # Generate customized project files
-            customization_prompt = f"""
-            Customize this template with user preferences:
-            
-            **Base Template**: {base_template['name']}
-            **Tech Stack**: {base_template['tech_stack']}
-            **Customizations**: {json.dumps(customizations, indent=2)}
-            
-            Apply customizations to:
-            1. Project name and branding
-            2. Color scheme and styling
-            3. Feature selection
-            4. Database choice
-            5. Deployment configuration
-            
-            Generate modified files with customizations applied.
-            """
-            
-            ai_response = await self.ai_service.process_enhanced_chat(
-                message=customization_prompt,
-                conversation_id=f"customize_{project_id}",
-                user_id=user_id,
-                agent_coordination="single"
-            )
-            
-            # Generate customized files
-            files = await self._apply_template_customizations(base_template, customizations)
-            
-            project_template = ProjectTemplate(
-                id=project_id,
-                template_id=template_id,
-                user_id=user_id,
-                project_name=customizations.get("project_name", base_template["name"]),
-                customizations=customizations,
-                files=files,
-                status="ready",
-                created_at=datetime.utcnow()
-            )
-            
-            # Store customized template
-            await db.project_templates.insert_one(project_template.dict())
-            
-            return project_template
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Template customization failed: {str(e)}")
-    
-    # Helper methods
-    async def _generate_template_files(self, requirements: Dict[str, Any], ai_response: Dict[str, Any]) -> List[TemplateFile]:
-        """Generate template files based on requirements"""
-        files = []
+        # Initialize enhanced template library
+        self.templates = self._initialize_enhanced_templates()
         
-        # Basic project structure based on requirements
-        project_type = requirements.get("type", "web-app")
-        
-        if project_type == "web-app":
-            files.extend([
-                TemplateFile(path="package.json", content=self._generate_package_json(requirements), type="file", language="json"),
-                TemplateFile(path="src/", content="", type="directory"),
-                TemplateFile(path="src/index.js", content=self._generate_index_js(requirements), type="file", language="javascript"),
-                TemplateFile(path="src/App.js", content=self._generate_app_js(requirements), type="file", language="javascript"),
-                TemplateFile(path="public/", content="", type="directory"),
-                TemplateFile(path="public/index.html", content=self._generate_index_html(requirements), type="file", language="html"),
-                TemplateFile(path="README.md", content=self._generate_readme(requirements), type="file", language="markdown"),
-                TemplateFile(path=".gitignore", content=self._generate_gitignore(), type="file")
-            ])
-        
-        return files
+        # Template usage analytics
+        self.usage_stats = {}
     
-    async def _apply_template_customizations(self, base_template: Dict[str, Any], customizations: Dict[str, Any]) -> List[TemplateFile]:
-        """Apply customizations to base template"""
-        # This would load the actual template files and apply customizations
-        # For now, return basic structure
-        files = [
-            TemplateFile(
-                path="README.md",
-                content=f"# {customizations.get('project_name', base_template['name'])}\n\nCustomized project based on {base_template['name']} template.",
-                type="file",
-                language="markdown"
+    def _initialize_categories(self) -> Dict[str, TemplateCategory]:
+        """Initialize template categories"""
+        categories = {
+            "web_apps": TemplateCategory(
+                id="web_apps",
+                name="Web Applications",
+                description="Full-stack web applications with modern frameworks",
+                icon="🌐",
+                color="blue",
+                template_count=8
             ),
-            TemplateFile(
-                path="package.json",
-                content=json.dumps({
-                    "name": customizations.get("project_name", "custom-project").lower().replace(" ", "-"),
-                    "version": "1.0.0",
-                    "description": customizations.get("description", ""),
-                    "main": "index.js",
-                    "scripts": {
-                        "start": "react-scripts start",
-                        "build": "react-scripts build",
-                        "test": "react-scripts test"
-                    },
-                    "dependencies": {
-                        "react": "^18.2.0",
-                        "react-dom": "^18.2.0",
-                        "react-scripts": "5.0.1"
-                    }
-                }, indent=2),
-                type="file",
-                language="json"
+            "saas": TemplateCategory(
+                id="saas",
+                name="SaaS Platforms",
+                description="Software-as-a-Service platforms with subscription features",
+                icon="💼",
+                color="purple",
+                template_count=6
+            ),
+            "ecommerce": TemplateCategory(
+                id="ecommerce",
+                name="E-Commerce",
+                description="Online stores and marketplace platforms",
+                icon="🛒",
+                color="green",
+                template_count=5
+            ),
+            "fintech": TemplateCategory(
+                id="fintech",
+                name="FinTech",
+                description="Financial technology applications and platforms",
+                icon="💰",
+                color="yellow",
+                template_count=4
+            ),
+            "ai_ml": TemplateCategory(
+                id="ai_ml",
+                name="AI & Machine Learning",
+                description="AI-powered applications and ML platforms",
+                icon="🤖",
+                color="indigo",
+                template_count=6
+            ),
+            "mobile": TemplateCategory(
+                id="mobile",
+                name="Mobile Apps",
+                description="Cross-platform mobile applications",
+                icon="📱",
+                color="pink",
+                template_count=4
+            ),
+            "developer_tools": TemplateCategory(
+                id="developer_tools",
+                name="Developer Tools",
+                description="Development utilities and productivity tools",
+                icon="🛠️",
+                color="gray",
+                template_count=5
+            ),
+            "landing_pages": TemplateCategory(
+                id="landing_pages",
+                name="Landing Pages",
+                description="Marketing and conversion-focused landing pages",
+                icon="📄",
+                color="orange",
+                template_count=7
             )
-        ]
+        }
+        return categories
+    
+    def _initialize_enhanced_templates(self) -> Dict[str, EnhancedTemplate]:
+        """Initialize comprehensive template library"""
         
-        return files
+        # Sample authors
+        authors = {
+            "aether_team": TemplateAuthor(
+                id="aether_team",
+                name="Aether AI Team",
+                avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+                bio="Official Aether AI template creators",
+                verified=True,
+                social_links={"website": "https://aether.ai", "github": "https://github.com/aether-ai"}
+            ),
+            "community_dev": TemplateAuthor(
+                id="community_dev",
+                name="Community Developer",
+                avatar="https://images.unsplash.com/photo-1494790108755-2616b612b647?w=150&h=150&fit=crop&crop=face",
+                bio="Active community contributor",
+                verified=True,
+                social_links={"github": "https://github.com/community-dev"}
+            ),
+            "enterprise_dev": TemplateAuthor(
+                id="enterprise_dev",
+                name="Enterprise Solutions",
+                avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+                bio="Enterprise-grade solution architect",
+                verified=True,
+                social_links={"linkedin": "https://linkedin.com/in/enterprise-dev"}
+            )
+        }
+        
+        templates = {}
+        
+        # SaaS Templates
+        templates["saas_starter_pro"] = EnhancedTemplate(
+            id="saas_starter_pro",
+            name="SaaS Starter Pro",
+            description="Complete SaaS platform with authentication, billing, and team management",
+            long_description="A comprehensive SaaS starter kit that includes user authentication, subscription billing with Stripe, team management, role-based permissions, admin dashboard, and email notifications. Built with React, Node.js, and PostgreSQL.",
+            category_id="saas",
+            author=authors["aether_team"],
+            tags=["saas", "authentication", "billing", "teams", "dashboard"],
+            tech_stack=["React", "Node.js", "PostgreSQL", "Stripe", "Redis", "Docker"],
+            difficulty="advanced",
+            estimated_setup_time="45-60 minutes",
+            metrics=TemplateMetrics(
+                downloads=15420,
+                rating=4.8,
+                reviews_count=234,
+                stars=1890,
+                forks=456,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://saas-starter-demo.vercel.app",
+            github_url="https://github.com/aether-ai/saas-starter-pro",
+            documentation_url="https://docs.saas-starter.com",
+            features=[
+                "User authentication & authorization",
+                "Stripe subscription billing",
+                "Team management & invitations",
+                "Role-based access control",
+                "Admin dashboard",
+                "Email notifications",
+                "Multi-tenancy support",
+                "API rate limiting",
+                "Comprehensive testing"
+            ],
+            requirements=["Node.js 18+", "PostgreSQL 13+", "Redis 6+", "Stripe account"],
+            installation_steps=[
+                "Clone the repository",
+                "Install dependencies with npm install",
+                "Setup environment variables",
+                "Initialize database with migrations",
+                "Configure Stripe webhooks",
+                "Start development server"
+            ],
+            is_featured=True,
+            is_pro=True,
+            price=99.00,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        templates["ecommerce_marketplace"] = EnhancedTemplate(
+            id="ecommerce_marketplace",
+            name="E-Commerce Marketplace",
+            description="Multi-vendor marketplace with payment processing and seller dashboard",
+            long_description="A complete e-commerce marketplace platform supporting multiple vendors, product management, order processing, payment integration, and comprehensive analytics. Features seller onboarding, commission management, and customer reviews.",
+            category_id="ecommerce",
+            author=authors["enterprise_dev"],
+            tags=["ecommerce", "marketplace", "payments", "vendors", "analytics"],
+            tech_stack=["Next.js", "FastAPI", "PostgreSQL", "Stripe", "AWS S3", "Redis"],
+            difficulty="expert",
+            estimated_setup_time="60-90 minutes",
+            metrics=TemplateMetrics(
+                downloads=8960,
+                rating=4.7,
+                reviews_count=156,
+                stars=1245,
+                forks=278,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://marketplace-demo.vercel.app",
+            github_url="https://github.com/enterprise/marketplace",
+            features=[
+                "Multi-vendor support",
+                "Product catalog management",
+                "Order processing & fulfillment",
+                "Payment processing with Stripe",
+                "Seller dashboard & analytics",
+                "Customer review system",
+                "Commission management",
+                "Inventory tracking",
+                "Mobile-responsive design"
+            ],
+            requirements=["Node.js 18+", "Python 3.9+", "PostgreSQL 13+", "AWS account", "Stripe account"],
+            installation_steps=[
+                "Clone the repository",
+                "Setup backend API server",
+                "Configure frontend application",
+                "Initialize database schema",
+                "Setup AWS S3 for file storage",
+                "Configure payment processing"
+            ],
+            is_featured=True,
+            is_pro=True,
+            price=149.00,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        # AI & ML Templates
+        templates["ai_content_generator"] = EnhancedTemplate(
+            id="ai_content_generator",
+            name="AI Content Generator Platform",
+            description="AI-powered content generation platform with multiple content types",
+            long_description="A comprehensive AI content generation platform that can create blog posts, social media content, product descriptions, and more. Features multiple AI models, content templates, and team collaboration tools.",
+            category_id="ai_ml",
+            author=authors["aether_team"],
+            tags=["ai", "content", "generation", "nlp", "automation"],
+            tech_stack=["React", "FastAPI", "PostgreSQL", "OpenAI", "Docker", "Redis"],
+            difficulty="advanced",
+            estimated_setup_time="30-45 minutes",
+            metrics=TemplateMetrics(
+                downloads=12340,
+                rating=4.9,
+                reviews_count=189,
+                stars=2156,
+                forks=387,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://ai-content-demo.vercel.app",
+            github_url="https://github.com/aether-ai/content-generator",
+            features=[
+                "Multiple AI model support",
+                "Content type templates",
+                "Batch content generation",
+                "Team collaboration",
+                "Content scheduling",
+                "SEO optimization",
+                "Export to multiple formats",
+                "Usage analytics",
+                "API access"
+            ],
+            requirements=["Node.js 18+", "Python 3.9+", "PostgreSQL 13+", "OpenAI API key"],
+            installation_steps=[
+                "Clone the repository",
+                "Install dependencies",
+                "Setup environment variables",
+                "Configure AI model APIs",
+                "Initialize database",
+                "Start the application"
+            ],
+            is_featured=True,
+            is_pro=False,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        # FinTech Templates  
+        templates["trading_dashboard"] = EnhancedTemplate(
+            id="trading_dashboard",
+            name="Crypto Trading Dashboard",
+            description="Real-time cryptocurrency trading dashboard with portfolio management",
+            long_description="A professional cryptocurrency trading dashboard with real-time market data, portfolio tracking, advanced charting, trade execution, and risk management tools. Integrates with major exchanges and provides comprehensive analytics.",
+            category_id="fintech",
+            author=authors["enterprise_dev"],
+            tags=["fintech", "trading", "crypto", "dashboard", "analytics"],
+            tech_stack=["React", "TypeScript", "WebSocket", "Node.js", "MongoDB", "TradingView"],
+            difficulty="expert",
+            estimated_setup_time="60-90 minutes",
+            metrics=TemplateMetrics(
+                downloads=6780,
+                rating=4.6,
+                reviews_count=98,
+                stars=890,
+                forks=156,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://trading-dashboard-demo.vercel.app",
+            github_url="https://github.com/enterprise/trading-dashboard",
+            features=[
+                "Real-time market data",
+                "Advanced charting with TradingView",
+                "Portfolio management",
+                "Trade execution",
+                "Risk management tools",
+                "P&L tracking",
+                "Alert system",
+                "Exchange integration",
+                "Mobile-responsive design"
+            ],
+            requirements=["Node.js 18+", "MongoDB 5+", "Exchange API keys", "WebSocket support"],
+            installation_steps=[
+                "Clone the repository",
+                "Setup environment configuration",
+                "Install dependencies",
+                "Configure exchange APIs",
+                "Initialize database",
+                "Setup WebSocket connections"
+            ],
+            is_featured=True,
+            is_pro=True,
+            price=199.00,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        # Web App Templates
+        templates["social_media_app"] = EnhancedTemplate(
+            id="social_media_app",
+            name="Social Media Platform",
+            description="Complete social media platform with posts, messaging, and social features",
+            long_description="A full-featured social media platform with user profiles, posts, comments, likes, real-time messaging, friend connections, and content moderation. Built for scalability with modern technologies.",
+            category_id="web_apps",
+            author=authors["community_dev"],
+            tags=["social", "messaging", "real-time", "community", "scalable"],
+            tech_stack=["React", "Socket.io", "Node.js", "PostgreSQL", "Redis", "AWS S3"],
+            difficulty="advanced",
+            estimated_setup_time="45-60 minutes",
+            metrics=TemplateMetrics(
+                downloads=18950,
+                rating=4.7,
+                reviews_count=342,
+                stars=3456,
+                forks=678,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://social-media-demo.vercel.app",
+            github_url="https://github.com/community/social-media-app",
+            features=[
+                "User profiles & authentication",
+                "Post creation & sharing",
+                "Real-time commenting",
+                "Direct messaging",
+                "Friend connections",
+                "News feed algorithm",
+                "Content moderation",
+                "Media upload & storage",
+                "Notification system"
+            ],
+            requirements=["Node.js 18+", "PostgreSQL 13+", "Redis 6+", "AWS account"],
+            installation_steps=[
+                "Clone the repository",
+                "Install dependencies",
+                "Setup database schema",
+                "Configure environment variables",
+                "Setup file storage",
+                "Start development servers"
+            ],
+            is_featured=true,
+            is_pro=False,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        # Mobile Templates
+        templates["react_native_ecommerce"] = EnhancedTemplate(
+            id="react_native_ecommerce",
+            name="React Native E-Commerce App",
+            description="Cross-platform mobile e-commerce app with native performance",
+            long_description="A high-performance React Native e-commerce mobile application with product browsing, shopping cart, secure payments, order tracking, and push notifications. Optimized for both iOS and Android.",
+            category_id="mobile",
+            author=authors["community_dev"],
+            tags=["mobile", "react-native", "ecommerce", "cross-platform", "payments"],
+            tech_stack=["React Native", "Expo", "Firebase", "Stripe", "Redux", "React Navigation"],
+            difficulty="intermediate",
+            estimated_setup_time="30-45 minutes",
+            metrics=TemplateMetrics(
+                downloads=9870,
+                rating=4.5,
+                reviews_count=167,
+                stars=1567,
+                forks=234,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://expo.dev/@demo/rn-ecommerce",
+            github_url="https://github.com/community/rn-ecommerce",
+            features=[
+                "Product catalog browsing",
+                "Shopping cart functionality",
+                "Secure payment processing",
+                "User authentication",
+                "Order history & tracking",
+                "Push notifications",
+                "Wishlist management",
+                "Product search & filters",
+                "Cross-platform compatibility"
+            ],
+            requirements=["Node.js 18+", "Expo CLI", "Firebase account", "Stripe account"],
+            installation_steps=[
+                "Install Expo CLI",
+                "Clone the repository",
+                "Install dependencies",
+                "Setup Firebase configuration",
+                "Configure payment processing",
+                "Run on device/simulator"
+            ],
+            is_featured=False,
+            is_pro=False,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        # Developer Tools Templates
+        templates["code_review_tool"] = EnhancedTemplate(
+            id="code_review_tool",
+            name="AI-Powered Code Review Tool",
+            description="Intelligent code review platform with AI analysis and team collaboration",
+            long_description="An advanced code review platform that uses AI to analyze code quality, detect potential bugs, suggest improvements, and facilitate team collaboration. Integrates with Git repositories and CI/CD pipelines.",
+            category_id="developer_tools",
+            author=authors["aether_team"],
+            tags=["developer-tools", "ai", "code-review", "collaboration", "quality"],
+            tech_stack=["React", "Python", "FastAPI", "PostgreSQL", "Docker", "Git", "OpenAI"],
+            difficulty="advanced",
+            estimated_setup_time="45-60 minutes",
+            metrics=TemplateMetrics(
+                downloads=5640,
+                rating=4.8,
+                reviews_count=89,
+                stars=1234,
+                forks=156,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://code-review-demo.vercel.app",
+            github_url="https://github.com/aether-ai/code-review-tool",
+            features=[
+                "AI-powered code analysis",
+                "Automated bug detection",
+                "Code quality metrics",
+                "Team collaboration tools",
+                "Git integration",
+                "CI/CD pipeline integration",
+                "Custom rule configuration",
+                "Performance analysis",
+                "Security vulnerability detection"
+            ],
+            requirements=["Node.js 18+", "Python 3.9+", "PostgreSQL 13+", "Docker", "OpenAI API key"],
+            installation_steps=[
+                "Clone the repository",
+                "Setup Python backend",
+                "Install frontend dependencies",
+                "Configure AI services",
+                "Initialize database",
+                "Setup Git webhooks"
+            ],
+            is_featured=True,
+            is_pro=True,
+            price=79.00,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        # Landing Page Templates
+        templates["saas_landing_page"] = EnhancedTemplate(
+            id="saas_landing_page",
+            name="SaaS Landing Page Kit",
+            description="High-converting landing page templates for SaaS products",
+            long_description="A collection of professionally designed, conversion-optimized landing page templates specifically crafted for SaaS products. Includes multiple variations, A/B testing setup, and analytics integration.",
+            category_id="landing_pages",
+            author=authors["aether_team"],
+            tags=["landing-page", "saas", "conversion", "marketing", "responsive"],
+            tech_stack=["React", "Next.js", "Tailwind CSS", "Framer Motion", "Vercel", "Analytics"],
+            difficulty="beginner",
+            estimated_setup_time="15-30 minutes",
+            metrics=TemplateMetrics(
+                downloads=23450,
+                rating=4.9,
+                reviews_count=456,
+                stars=4567,
+                forks=890,
+                last_updated=datetime.now()
+            ),
+            preview_images=[
+                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop"
+            ],
+            live_demo_url="https://saas-landing-demo.vercel.app",
+            github_url="https://github.com/aether-ai/saas-landing-kit",
+            features=[
+                "Multiple landing page variants",
+                "Conversion-optimized design",
+                "Mobile-responsive layouts",
+                "A/B testing integration",
+                "Analytics tracking",
+                "SEO optimization",
+                "Contact form integration",
+                "Newsletter signup",
+                "Social proof sections"
+            ],
+            requirements=["Node.js 18+", "Vercel account (optional)"],
+            installation_steps=[
+                "Clone the repository",
+                "Install dependencies",
+                "Customize content & branding",
+                "Setup analytics tracking",
+                "Deploy to hosting platform"
+            ],
+            is_featured=True,
+            is_pro=False,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        return templates
     
-    def _generate_package_json(self, requirements: Dict[str, Any]) -> str:
-        """Generate package.json based on requirements"""
-        return json.dumps({
-            "name": requirements.get("name", "custom-project").lower().replace(" ", "-"),
-            "version": "1.0.0",
-            "description": requirements.get("description", ""),
-            "main": "index.js",
-            "scripts": {
-                "start": "react-scripts start",
-                "build": "react-scripts build",
-                "test": "react-scripts test",
-                "eject": "react-scripts eject"
-            },
-            "dependencies": {
-                "react": "^18.2.0",
-                "react-dom": "^18.2.0",
-                "react-scripts": "5.0.1"
-            },
-            "browserslist": {
-                "production": [">0.2%", "not dead", "not op_mini all"],
-                "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
-            }
-        }, indent=2)
+    async def get_all_templates(self, category: str = None, difficulty: str = None, is_free: bool = None) -> List[EnhancedTemplate]:
+        """Get all templates with optional filtering"""
+        templates = list(self.templates.values())
+        
+        if category:
+            templates = [t for t in templates if t.category_id == category]
+        
+        if difficulty:
+            templates = [t for t in templates if t.difficulty == difficulty]
+        
+        if is_free is not None:
+            templates = [t for t in templates if (not t.is_pro) == is_free]
+        
+        return templates
     
-    def _generate_index_js(self, requirements: Dict[str, Any]) -> str:
-        """Generate index.js entry point"""
-        return """import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-"""
+    async def get_featured_templates(self) -> List[EnhancedTemplate]:
+        """Get featured templates"""
+        return [t for t in self.templates.values() if t.is_featured]
     
-    def _generate_app_js(self, requirements: Dict[str, Any]) -> str:
-        """Generate main App component"""
-        app_name = requirements.get("name", "Custom App")
-        return f"""import React from 'react';
-import './App.css';
-
-function App() {{
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>{app_name}</h1>
-        <p>Welcome to your custom application!</p>
-      </header>
-    </div>
-  );
-}}
-
-export default App;
-"""
+    async def search_templates(self, query: str) -> List[EnhancedTemplate]:
+        """Search templates by name, description, or tags"""
+        query_lower = query.lower()
+        results = []
+        
+        for template in self.templates.values():
+            # Search in name, description, and tags
+            if (query_lower in template.name.lower() or 
+                query_lower in template.description.lower() or 
+                any(query_lower in tag.lower() for tag in template.tags) or
+                any(query_lower in tech.lower() for tech in template.tech_stack)):
+                results.append(template)
+        
+        return results
     
-    def _generate_index_html(self, requirements: Dict[str, Any]) -> str:
-        """Generate index.html"""
-        app_name = requirements.get("name", "Custom App")
-        return f"""<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="{requirements.get('description', 'Custom application')}" />
-    <title>{app_name}</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
-</html>
-"""
-    
-    def _generate_readme(self, requirements: Dict[str, Any]) -> str:
-        """Generate README.md"""
-        app_name = requirements.get("name", "Custom Project")
-        return f"""# {app_name}
+    async def track_template_usage(self, template_id: str, user_id: str):
+        """Track template usage for analytics"""
+        if template_id not in self.usage_stats:
+            self.usage_stats[template_id] = {"downloads": 0, "users": set()}
+        
+        self.usage_stats[template_id]["downloads"] += 1
+        self.usage_stats[template_id]["users"].add(user_id)
+        
+        # Update template metrics
+        if template_id in self.templates:
+            self.templates[template_id].metrics.downloads += 1
 
-{requirements.get('description', 'A custom application built with modern web technologies.')}
-
-## Features
-
-- Modern React application
-- Responsive design
-- Fast development setup
-
-## Getting Started
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Start the development server:
-   ```bash
-   npm start
-   ```
-
-3. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-## Available Scripts
-
-- `npm start` - Runs the app in development mode
-- `npm build` - Builds the app for production
-- `npm test` - Launches the test runner
-
-## Learn More
-
-Built with Aether AI template generator.
-"""
-    
-    def _generate_gitignore(self) -> str:
-        """Generate .gitignore file"""
-        return """# Dependencies
-node_modules/
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Production
-/build
-
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Editor
-.vscode/
-.idea/
-
-# OS
-Thumbs.db
-"""
-
-# Initialize service
-template_service = EnhancedTemplateService()
+# Initialize enhanced template engine
+enhanced_template_engine = EnhancedTemplateEngine()
 
 @router.get("/categories")
 async def get_template_categories():
     """Get all template categories"""
-    return await template_service.get_template_categories()
+    try:
+        categories = list(enhanced_template_engine.categories.values())
+        return {"categories": [cat.dict() for cat in categories]}
+    except Exception as e:
+        logger.error(f"Error getting categories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/initialize")
-async def initialize_templates():
-    """Initialize comprehensive template library"""
-    return await template_service.initialize_templates()
-
-@router.post("/generate-custom")
-async def generate_custom_template(
-    requirements: Dict[str, Any],
-    current_user = Depends(get_current_user)
+@router.get("/enhanced", response_model=List[EnhancedTemplate])
+async def get_enhanced_templates(
+    category: Optional[str] = None,
+    difficulty: Optional[str] = None,
+    is_free: Optional[bool] = None,
+    featured_only: Optional[bool] = False
 ):
-    """Generate custom template based on requirements"""
-    return await template_service.generate_custom_template(requirements, current_user["id"])
+    """Get enhanced templates with filtering"""
+    try:
+        if featured_only:
+            templates = await enhanced_template_engine.get_featured_templates()
+        else:
+            templates = await enhanced_template_engine.get_all_templates(category, difficulty, is_free)
+        
+        return templates
+    except Exception as e:
+        logger.error(f"Error getting enhanced templates: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/customize/{template_id}")
-async def customize_template(
-    template_id: str,
-    customizations: Dict[str, Any],
-    current_user = Depends(get_current_user)
-):
-    """Customize existing template"""
-    return await template_service.customize_template(template_id, customizations, current_user["id"])
+@router.get("/search")
+async def search_templates(query: str):
+    """Search templates"""
+    try:
+        if not query or len(query.strip()) < 2:
+            raise HTTPException(status_code=400, detail="Query must be at least 2 characters")
+        
+        results = await enhanced_template_engine.search_templates(query)
+        return {"query": query, "results": [template.dict() for template in results]}
+    except Exception as e:
+        logger.error(f"Error searching templates: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/user-templates")
-async def get_user_templates(current_user = Depends(get_current_user)):
-    """Get all templates created by user"""
-    db = await get_database()
-    templates = await db.project_templates.find(
-        {"user_id": current_user["id"]}
-    ).sort("created_at", -1).limit(20).to_list(length=20)
-    return templates
-
-@router.get("/popular")
-async def get_popular_templates(limit: int = 12):
-    """Get most popular templates"""
-    db = await get_database()
-    templates = await db.templates.find({}).sort("download_count", -1).limit(limit).to_list(length=limit)
-    return templates
-
-@router.get("/by-category/{category}")
-async def get_templates_by_category(category: str, limit: int = 20):
-    """Get templates by category"""
-    db = await get_database()
-    templates = await db.templates.find({"category": category}).sort("rating", -1).limit(limit).to_list(length=limit)
-    return templates
-
-@router.get("/{template_id}")
-async def get_template_details(template_id: str):
+@router.get("/enhanced/{template_id}", response_model=EnhancedTemplate)
+async def get_enhanced_template(template_id: str):
     """Get detailed template information"""
-    db = await get_database()
-    template = await db.templates.find_one({"id": template_id})
-    if not template:
-        raise HTTPException(status_code=404, detail="Template not found")
-    return template
+    try:
+        if template_id not in enhanced_template_engine.templates:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        template = enhanced_template_engine.templates[template_id]
+        return template
+    except Exception as e:
+        logger.error(f"Error getting template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{template_id}/download")
-async def download_template(template_id: str, current_user = Depends(get_current_user)):
-    """Download template (increment download count)"""
-    db = await get_database()
-    
-    # Increment download count
-    result = await db.templates.update_one(
-        {"id": template_id},
-        {"$inc": {"download_count": 1}}
-    )
-    
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Template not found")
-    
-    # Get updated template
-    template = await db.templates.find_one({"id": template_id})
-    return {"message": "Template downloaded", "template": template}
+@router.post("/enhanced/{template_id}/use")
+async def use_enhanced_template(template_id: str, user_data: Dict[str, Any]):
+    """Track template usage and provide setup instructions"""
+    try:
+        if template_id not in enhanced_template_engine.templates:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        template = enhanced_template_engine.templates[template_id]
+        user_id = user_data.get("user_id", "anonymous")
+        
+        # Track usage
+        await enhanced_template_engine.track_template_usage(template_id, user_id)
+        
+        # Return setup information
+        return {
+            "template": template.dict(),
+            "setup_guide": {
+                "prerequisites": template.requirements,
+                "installation_steps": template.installation_steps,
+                "estimated_time": template.estimated_setup_time,
+                "next_steps": [
+                    "Follow the installation steps carefully",
+                    "Customize the template to your needs",
+                    "Test all functionality before deployment",
+                    "Review the documentation for advanced features"
+                ]
+            },
+            "support_resources": {
+                "documentation": template.documentation_url,
+                "github": template.github_url,
+                "demo": template.live_demo_url
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error using template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/stats")
+async def get_template_stats():
+    """Get template usage statistics"""
+    try:
+        total_templates = len(enhanced_template_engine.templates)
+        total_categories = len(enhanced_template_engine.categories)
+        
+        # Calculate aggregated stats
+        total_downloads = sum(
+            stats["downloads"] for stats in enhanced_template_engine.usage_stats.values()
+        )
+        
+        return {
+            "overview": {
+                "total_templates": total_templates,
+                "total_categories": total_categories,
+                "total_downloads": total_downloads,
+                "featured_count": len([t for t in enhanced_template_engine.templates.values() if t.is_featured]),
+                "free_count": len([t for t in enhanced_template_engine.templates.values() if not t.is_pro]),
+                "pro_count": len([t for t in enhanced_template_engine.templates.values() if t.is_pro])
+            },
+            "popular_templates": sorted(
+                enhanced_template_engine.usage_stats.items(),
+                key=lambda x: x[1]["downloads"],
+                reverse=True
+            )[:5]
+        }
+    except Exception as e:
+        logger.error(f"Error getting template stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
