@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import asyncio
 import uuid
 import json
-from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
+from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3Upgraded
 from models.database import get_database
 from routes.auth import get_current_user
 
@@ -60,7 +60,7 @@ class UserProfile(BaseModel):
 
 class LongTermMemoryService:
     def __init__(self):
-        self.ai_service = EnhancedAIServiceV3()
+        self.ai_service = EnhancedAIServiceV3Upgraded()
         
     async def store_conversation_memory(self, conversation_id: str, messages: List[Dict], user_id: str) -> ConversationMemory:
         """Store and analyze conversation for long-term memory"""
@@ -531,6 +531,43 @@ class LongTermMemoryService:
             completeness += 0.2
         
         return completeness
+
+    # Add missing helper methods
+    def _extract_patterns(self, text: str) -> List[str]:
+        """Extract architecture patterns from text"""
+        patterns = []
+        lines = text.split('\n')
+        for line in lines:
+            if any(keyword in line.lower() for keyword in ["pattern", "architecture", "design"]):
+                patterns.append(line.strip())
+        return patterns[:5]
+    
+    def _extract_lessons(self, text: str) -> List[str]:
+        """Extract lessons learned from text"""
+        lessons = []
+        lines = text.split('\n')
+        for line in lines:
+            if any(keyword in line.lower() for keyword in ["lesson", "learned", "insight", "discovery"]):
+                lessons.append(line.strip())
+        return lessons[:5]
+    
+    def _extract_success_factors(self, text: str) -> List[str]:
+        """Extract success factors from text"""
+        factors = []
+        lines = text.split('\n')
+        for line in lines:
+            if any(keyword in line.lower() for keyword in ["success", "effective", "worked", "good"]):
+                factors.append(line.strip())
+        return factors[:5]
+    
+    def _extract_challenges(self, text: str) -> List[str]:
+        """Extract challenges from text"""
+        challenges = []
+        lines = text.split('\n')
+        for line in lines:
+            if any(keyword in line.lower() for keyword in ["challenge", "problem", "issue", "difficult"]):
+                challenges.append(line.strip())
+        return challenges[:5]
 
 # Initialize service
 memory_service = LongTermMemoryService()
