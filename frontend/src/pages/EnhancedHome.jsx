@@ -17,9 +17,11 @@ import {
   LightBulbIcon,
   PaintBrushIcon,
   BeakerIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  StarIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../store/authStore'
+import CompetitiveFeatures from '../components/CompetitiveFeatures'
 
 const EnhancedHome = () => {
   const { isAuthenticated } = useAuthStore()
