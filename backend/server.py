@@ -41,6 +41,12 @@ from routes.enhanced_ai_v3 import router as enhanced_ai_v3_router
 # Import Phase 1 Optimized AI Routes
 from routes.optimized_ai_v4 import router as optimized_ai_v4_router
 
+# Import Gap-Closing Enhancement Routes
+from routes.autonomous_planning import router as autonomous_planning_router
+from routes.git_cicd_integration import router as git_cicd_router
+from routes.memory_system import router as memory_system_router
+from routes.conversational_debugging import router as conversational_debugging_router
+
 from models.database import init_db
 
 # Load environment variables
