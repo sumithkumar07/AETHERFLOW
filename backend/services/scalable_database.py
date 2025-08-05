@@ -98,14 +98,26 @@ class ScalableDatabase:
                 ("category", 1), ("featured", 1), ("downloads", -1)
             ], name="templates_category_featured_popularity")
             
-            # Full-text search indexes
-            await self.database.templates.create_index([
-                ("name", "text"), ("description", "text"), ("tags", "text")
-            ], name="templates_fulltext_search")
+            # Full-text search indexes (only if not exists)
+            try:
+                await self.database.templates.create_index([
+                    ("name", "text"), ("description", "text"), ("tags", "text")
+                ], name="templates_fulltext_search")
+            except Exception as e:
+                if "IndexOptionsConflict" in str(e):
+                    logger.info("✅ Text search index already exists with different options")
+                else:
+                    raise
             
-            await self.database.conversations.create_index([
-                ("messages.content", "text")
-            ], name="conversations_content_search")
+            try:
+                await self.database.conversations.create_index([
+                    ("messages.content", "text")
+                ], name="conversations_content_search")
+            except Exception as e:
+                if "IndexOptionsConflict" in str(e):
+                    logger.info("✅ Conversation search index already exists")
+                else:
+                    raise
             
             logger.info("✅ Advanced database indexing completed")
             
