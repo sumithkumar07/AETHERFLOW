@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 import json
 from datetime import datetime
-from models.auth import get_current_user
+from routes.auth import get_current_user
 from models.database import get_database
 from services.competitive_features_integration import competitive_orchestrator
 import uuid
