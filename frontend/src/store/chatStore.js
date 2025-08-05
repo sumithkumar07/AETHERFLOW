@@ -40,15 +40,29 @@ const useChatStore = create(
       // Actions
       initializeModelsAndAgents: async () => {
         try {
-          console.log('🤖 Initializing Aether AI models and agents with FREE Puter.js access...')
+          console.log('🤖 Initializing Aether AI models and agents...')
           
-          // Initialize Puter.js AI Service first
-          const puterAvailable = await puterAI.initialize()
+          // Initialize Puter.js AI Service with timeout (non-blocking)
+          let puterAvailable = false
+          try {
+            const initPromise = puterAI.initialize()
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('PuterAI initialization timeout')), 3000)
+            )
+            
+            puterAvailable = await Promise.race([initPromise, timeoutPromise])
+          } catch (error) {
+            console.warn('PuterAI failed to initialize, continuing without it:', error.message)
+            puterAvailable = false
+          }
+          
           set({ puterAIAvailable: puterAvailable })
           
           if (puterAvailable) {
             console.log('🎉 Puter.js initialized - Enhanced AI models ready!')
             toast.success('🤖 Enhanced AI models loaded successfully!')
+          } else {
+            console.log('📡 Using backend AI models')
           }
           
           // Get Puter.js models
