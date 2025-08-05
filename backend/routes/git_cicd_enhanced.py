@@ -11,7 +11,7 @@ import os
 import asyncio
 import subprocess
 from datetime import datetime
-from models.auth import get_current_user
+from routes.auth import get_current_user
 from models.database import get_database
 from services.groq_ai_service import GroqAIService
 import uuid
