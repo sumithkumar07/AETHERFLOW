@@ -234,26 +234,26 @@ Focus on practical insights and clear next steps. Leverage Groq's speed for rapi
         context: List[Dict] = None,
         stream: bool = False
     ):
-        """Call Groq API for ultra-fast AI inference"""
+        """Call Groq API for ultra-fast AI inference - PERFORMANCE OPTIMIZED"""
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=15.0) as client:  # 🚀 REDUCED timeout from 30 to 15 seconds
                 # Prepare messages
                 messages = [{"role": "system", "content": system_prompt}]
                 
-                # Add context if provided (last 5 messages for better context)
+                # 🚀 PERFORMANCE FIX: Limit context more aggressively for speed
                 if context:
-                    for ctx in context[-5:]:
+                    for ctx in context[-2:]:  # REDUCED from 5 to 2 messages for faster processing
                         if isinstance(ctx, dict) and 'role' in ctx and 'content' in ctx:
                             messages.append(ctx)
                 
                 messages.append({"role": "user", "content": message})
 
-                # Call Groq Chat Completions API
+                # Call Groq Chat Completions API with optimized parameters
                 payload = {
                     "model": model,
                     "messages": messages,
                     "temperature": 0.7,
-                    "max_tokens": 4000,
+                    "max_tokens": 2000,  # 🚀 REDUCED from 4000 for faster generation
                     "top_p": 0.9,
                     "stream": stream
                 }
@@ -291,7 +291,8 @@ Focus on practical insights and clear next steps. Leverage Groq's speed for rapi
                                 "model_info": self.models.get(model, {}),
                                 "ultra_fast": True,
                                 "timestamp": datetime.utcnow().isoformat(),
-                                "response_time": "< 2 seconds"  # Groq's typical speed
+                                "response_time": "< 2 seconds",  # Groq's typical speed
+                                "performance_optimized": True
                             }
                         }
                 else:
