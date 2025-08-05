@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 import asyncio
 import uuid
-from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
+from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3Upgraded
 from models.database import get_database
 from routes.auth import get_current_user
 
@@ -41,7 +41,7 @@ class ProjectRoadmap(BaseModel):
 
 class AutonomousPlanningService:
     def __init__(self):
-        self.ai_service = EnhancedAIServiceV3()
+        self.ai_service = EnhancedAIServiceV3Upgraded()
         
     async def create_project_roadmap(self, request: PlanningRequest, user_id: str) -> ProjectRoadmap:
         """Create comprehensive project roadmap with task breakdown"""
