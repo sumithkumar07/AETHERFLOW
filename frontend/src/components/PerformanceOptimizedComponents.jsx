@@ -22,7 +22,7 @@ const HeavyChart = lazy(() => import('./HeavyChart'))
 const AdvancedEditor = lazy(() => import('./AdvancedEditor'))
 
 // Performance optimized loading component
-const OptimizedLoader = memo(({ size = 'medium', color = 'blue' }) => {
+export const OptimizedLoader = memo(({ size = 'medium', color = 'blue' }) => {
   const sizes = {
     small: 'w-4 h-4',
     medium: 'w-6 h-6',
