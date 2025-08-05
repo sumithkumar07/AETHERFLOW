@@ -28,8 +28,8 @@ class GroqAIService:
                 "speed": "ultra-fast",
                 "recommended_for": ["quick_chat", "simple_questions", "fast_responses"]
             },
-            "llama-3.1-70b-versatile": {
-                "name": "Llama 3.1 70B (Smart & Fast)",
+            "llama-3.3-70b-versatile": {
+                "name": "Llama 3.3 70B (Smart & Fast)",
                 "description": "Best quality responses for complex tasks and coding",
                 "type": "chat-smart",
                 "size": "70B", 
