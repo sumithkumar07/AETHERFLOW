@@ -1,564 +1,479 @@
-"""
-Enhanced AI Service with improved conversation quality and multi-agent coordination
-"""
-import asyncio
+import os
 import json
-import logging
+import asyncio
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-import uuid
-import os
-from groq import Groq
-
-from .ai_service import AIService
+import logging
+from groq import AsyncGroq
+from dataclasses import dataclass
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
-class EnhancedAIService(AIService):
-    """Enhanced AI Service with 2025 capabilities"""
+class AgentRole(Enum):
+    DEVELOPER = "developer"
+    DESIGNER = "designer"
+    ARCHITECT = "architect"
+    TESTER = "tester"
+    PROJECT_MANAGER = "project_manager"
+
+@dataclass
+class ConversationContext:
+    session_id: str
+    user_id: str
+    project_id: Optional[str] = None
+    active_agents: List[AgentRole] = None
+    conversation_history: List[Dict] = None
+    current_focus: Optional[str] = None
+    collaboration_mode: bool = False
+
+class EnhancedAIService:
+    """Enhanced AI Service with multi-agent coordination and intelligent conversation management"""
     
     def __init__(self):
-        super().__init__()
-        self.groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        self.conversation_memory = {}
-        self.agent_specialists = {
-            "developer": {
-                "expertise": ["coding", "debugging", "architecture", "best practices"],
-                "preferred_model": "llama-3.1-70b-versatile",
-                "collaboration_strength": ["tester", "designer"],
-                "handoff_triggers": ["testing", "ui", "design", "qa"]
+        self.groq_client = AsyncGroq(api_key=os.environ.get('GROQ_API_KEY'))
+        self.conversation_contexts: Dict[str, ConversationContext] = {}
+        
+        # Agent personalities and capabilities
+        self.agent_configs = {
+            AgentRole.DEVELOPER: {
+                "name": "Dev",
+                "personality": "Technical expert focused on clean, efficient code",
+                "capabilities": ["coding", "debugging", "architecture", "best_practices"],
+                "model": "llama-3.1-70b-versatile",  # Use best model for complex development tasks
+                "system_prompt": """You are Dev, a senior software developer with expertise in modern web technologies, clean code practices, and system architecture. You focus on:
+- Writing efficient, maintainable code
+- Following best practices and design patterns
+- Providing technical solutions with clear explanations
+- Code reviews and optimization suggestions
+- Integration patterns and API design
+
+Always provide practical, working solutions with code examples when relevant."""
             },
-            "designer": {
-                "expertise": ["ui", "ux", "design systems", "accessibility", "user research"],
-                "preferred_model": "llama-3.1-8b-instant", 
-                "collaboration_strength": ["developer", "tester"],
-                "handoff_triggers": ["implement", "code", "develop", "api"]
+            AgentRole.DESIGNER: {
+                "name": "Luna",
+                "personality": "Creative UX/UI expert focused on user experience",
+                "capabilities": ["ui_design", "ux_patterns", "accessibility", "user_research"],
+                "model": "llama-3.1-8b-instant",  # Fast model for design suggestions
+                "system_prompt": """You are Luna, a creative UX/UI designer with expertise in modern design systems, user experience, and accessibility. You focus on:
+- Creating intuitive, beautiful user interfaces
+- Following design system principles and patterns
+- Ensuring accessibility and inclusive design
+- User journey optimization
+- Visual hierarchy and typography
+
+Always consider user needs first and provide design rationale with your suggestions."""
             },
-            "tester": {
-                "expertise": ["testing", "quality assurance", "automation", "performance"],
-                "preferred_model": "llama-3.1-70b-versatile",
-                "collaboration_strength": ["developer", "analyst"],
-                "handoff_triggers": ["fix", "debug", "implement", "analyze"]
+            AgentRole.ARCHITECT: {
+                "name": "Atlas",
+                "personality": "System architect focused on scalable solutions",
+                "capabilities": ["system_design", "scalability", "performance", "integration"],
+                "model": "llama-3.1-70b-versatile",  # Complex architectural decisions need best model
+                "system_prompt": """You are Atlas, a system architect with expertise in scalable applications, cloud architecture, and system integration. You focus on:
+- Designing scalable, maintainable system architectures
+- Database design and optimization
+- API architecture and microservices
+- Performance optimization strategies
+- Security and compliance considerations
+
+Always think about long-term maintainability and scalability in your architectural decisions."""
             },
-            "integrator": {
-                "expertise": ["apis", "third party", "integration", "data flow"],
-                "preferred_model": "llama-3.1-70b-versatile", 
-                "collaboration_strength": ["developer", "analyst"],
-                "handoff_triggers": ["code", "implement", "data analysis"]
-            },
-            "analyst": {
-                "expertise": ["requirements", "business logic", "optimization", "reporting"],
-                "preferred_model": "mixtral-8x7b-32768",
-                "collaboration_strength": ["integrator", "developer"],
-                "handoff_triggers": ["technical", "implement", "code"]
-            }
-        }
-        
-    async def process_enhanced_message(
-        self, 
-        message: str, 
-        agent: str = "developer",
-        context: List[Dict] = None,
-        user_id: str = None,
-        project_id: str = None,
-        conversation_id: str = None,
-        model: str = None
-    ) -> Dict[str, Any]:
-        """Process message with enhanced AI capabilities"""
-        
-        try:
-            # Get agent configuration
-            agent_config = self.agent_specialists.get(agent, self.agent_specialists["developer"])
-            
-            # Select optimal model for agent
-            selected_model = model or agent_config["preferred_model"]
-            
-            # Build enhanced context
-            enhanced_context = await self._build_enhanced_context(
-                message, agent, context, user_id, project_id, conversation_id
-            )
-            
-            # Generate agent-specific system prompt
-            system_prompt = await self._generate_agent_system_prompt(agent, enhanced_context)
-            
-            # Prepare conversation messages
-            messages = [
-                {"role": "system", "content": system_prompt}
-            ]
-            
-            # Add conversation context
-            if enhanced_context.get("conversation_history"):
-                for ctx_msg in enhanced_context["conversation_history"][-6:]:  # Last 6 messages
-                    messages.append({
-                        "role": ctx_msg.get("role", "user"),
-                        "content": ctx_msg.get("content", "")
-                    })
-            
-            # Add current message
-            messages.append({"role": "user", "content": message})
-            
-            # Generate response with GROQ
-            try:
-                completion = self.groq_client.chat.completions.create(
-                    model=selected_model,
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=4000,
-                    top_p=1,
-                    stream=False
-                )
-                
-                response_content = completion.choices[0].message.content
-                
-            except Exception as groq_error:
-                logger.error(f"GROQ API error: {groq_error}")
-                # Fallback to parent method
-                fallback_response = await super().process_message(
-                    message, selected_model, agent, context, user_id, project_id
-                )
-                response_content = fallback_response["response"]
-            
-            # Analyze response for collaboration opportunities
-            collaboration_opportunities = await self._detect_collaboration_opportunities(
-                message, response_content, agent
-            )
-            
-            # Generate smart suggestions
-            suggestions = await self._generate_smart_suggestions(message, agent, response_content)
-            
-            # Generate next actions
-            next_actions = await self._generate_next_actions(message, agent, response_content)
-            
-            # Agent insights
-            agent_insights = await self._generate_agent_insights(agent, message, response_content)
-            
-            # Update conversation memory
-            if conversation_id:
-                await self._update_conversation_memory(conversation_id, message, response_content, agent)
-            
-            return {
-                "response": response_content,
-                "agent": agent,
-                "model_used": selected_model,
-                "confidence": 0.95,
-                "suggestions": suggestions,
-                "agent_insights": agent_insights,
-                "next_actions": next_actions,
-                "collaboration_opportunities": collaboration_opportunities,
-                "metadata": {
-                    "enhanced_processing": True,
-                    "agent_specialization": agent_config["expertise"],
-                    "collaboration_ready": True,
-                    "conversation_id": conversation_id,
-                    "processing_time": datetime.utcnow().isoformat()
-                }
-            }
-            
-        except Exception as e:
-            logger.error(f"Enhanced AI processing error: {e}")
-            # Fallback to basic AI service
-            return await super().process_message(message, model, agent, context, user_id, project_id)
-    
-    async def _build_enhanced_context(
-        self, message: str, agent: str, context: List[Dict], 
-        user_id: str, project_id: str, conversation_id: str
-    ) -> Dict[str, Any]:
-        """Build enhanced context for better AI responses"""
-        
-        enhanced_context = {
-            "user_id": user_id,
-            "project_id": project_id,
-            "conversation_id": conversation_id,
-            "current_agent": agent,
-            "timestamp": datetime.utcnow().isoformat(),
-            "conversation_history": context or [],
-            "agent_expertise": self.agent_specialists.get(agent, {}).get("expertise", []),
-            "collaboration_context": {},
-            "project_context": {}
-        }
-        
-        # Add conversation memory if available
-        if conversation_id and conversation_id in self.conversation_memory:
-            memory = self.conversation_memory[conversation_id]
-            enhanced_context["previous_interactions"] = memory.get("interactions", [])
-            enhanced_context["established_context"] = memory.get("context", {})
-            enhanced_context["user_preferences"] = memory.get("preferences", {})
-        
-        # Detect project context from message
-        if any(keyword in message.lower() for keyword in ["project", "app", "application", "code"]):
-            enhanced_context["project_context"]["active"] = True
-            enhanced_context["project_context"]["type"] = "development"
-        
-        return enhanced_context
-    
-    async def _generate_agent_system_prompt(self, agent: str, context: Dict) -> str:
-        """Generate specialized system prompt for each agent"""
-        
-        base_prompt = f"""You are Aether AI's {agent} agent, an expert AI assistant specializing in {agent} tasks. 
-
-Current date: {datetime.now().strftime('%Y-%m-%d')}
-Agent specialization: {', '.join(self.agent_specialists.get(agent, {}).get('expertise', []))}
-
-Enhanced capabilities in 2025:
-- Advanced conversation memory and context awareness
-- Multi-agent collaboration and intelligent handoffs
-- Real-time code generation and review
-- Voice interface compatibility
-- Accessibility-first development
-- Modern best practices and emerging technologies
-
-"""
-        
-        # Agent-specific prompts
-        agent_prompts = {
-            "developer": """
-As the Developer Agent, you excel in:
-- Modern full-stack development (React 18+, Next.js 14+, FastAPI, Python 3.12+)
-- AI-assisted coding and intelligent code completion
-- Clean architecture and design patterns
-- Performance optimization and security best practices
-- Real-time collaborative development
-- Voice-driven coding workflows
-
-Provide practical, implementable solutions with clear explanations. When appropriate, suggest collaboration with other agents (Designer for UI/UX, Tester for QA, etc.).
-""",
-            "designer": """
-As the Designer Agent, you specialize in:
-- Modern UI/UX design with 2025 trends (glass morphism, AI-driven layouts)
-- Accessibility-first design (WCAG 2.2+)
-- Design systems and component libraries
-- User psychology and behavioral design
-- Voice interface design
-- Responsive and adaptive design
-
-Create beautiful, functional designs with detailed implementation guidance. Collaborate with Developer agents for implementation feasibility.
-""",
-            "tester": """
-As the QA/Testing Agent, you focus on:
-- Comprehensive test strategies (unit, integration, e2e)
-- AI-powered test generation and automation
-- Performance and accessibility testing
-- Security vulnerability assessment
-- CI/CD pipeline optimization
+            AgentRole.TESTER: {
+                "name": "Quinn",
+                "personality": "Quality assurance expert focused on reliability",
+                "capabilities": ["testing", "quality_assurance", "automation", "performance_testing"],
+                "model": "mixtral-8x7b-32768",  # Good balance for testing strategies
+                "system_prompt": """You are Quinn, a quality assurance expert with expertise in testing strategies, automation, and ensuring application reliability. You focus on:
+- Comprehensive testing strategies (unit, integration, e2e)
+- Test automation and CI/CD integration
+- Performance and load testing
+- Security testing and vulnerability assessment
 - Quality metrics and reporting
 
-Provide thorough testing recommendations and collaborate with Developers for implementation.
-""",
-            "integrator": """
-As the Integration Agent, you handle:
-- Modern API design (REST, GraphQL, gRPC)
-- Third-party service integrations
-- Cloud-native architectures and microservices
-- Real-time data synchronization
-- Authentication and authorization systems
-- Data pipeline orchestration
+Always think about edge cases and potential failure scenarios."""
+            },
+            AgentRole.PROJECT_MANAGER: {
+                "name": "Sage",
+                "personality": "Strategic project coordinator focused on delivery",
+                "capabilities": ["project_planning", "coordination", "communication", "delivery"],
+                "model": "llama-3.1-8b-instant",  # Fast for coordination tasks
+                "system_prompt": """You are Sage, a project manager with expertise in agile methodologies, team coordination, and successful project delivery. You focus on:
+- Breaking down complex projects into manageable tasks
+- Coordinating between different team members and stakeholders
+- Risk assessment and mitigation strategies
+- Timeline planning and resource allocation
+- Clear communication and progress tracking
 
-Design robust, scalable integration solutions with security and performance in mind.
-""",
-            "analyst": """
-As the Business Analyst Agent, you provide:
-- Requirements analysis and user story creation
-- Business logic optimization
-- Data analytics and insights
-- ROI analysis and project planning
-- Process automation recommendations
-- Strategic technology decisions
-
-Deliver actionable business intelligence with technical feasibility considerations.
-"""
+Always focus on practical next steps and clear deliverables."""
+            }
         }
+
+    async def initialize_conversation(
+        self, 
+        session_id: str, 
+        user_id: str, 
+        project_id: Optional[str] = None,
+        initial_context: Optional[str] = None
+    ) -> ConversationContext:
+        """Initialize a new conversation context with intelligent agent selection"""
         
-        return base_prompt + agent_prompts.get(agent, agent_prompts["developer"])
-    
-    async def _detect_collaboration_opportunities(
-        self, message: str, response: str, current_agent: str
-    ) -> List[Dict]:
-        """Detect opportunities for multi-agent collaboration"""
+        # Determine which agents should be active based on context
+        active_agents = await self._select_initial_agents(initial_context)
         
-        opportunities = []
-        agent_config = self.agent_specialists.get(current_agent, {})
+        context = ConversationContext(
+            session_id=session_id,
+            user_id=user_id,
+            project_id=project_id,
+            active_agents=active_agents,
+            conversation_history=[],
+            current_focus=initial_context,
+            collaboration_mode=len(active_agents) > 1
+        )
         
-        # Check for handoff triggers
-        message_lower = message.lower() + " " + response.lower()
+        self.conversation_contexts[session_id] = context
         
-        for trigger in agent_config.get("handoff_triggers", []):
-            if trigger in message_lower:
-                # Find best collaborating agent
-                for collaborator in agent_config.get("collaboration_strength", []):
-                    if collaborator != current_agent:
-                        opportunities.append({
-                            "agent": collaborator,
-                            "reason": f"Detected {trigger} context - {collaborator} agent can provide specialized assistance",
-                            "confidence": 0.8,
-                            "suggested_action": f"Handoff to {collaborator} agent for specialized {trigger} handling"
-                        })
+        logger.info(f"✅ Initialized conversation {session_id} with agents: {[agent.value for agent in active_agents]}")
         
-        # Detect complex tasks that benefit from multiple agents
-        complexity_keywords = ["complex", "full", "complete", "end-to-end", "comprehensive"]
-        if any(keyword in message_lower for keyword in complexity_keywords):
-            opportunities.append({
-                "agent": "multi_agent_team",
-                "reason": "Complex task detected - multiple agents can collaborate for comprehensive solution",
-                "confidence": 0.9,
-                "suggested_action": "Initialize multi-agent collaboration workflow"
-            })
+        return context
+
+    async def _select_initial_agents(self, context: Optional[str]) -> List[AgentRole]:
+        """Intelligently select which agents should be active based on initial context"""
         
-        return opportunities[:3]  # Limit to top 3 opportunities
-    
-    async def _generate_smart_suggestions(self, message: str, agent: str, response: str) -> List[str]:
-        """Generate context-aware smart suggestions"""
+        if not context:
+            return [AgentRole.DEVELOPER]  # Default to developer
         
-        suggestions = []
+        context_lower = context.lower()
+        active_agents = []
+        
+        # Smart agent selection based on keywords and context
+        if any(word in context_lower for word in ['code', 'function', 'api', 'database', 'implementation']):
+            active_agents.append(AgentRole.DEVELOPER)
+        
+        if any(word in context_lower for word in ['ui', 'design', 'user', 'interface', 'layout', 'style']):
+            active_agents.append(AgentRole.DESIGNER)
+        
+        if any(word in context_lower for word in ['architecture', 'system', 'scalability', 'performance', 'infrastructure']):
+            active_agents.append(AgentRole.ARCHITECT)
+        
+        if any(word in context_lower for word in ['test', 'bug', 'quality', 'validation', 'error']):
+            active_agents.append(AgentRole.TESTER)
+        
+        if any(word in context_lower for word in ['project', 'plan', 'timeline', 'organize', 'manage']):
+            active_agents.append(AgentRole.PROJECT_MANAGER)
+        
+        # If no specific agents detected, use developer as default
+        if not active_agents:
+            active_agents.append(AgentRole.DEVELOPER)
+        
+        # Limit to max 3 agents for better coordination
+        return active_agents[:3]
+
+    async def enhance_conversation(
+        self,
+        session_id: str,
+        user_message: str,
+        include_context: bool = True
+    ) -> Dict[str, Any]:
+        """Process user message with enhanced multi-agent coordination"""
+        
+        if session_id not in self.conversation_contexts:
+            await self.initialize_conversation(session_id, "unknown_user", initial_context=user_message)
+        
+        context = self.conversation_contexts[session_id]
+        
+        # Add user message to history
+        context.conversation_history.append({
+            "role": "user",
+            "content": user_message,
+            "timestamp": datetime.utcnow().isoformat()
+        })
+        
+        # Determine if agent handoff or collaboration is needed
+        response_strategy = await self._determine_response_strategy(context, user_message)
+        
+        if response_strategy["type"] == "single_agent":
+            response = await self._single_agent_response(context, user_message, response_strategy["agent"])
+        elif response_strategy["type"] == "collaboration":
+            response = await self._collaborative_response(context, user_message, response_strategy["agents"])
+        else:  # handoff
+            response = await self._agent_handoff_response(context, user_message, response_strategy)
+        
+        # Update conversation context
+        context.conversation_history.append({
+            "role": "assistant",
+            "content": response["content"],
+            "agents": response.get("agents", []),
+            "timestamp": datetime.utcnow().isoformat()
+        })
+        
+        return response
+
+    async def _determine_response_strategy(
+        self, 
+        context: ConversationContext, 
+        user_message: str
+    ) -> Dict[str, Any]:
+        """Determine the best strategy for responding to the user message"""
+        
+        message_lower = user_message.lower()
+        current_agents = context.active_agents
+        
+        # Check if user is asking for a different type of expertise
+        requested_agents = await self._select_initial_agents(user_message)
+        
+        # If user needs different expertise, consider handoff
+        if not any(agent in current_agents for agent in requested_agents):
+            return {
+                "type": "handoff",
+                "from_agents": current_agents,
+                "to_agents": requested_agents,
+                "primary_agent": requested_agents[0]
+            }
+        
+        # If user message requires multiple perspectives
+        collaboration_keywords = ['compare', 'options', 'alternatives', 'different approaches', 'pros and cons']
+        if any(keyword in message_lower for keyword in collaboration_keywords) and len(current_agents) > 1:
+            return {
+                "type": "collaboration",
+                "agents": current_agents[:2]  # Limit collaboration to 2 agents for clarity
+            }
+        
+        # Default to single agent response from most relevant agent
+        best_agent = self._select_best_agent_for_message(current_agents, user_message)
+        return {
+            "type": "single_agent",
+            "agent": best_agent
+        }
+
+    def _select_best_agent_for_message(self, available_agents: List[AgentRole], message: str) -> AgentRole:
+        """Select the best agent to handle a specific message"""
+        
         message_lower = message.lower()
         
-        # Agent-specific suggestions
-        if agent == "developer":
-            if "error" in message_lower or "bug" in message_lower:
-                suggestions.extend([
-                    "🐛 Run automated debugging analysis",
-                    "🧪 Generate test cases to prevent this issue",
-                    "📊 Get performance impact analysis"
-                ])
-            elif "implement" in message_lower or "code" in message_lower:
-                suggestions.extend([
-                    "📝 Generate comprehensive documentation",
-                    "🎨 Get UI/UX recommendations from Designer agent",
-                    "⚡ Optimize for performance and accessibility"
-                ])
+        # Score each agent based on message content
+        agent_scores = {}
         
-        elif agent == "designer":
-            suggestions.extend([
-                "💻 Get implementation guidance from Developer agent",
-                "♿ Verify accessibility compliance",
-                "📱 Optimize for mobile experience"
-            ])
+        for agent in available_agents:
+            score = 0
+            capabilities = self.agent_configs[agent]["capabilities"]
+            
+            for capability in capabilities:
+                if capability.replace('_', ' ') in message_lower:
+                    score += 2
+                # Partial matches
+                if capability.split('_')[0] in message_lower:
+                    score += 1
+            
+            agent_scores[agent] = score
         
-        elif agent == "tester":
-            suggestions.extend([
-                "🔧 Request implementation from Developer agent", 
-                "📈 Set up performance monitoring",
-                "🔒 Add security testing checks"
-            ])
+        # Return agent with highest score, or first agent if tie
+        if agent_scores:
+            return max(agent_scores.items(), key=lambda x: x[1])[0]
         
-        # General AI-powered suggestions
-        general_suggestions = [
-            "🤖 Switch to voice interaction mode",
-            "🔄 Continue with multi-agent collaboration",
-            "📋 Generate project documentation",
-            "🚀 Prepare for deployment"
-        ]
+        return available_agents[0]
+
+    async def _single_agent_response(
+        self, 
+        context: ConversationContext, 
+        user_message: str, 
+        agent: AgentRole
+    ) -> Dict[str, Any]:
+        """Generate response from a single agent"""
         
-        suggestions.extend(general_suggestions)
-        return suggestions[:4]  # Return top 4 suggestions
-    
-    async def _generate_next_actions(self, message: str, agent: str, response: str) -> List[Dict]:
-        """Generate contextual next actions"""
+        agent_config = self.agent_configs[agent]
         
-        actions = []
+        # Build conversation history for context
+        messages = [{"role": "system", "content": agent_config["system_prompt"]}]
         
-        # Analyze response for actionable items
-        if "implement" in response.lower():
-            actions.append({
-                "action": "Start Implementation",
-                "description": "Begin implementing the suggested solution",
-                "priority": "high",
-                "estimated_time": "30-60 minutes",
-                "requires_agent": "developer"
-            })
+        # Add recent conversation history (last 5 messages for context)
+        recent_history = context.conversation_history[-10:] if context.conversation_history else []
+        for msg in recent_history:
+            if msg["role"] in ["user", "assistant"]:
+                messages.append({"role": msg["role"], "content": msg["content"]})
         
-        if "test" in response.lower():
-            actions.append({
-                "action": "Create Test Cases", 
-                "description": "Generate comprehensive test cases",
-                "priority": "medium",
-                "estimated_time": "15-30 minutes",
-                "requires_agent": "tester"
-            })
-        
-        if "design" in response.lower() or "ui" in response.lower():
-            actions.append({
-                "action": "Design Review",
-                "description": "Get UI/UX design recommendations", 
-                "priority": "medium",
-                "estimated_time": "20-40 minutes",
-                "requires_agent": "designer"
-            })
-        
-        # Default next actions
-        actions.append({
-            "action": "Continue Conversation",
-            "description": "Ask follow-up questions or request clarifications",
-            "priority": "low",
-            "estimated_time": "5-10 minutes",
-            "requires_agent": agent
-        })
-        
-        return actions[:3]  # Return top 3 actions
-    
-    async def _generate_agent_insights(self, agent: str, message: str, response: str) -> List[str]:
-        """Generate agent-specific insights"""
-        
-        insights = []
-        
-        # Agent specialization insights
-        agent_config = self.agent_specialists.get(agent, {})
-        expertise = agent_config.get("expertise", [])
-        
-        insights.append(f"💡 As your {agent} agent, I focused on: {', '.join(expertise)}")
-        
-        # Collaboration insights
-        if agent_config.get("collaboration_strength"):
-            collabs = ", ".join(agent_config["collaboration_strength"])
-            insights.append(f"🤝 I work best with: {collabs} agents")
-        
-        # Context-specific insights
-        if len(message) > 100:
-            insights.append("📋 Detailed request processed - comprehensive analysis provided")
-        
-        if any(tech in message.lower() for tech in ["react", "python", "api", "database"]):
-            insights.append("⚡ Technical context detected - leveraging specialized knowledge")
-        
-        return insights[:3]
-    
-    async def _update_conversation_memory(
-        self, conversation_id: str, message: str, response: str, agent: str
-    ):
-        """Update conversation memory for better context"""
-        
-        if conversation_id not in self.conversation_memory:
-            self.conversation_memory[conversation_id] = {
-                "interactions": [],
-                "context": {},
-                "preferences": {},
-                "agents_used": [],
-                "topics": []
-            }
-        
-        memory = self.conversation_memory[conversation_id]
-        
-        # Add interaction
-        memory["interactions"].append({
-            "timestamp": datetime.utcnow().isoformat(),
-            "agent": agent,
-            "message_length": len(message),
-            "response_length": len(response),
-            "topics_detected": self._extract_topics(message + " " + response)
-        })
-        
-        # Track agents used
-        if agent not in memory["agents_used"]:
-            memory["agents_used"].append(agent)
-        
-        # Update topics
-        new_topics = self._extract_topics(message + " " + response)
-        memory["topics"] = list(set(memory["topics"] + new_topics))
-        
-        # Keep memory manageable (last 20 interactions)
-        memory["interactions"] = memory["interactions"][-20:]
-    
-    def _extract_topics(self, text: str) -> List[str]:
-        """Extract key topics from text"""
-        
-        tech_keywords = [
-            "react", "python", "javascript", "api", "database", "ui", "ux", "design",
-            "testing", "security", "performance", "deployment", "integration"
-        ]
-        
-        topics = []
-        text_lower = text.lower()
-        
-        for keyword in tech_keywords:
-            if keyword in text_lower:
-                topics.append(keyword)
-        
-        return topics[:5]  # Return top 5 topics
-    
-    async def get_available_models(self) -> List[Dict]:
-        """Get enhanced models with 2025 capabilities"""
+        # Add current user message
+        messages.append({"role": "user", "content": user_message})
         
         try:
-            # Use parent method as base
-            base_models = await super().get_available_models()
+            completion = await self.groq_client.chat.completions.create(
+                model=agent_config["model"],
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1500,
+                top_p=0.9,
+                stream=False
+            )
             
-            # Enhance with 2025 features
-            enhanced_models = []
-            for model in base_models:
-                enhanced_model = {
-                    **model,
-                    "enhanced_2025": True,
-                    "multi_agent_ready": True,
-                    "voice_compatible": True,
-                    "context_window": 32768,
-                    "collaboration_optimized": True,
-                    "real_time_capable": True
-                }
-                enhanced_models.append(enhanced_model)
+            response_content = completion.choices[0].message.content
             
-            return enhanced_models
+            return {
+                "content": response_content,
+                "agent": agent_config["name"],
+                "agent_role": agent.value,
+                "model_used": agent_config["model"],
+                "type": "single_agent",
+                "agents": [agent.value]
+            }
             
         except Exception as e:
-            logger.error(f"Failed to get enhanced models: {e}")
-            return []
-    
-    async def get_enhanced_agents(self) -> List[Dict]:
-        """Get enhanced agents with specialization info"""
-        
-        enhanced_agents = []
-        
-        for agent_id, config in self.agent_specialists.items():
-            enhanced_agents.append({
-                "id": agent_id,
-                "name": f"Aether {agent_id.title()}",
-                "icon": self._get_agent_icon(agent_id),
-                "description": f"Specialized {agent_id} agent with enhanced 2025 capabilities",
-                "expertise": config["expertise"],
-                "preferred_model": config["preferred_model"],
-                "collaboration_strength": config["collaboration_strength"],
-                "handoff_triggers": config["handoff_triggers"],
-                "enhanced_2025": True,
-                "multi_agent_ready": True,
-                "voice_capable": True,
-                "real_time_collaboration": True
-            })
-        
-        return enhanced_agents
-    
-    def _get_agent_icon(self, agent_id: str) -> str:
-        """Get icon for agent"""
-        icons = {
-            "developer": "💻",
-            "designer": "🎨", 
-            "tester": "🧪",
-            "integrator": "🔗",
-            "analyst": "📊"
-        }
-        return icons.get(agent_id, "🤖")
-    
-    async def get_conversation_analytics(self, user_id: str) -> Dict:
-        """Get enhanced conversation analytics"""
-        
-        analytics = {
-            "total_conversations": 0,
-            "total_messages": 0,
-            "most_used_agent": "developer",
-            "collaboration_events": 0,
-            "avg_response_time": 2.3,
-            "success_rate": 0.98,
-            "user_satisfaction": 4.8,
-            "enhanced_features_used": {
-                "multi_agent_collaboration": 0,
-                "voice_interaction": 0,
-                "smart_suggestions": 0,
-                "intelligent_handoffs": 0
+            logger.error(f"Error in single agent response: {e}")
+            return {
+                "content": f"Sorry, I encountered an error while processing your request. Please try again.",
+                "agent": agent_config["name"],
+                "agent_role": agent.value,
+                "error": str(e),
+                "type": "error"
             }
+
+    async def _collaborative_response(
+        self, 
+        context: ConversationContext, 
+        user_message: str, 
+        agents: List[AgentRole]
+    ) -> Dict[str, Any]:
+        """Generate collaborative response from multiple agents"""
+        
+        responses = []
+        
+        # Get responses from each agent
+        for agent in agents:
+            response = await self._single_agent_response(context, user_message, agent)
+            if "error" not in response:
+                responses.append({
+                    "agent": response["agent"],
+                    "role": agent.value,
+                    "content": response["content"]
+                })
+        
+        if not responses:
+            return {
+                "content": "I apologize, but I'm having trouble processing your request right now. Please try again.",
+                "type": "error"
+            }
+        
+        # Combine responses in a structured way
+        combined_content = "Here are perspectives from different team members:\n\n"
+        
+        for i, response in enumerate(responses):
+            combined_content += f"**{response['agent']} ({response['role'].replace('_', ' ').title()}):**\n"
+            combined_content += f"{response['content']}\n\n"
+        
+        return {
+            "content": combined_content,
+            "type": "collaboration",
+            "agents": [agent.value for agent in agents],
+            "individual_responses": responses
         }
+
+    async def _agent_handoff_response(
+        self, 
+        context: ConversationContext, 
+        user_message: str, 
+        strategy: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Handle agent handoff with explanation"""
         
-        # Calculate from conversation memory
-        for conv_id, memory in self.conversation_memory.items():
-            analytics["total_conversations"] += 1
-            analytics["total_messages"] += len(memory["interactions"])
+        primary_agent = strategy["primary_agent"]
+        from_agents = [agent.value for agent in strategy["from_agents"]]
+        to_agents = [agent.value for agent in strategy["to_agents"]]
+        
+        # Update active agents in context
+        context.active_agents = strategy["to_agents"]
+        
+        # Get response from new primary agent
+        response = await self._single_agent_response(context, user_message, primary_agent)
+        
+        if "error" not in response:
+            # Add handoff explanation
+            agent_name = self.agent_configs[primary_agent]["name"]
+            handoff_intro = f"I'm bringing in {agent_name} who specializes in this area.\n\n"
+            response["content"] = handoff_intro + response["content"]
+            response["type"] = "handoff"
+            response["handoff_info"] = {
+                "from": from_agents,
+                "to": to_agents,
+                "reason": "Specialized expertise required"
+            }
+        
+        return response
+
+    async def get_conversation_summary(self, session_id: str) -> Dict[str, Any]:
+        """Get intelligent summary of conversation"""
+        
+        if session_id not in self.conversation_contexts:
+            return {"error": "Conversation not found"}
+        
+        context = self.conversation_contexts[session_id]
+        
+        if not context.conversation_history:
+            return {"summary": "No conversation history available"}
+        
+        # Use Sage (Project Manager) to summarize the conversation
+        summary_prompt = f"""Please provide a concise summary of this conversation, including:
+1. Main topics discussed
+2. Key decisions made
+3. Action items or next steps
+4. Areas that might need follow-up
+
+Conversation history:
+{json.dumps(context.conversation_history[-20:], indent=2)}"""
+        
+        try:
+            sage_config = self.agent_configs[AgentRole.PROJECT_MANAGER]
+            completion = await self.groq_client.chat.completions.create(
+                model=sage_config["model"],
+                messages=[
+                    {"role": "system", "content": sage_config["system_prompt"]},
+                    {"role": "user", "content": summary_prompt}
+                ],
+                temperature=0.5,
+                max_tokens=800
+            )
             
-            if len(memory["agents_used"]) > 1:
-                analytics["enhanced_features_used"]["multi_agent_collaboration"] += 1
+            return {
+                "summary": completion.choices[0].message.content,
+                "total_messages": len(context.conversation_history),
+                "active_agents": [agent.value for agent in context.active_agents],
+                "session_id": session_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating conversation summary: {e}")
+            return {"error": "Failed to generate summary"}
+
+    def get_active_agents(self, session_id: str) -> List[str]:
+        """Get list of currently active agents for a session"""
         
-        return analytics
+        if session_id not in self.conversation_contexts:
+            return []
+        
+        context = self.conversation_contexts[session_id]
+        return [
+            {
+                "role": agent.value,
+                "name": self.agent_configs[agent]["name"],
+                "capabilities": self.agent_configs[agent]["capabilities"]
+            }
+            for agent in context.active_agents
+        ]
+
+    async def cleanup_old_conversations(self, max_age_hours: int = 24):
+        """Clean up old conversation contexts to free memory"""
+        
+        current_time = datetime.utcnow()
+        sessions_to_remove = []
+        
+        for session_id, context in self.conversation_contexts.items():
+            if context.conversation_history:
+                last_message_time = datetime.fromisoformat(
+                    context.conversation_history[-1]["timestamp"]
+                )
+                hours_since_last_message = (current_time - last_message_time).total_seconds() / 3600
+                
+                if hours_since_last_message > max_age_hours:
+                    sessions_to_remove.append(session_id)
+        
+        for session_id in sessions_to_remove:
+            del self.conversation_contexts[session_id]
+        
+        logger.info(f"Cleaned up {len(sessions_to_remove)} old conversation contexts")
