@@ -40,7 +40,7 @@ class EnhancedAIService:
                 "name": "Dev",
                 "personality": "Technical expert focused on clean, efficient code",
                 "capabilities": ["coding", "debugging", "architecture", "best_practices"],
-                "model": "llama-3.1-70b-versatile",  # Use best model for complex development tasks
+                "model": "llama-3.3-70b-versatile",  # Use best model for complex development tasks
                 "system_prompt": """You are Dev, a senior software developer with expertise in modern web technologies, clean code practices, and system architecture. You focus on:
 - Writing efficient, maintainable code
 - Following best practices and design patterns
