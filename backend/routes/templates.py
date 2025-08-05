@@ -49,27 +49,10 @@ async def get_templates(
 
 @router.get("/categories")
 async def get_template_categories():
-    """Get template categories"""
-    try:
-        db = await get_database()
-        
-        categories = await db.templates.distinct("category")
-        
-        # Get counts for each category
-        category_data = []
-        for category in categories:
-            count = await db.templates.count_documents({"category": category})
-            category_data.append({
-                "name": category,
-                "count": count,
-                "slug": category.lower().replace(" ", "-")
-            })
-        
-        return {"categories": category_data}
-        
-    except Exception as e:
-        logger.error(f"Categories fetch error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch categories")
+    """Get all template categories with counts"""
+    return {
+        "categories": enhanced_template_library.get_categories()
+    }
 
 @router.get("/{template_id}")
 async def get_template_details(template_id: str):
