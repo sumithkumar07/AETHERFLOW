@@ -467,7 +467,7 @@ async def get_user_pipelines(current_user = Depends(get_current_user)):
 
 @router.get("/deployments")
 async def get_user_deployments(current_user = Depends(get_current_user)):
-    """Get all deployments for current user"" 
+    """Get all deployments for current user"""
     db = await get_database()
     deployments = await db.deployments.find(
         {"user_id": current_user["id"]}
