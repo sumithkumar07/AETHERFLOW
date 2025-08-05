@@ -142,6 +142,7 @@ app.include_router(enhanced_editor_router, prefix="/api/editor", tags=["Enhanced
 app.include_router(enhanced_templates_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates"])
 
 # Include ALL NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION 
+app.include_router(competitive_features_api_router, prefix="/api/competitive", tags=["Competitive Features API - Main Interface"])
 app.include_router(natural_language_planning_router, prefix="/api/planning/nl", tags=["Natural Language Planning"])
 app.include_router(persistent_memory_router, prefix="/api/memory/persistent", tags=["Persistent Memory System"])
 app.include_router(git_cicd_enhanced_router, prefix="/api/git/enhanced", tags=["Enhanced Git & CI/CD"])
