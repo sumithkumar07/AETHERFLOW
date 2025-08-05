@@ -1,277 +1,444 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, createContext, useContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  Bars3Icon, 
+  Bars3Icon,
   XMarkIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   DeviceTabletIcon
 } from '@heroicons/react/24/outline'
 
-const ResponsiveLayout = ({ children, sidebar, sidebarWidth = 280, collapsible = true }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [screenSize, setScreenSize] = useState('desktop')
-  const [isMobile, setIsMobile] = useState(false)
+// Breakpoint context for responsive design
+const ResponsiveContext = createContext()
 
-  // Detect screen size
+export const useResponsive = () => {
+  const context = useContext(ResponsiveContext)
+  if (!context) {
+    throw new Error('useResponsive must be used within ResponsiveProvider')
+  }
+  return context
+}
+
+// Responsive provider with advanced breakpoint detection
+export const ResponsiveProvider = ({ children }) => {
+  const [viewport, setViewport] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+    height: typeof window !== 'undefined' ? window.innerHeight : 800
+  })
+
+  const [device, setDevice] = useState('desktop')
+  const [orientation, setOrientation] = useState('landscape')
+
+  // Breakpoint definitions (following Tailwind CSS)
+  const breakpoints = {
+    xs: 475,
+    sm: 640,
+    md: 768,
+    lg: 1024,
+    xl: 1280,
+    '2xl': 1536
+  }
+
+  // Device detection logic
+  const detectDevice = (width) => {
+    if (width < breakpoints.sm) return 'mobile'
+    if (width < breakpoints.lg) return 'tablet'
+    return 'desktop'
+  }
+
+  // Update viewport and device information
+  const updateViewport = () => {
+    const width = window.innerWidth
+    const height = window.innerHeight
+    
+    setViewport({ width, height })
+    setDevice(detectDevice(width))
+    setOrientation(width > height ? 'landscape' : 'portrait')
+  }
+
   useEffect(() => {
+    updateViewport()
+    
     const handleResize = () => {
-      const width = window.innerWidth
-      
-      if (width < 640) {
-        setScreenSize('mobile')
-        setIsMobile(true)
-        setSidebarOpen(false) // Auto-close sidebar on mobile
-      } else if (width < 1024) {
-        setScreenSize('tablet')
-        setIsMobile(true)
-        setSidebarOpen(false)
-      } else {
-        setScreenSize('desktop')
-        setIsMobile(false)
-        setSidebarOpen(true) // Auto-open sidebar on desktop
-      }
+      updateViewport()
     }
 
-    handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen)
-  }
+  // Utility functions for responsive checks
+  const isMobile = device === 'mobile'
+  const isTablet = device === 'tablet'
+  const isDesktop = device === 'desktop'
+  const isTouch = 'ontouchstart' in window
+  const isSmallScreen = viewport.width < breakpoints.md
+  const isMediumScreen = viewport.width >= breakpoints.md && viewport.width < breakpoints.xl
+  const isLargeScreen = viewport.width >= breakpoints.xl
 
-  const getScreenIcon = () => {
-    switch (screenSize) {
-      case 'mobile':
-        return <DevicePhoneMobileIcon className="w-4 h-4" />
-      case 'tablet':
-        return <DeviceTabletIcon className="w-4 h-4" />
-      default:
-        return <ComputerDesktopIcon className="w-4 h-4" />
-    }
+  // Breakpoint utilities
+  const isAbove = (breakpoint) => viewport.width >= breakpoints[breakpoint]
+  const isBelow = (breakpoint) => viewport.width < breakpoints[breakpoint]
+  const isBetween = (min, max) => viewport.width >= breakpoints[min] && viewport.width < breakpoints[max]
+
+  const contextValue = {
+    viewport,
+    device,
+    orientation,
+    isMobile,
+    isTablet,
+    isDesktop,
+    isTouch,
+    isSmallScreen,
+    isMediumScreen,
+    isLargeScreen,
+    isAbove,
+    isBelow,
+    isBetween,
+    breakpoints
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
-      {/* Sidebar for desktop/tablet */}
-      {sidebar && (
+    <ResponsiveContext.Provider value={contextValue}>
+      {children}
+    </ResponsiveContext.Provider>
+  )
+}
+
+// Enhanced Container with responsive behavior
+export const ResponsiveContainer = ({ 
+  children, 
+  maxWidth = 'xl',
+  padding = true,
+  center = true,
+  className = '',
+  ...props 
+}) => {
+  const { isSmallScreen, isMediumScreen } = useResponsive()
+
+  const maxWidthClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+    '4xl': 'max-w-4xl',
+    '6xl': 'max-w-6xl',
+    '7xl': 'max-w-7xl',
+    full: 'max-w-full'
+  }
+
+  const paddingClasses = padding 
+    ? isSmallScreen 
+      ? 'px-4 py-4' 
+      : isMediumScreen 
+        ? 'px-6 py-6' 
+        : 'px-8 py-8'
+    : ''
+
+  return (
+    <div
+      className={`
+        ${maxWidthClasses[maxWidth] || maxWidthClasses.xl} 
+        ${center ? 'mx-auto' : ''} 
+        ${paddingClasses} 
+        ${className}
+      `}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Mobile-first grid system
+export const ResponsiveGrid = ({ 
+  children,
+  cols = { mobile: 1, tablet: 2, desktop: 3 },
+  gap = 6,
+  className = '',
+  ...props 
+}) => {
+  const { isMobile, isTablet } = useResponsive()
+
+  const getColumns = () => {
+    if (isMobile) return cols.mobile || 1
+    if (isTablet) return cols.tablet || cols.mobile || 2
+    return cols.desktop || cols.tablet || cols.mobile || 3
+  }
+
+  const gridColumns = getColumns()
+  const gapClass = `gap-${gap}`
+
+  return (
+    <div
+      className={`
+        grid grid-cols-${gridColumns} ${gapClass} ${className}
+      `}
+      style={{
+        gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Responsive navigation drawer/sidebar
+export const ResponsiveNavigation = ({ 
+  isOpen, 
+  onClose, 
+  children,
+  position = 'left',
+  overlay = true,
+  className = ''
+}) => {
+  const { isMobile, isTablet } = useResponsive()
+  const shouldShowDrawer = isMobile || isTablet
+
+  if (!shouldShowDrawer) {
+    // Desktop: show as regular sidebar
+    return (
+      <nav className={`${className}`}>
+        {children}
+      </nav>
+    )
+  }
+
+  // Mobile/Tablet: show as drawer
+  return (
+    <AnimatePresence>
+      {isOpen && (
         <>
-          {/* Desktop/Tablet Sidebar */}
-          <AnimatePresence>
-            {sidebarOpen && !isMobile && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: sidebarWidth, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="hidden sm:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg"
-                style={{ minWidth: sidebarWidth }}
+          {/* Overlay */}
+          {overlay && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            />
+          )}
+
+          {/* Drawer */}
+          <motion.nav
+            initial={{ 
+              x: position === 'left' ? '-100%' : '100%',
+              opacity: 0 
+            }}
+            animate={{ 
+              x: 0,
+              opacity: 1 
+            }}
+            exit={{ 
+              x: position === 'left' ? '-100%' : '100%',
+              opacity: 0 
+            }}
+            transition={{ 
+              type: 'spring',
+              damping: 25,
+              stiffness: 200
+            }}
+            className={`
+              fixed top-0 ${position === 'left' ? 'left-0' : 'right-0'} 
+              h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 
+              border-r dark:border-gray-800 shadow-2xl z-50
+              ${className}
+            `}
+          >
+            {/* Close button */}
+            <div className="flex justify-end p-4">
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Close navigation"
               >
-                {/* Sidebar Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-2">
-                    {getScreenIcon()}
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      {screenSize.charAt(0).toUpperCase() + screenSize.slice(1)} View
-                    </span>
-                  </div>
-                  
-                  {collapsible && (
-                    <motion.button
-                      onClick={toggleSidebar}
-                      className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <ChevronLeftIcon className="w-4 h-4" />
-                    </motion.button>
-                  )}
-                </div>
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
 
-                {/* Sidebar Content */}
-                <div className="flex-1 overflow-y-auto">
-                  {sidebar}
-                </div>
-
-                {/* Sidebar Footer */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>Responsive Layout</span>
-                    <span className="capitalize">{screenSize}</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Mobile Sidebar Overlay */}
-          <AnimatePresence>
-            {sidebarOpen && isMobile && (
-              <>
-                {/* Backdrop */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={toggleSidebar}
-                  className="fixed inset-0 z-40 bg-black bg-opacity-50 sm:hidden"
-                />
-                
-                {/* Mobile Sidebar */}
-                <motion.div
-                  initial={{ x: -sidebarWidth }}
-                  animate={{ x: 0 }}
-                  exit={{ x: -sidebarWidth }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 shadow-xl sm:hidden"
-                  style={{ width: Math.min(sidebarWidth, window.innerWidth * 0.8) }}
-                >
-                  {/* Mobile Sidebar Header */}
-                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center space-x-2">
-                      <DevicePhoneMobileIcon className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        Mobile Menu
-                      </span>
-                    </div>
-                    
-                    <motion.button
-                      onClick={toggleSidebar}
-                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-
-                  {/* Mobile Sidebar Content */}
-                  <div className="flex-1 overflow-y-auto">
-                    {sidebar}
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+            {/* Navigation content */}
+            <div className="px-4 pb-4">
+              {children}
+            </div>
+          </motion.nav>
         </>
       )}
+    </AnimatePresence>
+  )
+}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar (for mobile sidebar toggle) */}
-        {sidebar && (
-          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sm:hidden">
-            <motion.button
-              onClick={toggleSidebar}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Bars3Icon className="w-5 h-5" />
-            </motion.button>
-            
-            <div className="flex items-center space-x-2">
-              {getScreenIcon()}
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                {screenSize.charAt(0).toUpperCase() + screenSize.slice(1)}
-              </span>
-            </div>
-          </div>
-        )}
+// Responsive card with adaptive layout
+export const ResponsiveCard = ({ 
+  children, 
+  variant = 'elevated',
+  padding = 'normal',
+  className = '',
+  ...props 
+}) => {
+  const { isSmallScreen } = useResponsive()
 
-        {/* Collapsed Sidebar Toggle (Desktop) */}
-        {sidebar && !sidebarOpen && !isMobile && collapsible && (
-          <motion.button
-            onClick={toggleSidebar}
-            className="fixed left-4 top-1/2 z-30 p-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-            style={{ transform: 'translateY(-50%)' }}
-            whileHover={{ scale: 1.05, x: 4 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <ChevronRightIcon className="w-4 h-4" />
-          </motion.button>
-        )}
+  const variants = {
+    flat: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
+    elevated: 'bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700',
+    glass: 'bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-white/20 dark:border-gray-700/50',
+    gradient: 'bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg'
+  }
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto focus:outline-none">
-          <div className={`h-full ${
-            screenSize === 'mobile' ? 'px-4 py-4' : 
-            screenSize === 'tablet' ? 'px-6 py-6' : 
-            'px-8 py-8'
-          }`}>
-            {children}
-          </div>
-        </main>
+  const paddingClasses = {
+    none: '',
+    tight: isSmallScreen ? 'p-3' : 'p-4',
+    normal: isSmallScreen ? 'p-4' : 'p-6',
+    loose: isSmallScreen ? 'p-6' : 'p-8'
+  }
 
-        {/* Responsive Design Indicator (Development Only) */}
-        {process.env.NODE_ENV === 'development' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-4 right-4 flex items-center space-x-2 px-3 py-2 bg-black bg-opacity-75 text-white text-xs rounded-lg font-mono z-50"
-          >
-            {getScreenIcon()}
-            <span>{screenSize}</span>
-            <span>•</span>
-            <span>{window.innerWidth}px</span>
-            {sidebarOpen && <span>• Sidebar Open</span>}
-          </motion.div>
-        )}
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
+      className={`
+        ${variants[variant]} 
+        ${paddingClasses[padding]} 
+        rounded-xl transition-all duration-200 ${className}
+      `}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// Responsive text that adapts to screen size
+export const ResponsiveText = ({ 
+  children,
+  variant = 'body',
+  className = '',
+  ...props 
+}) => {
+  const { isSmallScreen, isMediumScreen } = useResponsive()
+
+  const variants = {
+    h1: isSmallScreen 
+      ? 'text-2xl font-bold' 
+      : isMediumScreen 
+        ? 'text-3xl font-bold' 
+        : 'text-4xl font-bold',
+    h2: isSmallScreen 
+      ? 'text-xl font-semibold' 
+      : isMediumScreen 
+        ? 'text-2xl font-semibold' 
+        : 'text-3xl font-semibold',
+    h3: isSmallScreen 
+      ? 'text-lg font-medium' 
+      : 'text-xl font-medium',
+    h4: isSmallScreen 
+      ? 'text-base font-medium' 
+      : 'text-lg font-medium',
+    body: 'text-sm md:text-base',
+    caption: 'text-xs md:text-sm',
+    large: isSmallScreen 
+      ? 'text-lg' 
+      : 'text-xl'
+  }
+
+  const Component = variant.startsWith('h') ? variant : 'p'
+
+  return (
+    <Component
+      className={`${variants[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </Component>
+  )
+}
+
+// Responsive image with adaptive sizing
+export const ResponsiveImage = ({ 
+  src, 
+  alt, 
+  aspectRatio = '16/9',
+  sizes = '100vw',
+  className = '',
+  ...props 
+}) => {
+  const { isSmallScreen } = useResponsive()
+  const [loaded, setLoaded] = useState(false)
+
+  const aspectRatioClasses = {
+    '1/1': 'aspect-square',
+    '4/3': 'aspect-4/3', 
+    '16/9': 'aspect-video',
+    '21/9': 'aspect-21/9'
+  }
+
+  return (
+    <div className={`${aspectRatioClasses[aspectRatio]} overflow-hidden ${className}`}>
+      <motion.img
+        src={src}
+        alt={alt}
+        sizes={sizes}
+        onLoad={() => setLoaded(true)}
+        initial={{ opacity: 0, scale: 1.1 }}
+        animate={{ 
+          opacity: loaded ? 1 : 0, 
+          scale: loaded ? 1 : 1.1 
+        }}
+        transition={{ duration: 0.3 }}
+        className="w-full h-full object-cover"
+        {...props}
+      />
+      
+      {/* Loading placeholder */}
+      {!loaded && (
+        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Device indicator for development/debugging
+export const DeviceIndicator = ({ show = process.env.NODE_ENV === 'development' }) => {
+  const { device, viewport, orientation } = useResponsive()
+
+  if (!show) return null
+
+  const deviceIcons = {
+    mobile: DevicePhoneMobileIcon,
+    tablet: DeviceTabletIcon,
+    desktop: ComputerDesktopIcon
+  }
+
+  const DeviceIcon = deviceIcons[device]
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-black/80 text-white text-xs p-3 rounded-lg font-mono z-50 backdrop-blur-sm">
+      <div className="flex items-center space-x-2 mb-1">
+        <DeviceIcon className="w-4 h-4" />
+        <span className="capitalize">{device}</span>
+      </div>
+      <div>
+        {viewport.width} x {viewport.height}
+      </div>
+      <div className="capitalize text-gray-300">
+        {orientation}
       </div>
     </div>
   )
 }
 
-export default ResponsiveLayout
-
-// Higher-order component for easy integration
-export const withResponsiveLayout = (Component, layoutProps = {}) => {
-  return (props) => (
-    <ResponsiveLayout {...layoutProps}>
-      <Component {...props} />
-    </ResponsiveLayout>
-  )
-}
-
-// Hook for responsive utilities
-export const useResponsive = () => {
-  const [screenSize, setScreenSize] = useState('desktop')
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      
-      setDimensions({ width, height })
-      
-      if (width < 640) {
-        setScreenSize('mobile')
-      } else if (width < 1024) {
-        setScreenSize('tablet')
-      } else {
-        setScreenSize('desktop')
-      }
-    }
-
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  return {
-    screenSize,
-    dimensions,
-    isMobile: screenSize === 'mobile',
-    isTablet: screenSize === 'tablet',
-    isDesktop: screenSize === 'desktop',
-    isMobileOrTablet: ['mobile', 'tablet'].includes(screenSize)
-  }
+export default {
+  ResponsiveProvider,
+  useResponsive,
+  ResponsiveContainer,
+  ResponsiveGrid,
+  ResponsiveNavigation,
+  ResponsiveCard,
+  ResponsiveText,
+  ResponsiveImage,
+  DeviceIndicator
 }
