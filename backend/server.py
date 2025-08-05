@@ -125,11 +125,13 @@ app.include_router(enhanced_ai_v3_router, prefix="/api/ai/v3", tags=["Enhanced A
 # Include Phase 1 Optimized AI Routes - Enterprise Performance
 app.include_router(optimized_ai_v4_router, prefix="/api/ai", tags=["Optimized AI v4 - Enterprise"])
 
-# Include Gap-Closing Enhancement Routes
+# Include Gap-Closing Enhancement Routes - All Competitive Features
 app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
 app.include_router(git_cicd_router, prefix="/api/git", tags=["Git & CI/CD Integration"])
 app.include_router(memory_system_router, prefix="/api/memory", tags=["Memory System"])
 app.include_router(conversational_debugging_router, prefix="/api/debug", tags=["Conversational Debugging"])
+app.include_router(enhanced_editor_router, prefix="/api/editor", tags=["Enhanced Editor & VS Code"])
+app.include_router(enhanced_templates_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates"])
 
 # Include additional missing routers
 app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advanced AI"])
