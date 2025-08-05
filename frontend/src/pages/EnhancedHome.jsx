@@ -3,18 +3,15 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
   SparklesIcon, 
-  CodeBracketIcon, 
-  RocketLaunchIcon,
   ChatBubbleLeftRightIcon,
+  RocketLaunchIcon,
   DocumentDuplicateIcon,
   ArrowRightIcon,
   UserGroupIcon,
   CommandLineIcon,
   BoltIcon,
-  StarIcon,
   CheckCircleIcon,
   CpuChipIcon,
-  MicrophoneIcon,
   EyeIcon,
   GlobeAltIcon,
   LightBulbIcon,
@@ -32,56 +29,64 @@ const EnhancedHome = () => {
   const coreFeatures = [
     {
       icon: ChatBubbleLeftRightIcon,
-      title: 'Enhanced AI Chat',
-      description: 'Smart conversation with specialized AI agents that collaborate intelligently',
+      title: 'Multi-Agent AI Chat',
+      description: 'Coordinate with 5 specialized AI agents: Developer, Designer, Architect, Tester, and Project Manager',
       color: 'blue',
       badge: 'ENHANCED',
-      improvements: ['Multi-agent coordination', 'Smart suggestions', 'Voice interface']
+      improvements: ['Intelligent agent handoff', 'Real-time collaboration', 'Context-aware responses']
     },
     {
       icon: CpuChipIcon,
-      title: 'Intelligent Agents',
-      description: 'Specialized AI agents for development, design, testing, and integration',
+      title: 'Smart Coordination',
+      description: 'Agents automatically collaborate and hand off tasks based on your needs',
       color: 'purple',
       badge: 'SMART',
-      improvements: ['Agent handoffs', 'Collaboration detection', 'Expert specialization']
+      improvements: ['Auto agent selection', 'Seamless handoffs', 'Conversation summarization']
     },
     {
-      icon: ChartBarIcon,
-      title: 'Advanced Analytics',
-      description: 'Real-time insights into your development workflow and AI interactions',
+      icon: RocketLaunchIcon,
+      title: 'Lightning Fast',
+      description: 'Powered by Groq API with sub-2 second response times and smart model routing',
       color: 'green',
-      badge: 'LIVE',
-      improvements: ['Conversation analytics', 'Performance tracking', 'Usage insights']
+      badge: 'FAST',
+      improvements: ['10x faster responses', 'Cost optimization', '4 ultra-fast models']
     },
     {
       icon: BoltIcon,
-      title: 'Simplified Workflow',
-      description: 'Streamlined navigation and intuitive user experience',
+      title: 'Simplified Interface',
+      description: 'Streamlined 4-category navigation designed for maximum productivity',
       color: 'orange',
-      badge: 'IMPROVED',
-      improvements: ['4 main categories', 'Quick access', 'Better organization']
+      badge: 'SIMPLE',
+      improvements: ['4 main categories', 'Intuitive workflows', 'Enhanced UX patterns']
     }
   ]
 
-  const aiCapabilities = [
-    { text: 'Multi-agent collaboration', icon: UserGroupIcon, improved: true },
-    { text: 'Smart conversation quality', icon: ChatBubbleLeftRightIcon, improved: true },
-    { text: 'Intelligent code generation', icon: CodeBracketIcon, improved: true },
-    { text: 'Enhanced voice interface', icon: MicrophoneIcon, improved: true },
-    { text: 'Real-time collaboration', icon: GlobeAltIcon, improved: true },
-    { text: 'Simplified navigation', icon: CommandLineIcon, improved: true }
+  const aiAgents = [
+    { name: 'Dev', role: 'Developer', icon: CommandLineIcon, specialty: 'Clean code & architecture', color: 'blue' },
+    { name: 'Luna', role: 'Designer', icon: PaintBrushIcon, specialty: 'UI/UX & accessibility', color: 'pink' },
+    { name: 'Atlas', role: 'Architect', icon: CpuChipIcon, specialty: 'System design & scalability', color: 'purple' },
+    { name: 'Quinn', role: 'Tester', icon: BeakerIcon, specialty: 'Quality assurance & testing', color: 'green' },
+    { name: 'Sage', role: 'Project Manager', icon: UserGroupIcon, specialty: 'Coordination & delivery', color: 'orange' }
   ]
 
   const stats = [
-    { value: '4', label: 'Main Categories', color: 'text-blue-600', change: 'down from 9' },
-    { value: '5', label: 'AI Agents', color: 'text-purple-600', change: 'enhanced' },
-    { value: '99.9%', label: 'Uptime', color: 'text-green-600', change: 'maintained' },
-    { value: '50%', label: 'Faster Navigation', color: 'text-orange-600', change: 'improvement' }
+    { value: '5', label: 'AI Agents', color: 'text-blue-600', change: 'enhanced coordination' },
+    { value: '<2s', label: 'Response Time', color: 'text-green-600', change: '10x faster' },
+    { value: '4', label: 'Categories', color: 'text-purple-600', change: 'simplified from 9' },
+    { value: '85%', label: 'Cost Savings', color: 'text-orange-600', change: 'vs GPU setup' }
+  ]
+
+  const capabilities = [
+    { text: 'Multi-agent conversations', icon: UserGroupIcon, enhanced: true },
+    { text: 'Intelligent handoffs', icon: ArrowRightIcon, enhanced: true },
+    { text: 'Context-aware responses', icon: LightBulbIcon, enhanced: true },
+    { text: 'Real-time collaboration', icon: GlobeAltIcon, enhanced: true },
+    { text: 'Smart model routing', icon: BoltIcon, enhanced: true },
+    { text: 'Simplified workflows', icon: CheckCircleIcon, enhanced: true }
   ]
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden pt-16">
       {/* Enhanced Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
         <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
@@ -106,10 +111,10 @@ const EnhancedHome = () => {
                 <div className="flex items-center space-x-3">
                   <SparklesIcon className="w-6 h-6 text-blue-500" />
                   <span className="text-sm font-semibold text-gradient">
-                    Enhanced AI Platform - Simplified & Powerful
+                    Enhanced Multi-Agent AI Platform
                   </span>
-                  <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
-                    ENHANCED
+                  <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full animate-pulse">
+                    V3.0
                   </span>
                 </div>
               </div>
@@ -135,30 +140,29 @@ const EnhancedHome = () => {
                 transition={{ delay: 0.6, duration: 0.8 }}
                 className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 leading-relaxed"
               >
-                Experience the enhanced AI development platform with improved conversation quality, 
-                intelligent multi-agent coordination, and simplified workflow structure.
+                Experience intelligent multi-agent collaboration with 5 specialized AI experts working together to deliver exceptional results at lightning speed.
               </motion.p>
 
-              {/* Enhanced Capabilities */}
+              {/* Enhanced Capabilities Grid */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
                 className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12 max-w-4xl mx-auto"
               >
-                {aiCapabilities.map((capability, index) => {
+                {capabilities.map((capability, index) => {
                   const Icon = capability.icon
                   return (
                     <div 
                       key={index}
-                      className="flex items-center space-x-2 px-4 py-3 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-white/20 rounded-xl"
+                      className="flex items-center space-x-2 px-4 py-3 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
                     >
                       <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {capability.text}
                       </span>
-                      {capability.improved && (
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      {capability.enhanced && (
+                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                       )}
                     </div>
                   )
@@ -180,8 +184,8 @@ const EnhancedHome = () => {
                 onMouseLeave={() => setIsHovered(false)}
               >
                 <span className="relative z-10 flex items-center">
-                  <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2" />
-                  Try Enhanced AI
+                  <UserGroupIcon className="w-5 h-5 mr-2" />
+                  Start Multi-Agent Chat
                   <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
                 {isHovered && (
@@ -200,7 +204,7 @@ const EnhancedHome = () => {
                 className="btn-secondary text-lg px-10 py-4 glass"
               >
                 <DocumentDuplicateIcon className="w-5 h-5 mr-2" />
-                <span>Browse Templates</span>
+                <span>Explore Templates</span>
               </Link>
             </motion.div>
 
@@ -236,7 +240,7 @@ const EnhancedHome = () => {
         </div>
       </section>
 
-      {/* Enhanced Features Section */}
+      {/* AI Agents Section */}
       <section className="relative py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -247,10 +251,69 @@ const EnhancedHome = () => {
             className="text-center mb-20"
           >
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              What's Enhanced
+              Meet Your AI Team
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              We've improved every aspect of the platform while keeping the functionality you love
+              5 specialized AI agents work together intelligently, handling tasks from development to deployment
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {aiAgents.map((agent, index) => {
+              const Icon = agent.icon
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.6 }}
+                  className="group relative"
+                >
+                  <div className="card hover-lift group-hover:shadow-glow overflow-hidden h-full">
+                    <div className={`absolute inset-0 bg-gradient-to-br from-${agent.color}-500/5 to-${agent.color}-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}>
+                    </div>
+                    
+                    <div className="relative z-10 text-center">
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r from-${agent.color}-500 to-${agent.color}-600 p-4 mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 mx-auto`}>
+                        <Icon className="w-8 h-8 text-white" />
+                      </div>
+                      
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {agent.name}
+                      </h3>
+                      
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        {agent.role}
+                      </p>
+                      
+                      <p className="text-xs text-gray-500 dark:text-gray-500">
+                        {agent.specialty}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Features Section */}
+      <section className="relative py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-cyan-600/5">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Enhanced Capabilities
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Every aspect improved for better performance, usability, and developer experience
             </p>
           </motion.div>
 
@@ -267,12 +330,10 @@ const EnhancedHome = () => {
                   className="group relative"
                 >
                   <div className="card hover-lift group-hover:shadow-glow overflow-hidden h-full">
-                    {/* Background gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br from-${feature.color}-500/5 to-${feature.color}-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}>
                     </div>
                     
                     <div className="relative z-10 h-full flex flex-col">
-                      {/* Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className={`w-16 h-16 rounded-3xl bg-gradient-to-r from-${feature.color}-500 to-${feature.color}-600 p-4 mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
                           <Icon className="w-8 h-8 text-white" />
@@ -280,15 +341,14 @@ const EnhancedHome = () => {
                         <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                           feature.badge === 'ENHANCED' ? 'bg-blue-500 text-white' :
                           feature.badge === 'SMART' ? 'bg-purple-500 text-white' :
-                          feature.badge === 'LIVE' ? 'bg-green-500 text-white animate-pulse' :
-                          feature.badge === 'IMPROVED' ? 'bg-orange-500 text-white' :
+                          feature.badge === 'FAST' ? 'bg-green-500 text-white animate-pulse' :
+                          feature.badge === 'SIMPLE' ? 'bg-orange-500 text-white' :
                           'bg-gray-500 text-white'
                         }`}>
                           {feature.badge}
                         </span>
                       </div>
                       
-                      {/* Content */}
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {feature.title}
@@ -298,11 +358,10 @@ const EnhancedHome = () => {
                           {feature.description}
                         </p>
 
-                        {/* Improvements */}
                         <div className="space-y-2">
                           <div className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
                             <LightBulbIcon className="w-4 h-4 mr-1 text-yellow-500" />
-                            Key Improvements:
+                            Key Enhancements:
                           </div>
                           <ul className="space-y-1">
                             {feature.improvements.map((improvement, idx) => (
@@ -342,12 +401,12 @@ const EnhancedHome = () => {
             </div>
 
             <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-              Experience the Enhanced
-              <span className="block">Aether AI Platform</span>
+              Ready to Experience
+              <span className="block">Enhanced AI Collaboration?</span>
             </h2>
             <p className="text-xl text-blue-100 mb-12 leading-relaxed">
-              Join the next generation of AI-powered development with improved conversation quality, 
-              intelligent multi-agent coordination, and a simplified, intuitive interface.
+              Join the next generation of AI-powered development with intelligent multi-agent coordination, 
+              lightning-fast responses, and a beautifully simplified interface.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -355,8 +414,8 @@ const EnhancedHome = () => {
                 to={isAuthenticated ? "/chat" : "/signup"}
                 className="inline-flex items-center space-x-3 bg-white text-blue-600 hover:text-blue-700 font-semibold px-10 py-4 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-3xl hover:bg-blue-50 hover:scale-105"
               >
-                <ChatBubbleLeftRightIcon className="w-6 h-6" />
-                <span>Start with Enhanced AI</span>
+                <UserGroupIcon className="w-6 h-6" />
+                <span>Start Multi-Agent Chat</span>
               </Link>
               
               <Link
@@ -364,7 +423,7 @@ const EnhancedHome = () => {
                 className="inline-flex items-center space-x-3 glass border-2 border-white/30 hover:border-white/50 text-white hover:bg-white/10 font-semibold px-10 py-4 rounded-2xl transition-all duration-300 hover:scale-105"
               >
                 <DocumentDuplicateIcon className="w-6 h-6" />
-                <span>Explore Templates</span>
+                <span>Browse Templates</span>
               </Link>
             </div>
           </motion.div>
