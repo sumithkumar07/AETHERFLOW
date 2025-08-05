@@ -140,9 +140,14 @@ app.include_router(conversational_debugging_router, prefix="/api/debug", tags=["
 app.include_router(enhanced_editor_router, prefix="/api/editor", tags=["Enhanced Editor & VS Code"])
 app.include_router(enhanced_templates_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates"])
 
-# Include NEW COMPETITIVE FEATURES
+# Include ALL NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION 
 app.include_router(natural_language_planning_router, prefix="/api/planning/nl", tags=["Natural Language Planning"])
 app.include_router(persistent_memory_router, prefix="/api/memory/persistent", tags=["Persistent Memory System"])
+app.include_router(git_cicd_enhanced_router, prefix="/api/git/enhanced", tags=["Enhanced Git & CI/CD"])
+app.include_router(enhanced_templates_expanded_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates Expanded"])
+app.include_router(conversational_debugging_enhanced_router, prefix="/api/debugging/enhanced", tags=["Enhanced Conversational Debugging"])
+
+# Legacy routes (maintain backward compatibility)
 app.include_router(git_cicd_router, prefix="/api/cicd", tags=["Git & CI/CD Integration"])
 app.include_router(conversational_debugging_router, prefix="/api/debugging", tags=["Conversational Debugging"])
 
