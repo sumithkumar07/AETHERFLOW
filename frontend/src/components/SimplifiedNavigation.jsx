@@ -90,196 +90,235 @@ const SimplifiedNavigation = () => {
   }
 
   return (
-    <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border-b border-gray-200/30 dark:border-gray-700/30 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Enhanced Logo */}
-          <Link 
-            to="/" 
-            className="flex items-center space-x-3 group"
-          >
-            <motion.div 
-              whileHover={{ scale: 1.1, rotate: 10 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300"
-            >
-              <CommandLineIcon className="w-6 h-6 text-white" />
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
-            </motion.div>
+    <>
+      {/* Main Navigation Bar */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-lg' 
+          : 'bg-transparent'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             
-            <motion.div
-              className="flex flex-col"
-              whileHover={{ y: -1 }}
+            {/* Logo & Brand */}
+            <Link 
+              to="/" 
+              className="flex items-center space-x-3 group"
             >
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-                Aether AI
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1 font-medium">
-                Smart Development
-              </span>
-            </motion.div>
-          </Link>
-
-          {/* Desktop Quick Access */}
-          <div className="hidden lg:flex items-center space-x-2">
-            {quickAccessItems.map((item) => (
-              <NavItem key={item.name} item={item} isQuickAccess />
-            ))}
-          </div>
-
-          {/* Right side actions */}
-          <div className="flex items-center space-x-3">
-            {/* Enhanced Global Search */}
-            {isAuthenticated && (
-              <motion.div 
-                className="hidden md:block relative"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="flex items-center space-x-3 px-4 py-2.5 bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl cursor-pointer hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg">
-                  <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Search AI features...</span>
-                  <kbd className="px-2 py-1 text-xs font-bold text-gray-800 dark:text-gray-300 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm">
-                    ⌘K
-                  </kbd>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Active Features Counter */}
-            {isAuthenticated && (
-              <motion.div 
-                className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl border border-green-200/50 dark:border-green-800/50"
+              <motion.div
                 whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg"
               >
-                <SparklesIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-bold text-green-700 dark:text-green-300">
-                  AI Active
-                </span>
+                <SparklesIcon className="w-6 h-6 text-white" />
               </motion.div>
-            )}
+              <div className="hidden sm:block">
+                <div className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  Aether AI
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                  Enhanced Platform
+                </div>
+              </div>
+            </Link>
 
-            {/* Theme Toggle */}
-            <motion.button
-              onClick={toggleTheme}
-              className="p-2.5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300 hover:shadow-lg"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {theme === 'dark' ? (
-                <SunIcon className="w-5 h-5" />
-              ) : (
-                <MoonIcon className="w-5 h-5" />
-              )}
-            </motion.button>
-
-            {/* Authentication */}
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-2">
-                <Link
-                  to="/profile"
-                  className="flex items-center space-x-2 p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300 hover:shadow-lg"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <UserIcon className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="hidden xl:block text-sm font-semibold">
-                    {user?.name || 'Profile'}
-                  </span>
-                </Link>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-1">
+              {mainNavItems.map((item) => {
+                if (item.protected && !isAuthenticated) return null
+                const Icon = item.icon
+                const active = isActive(item.href)
                 
-                <motion.button
-                  onClick={handleLogout}
-                  className="p-2.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 hover:shadow-lg"
-                  title="Logout"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                </motion.button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <Link
-                  to="/login"
-                  className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="btn-primary text-sm px-6 py-2.5 shadow-lg hover:shadow-xl"
-                >
-                  Get Started Free
-                </Link>
-              </div>
-            )}
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`relative flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                      active
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    } ${
+                      item.primary ? 'ring-2 ring-blue-200 dark:ring-blue-800' : ''
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                    <span>{item.name}</span>
+                    
+                    {item.primary && (
+                      <BoltIcon className="w-4 h-4 text-yellow-500 animate-pulse" />
+                    )}
+                    
+                    {active && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-xl -z-10"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
 
-            {/* Simplified Mobile menu button */}
-            <motion.button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="w-6 h-6" />
+            {/* Right Side Actions */}
+            <div className="flex items-center space-x-3">
+              
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? '🌞' : '🌙'}
+              </button>
+
+              {/* User Actions */}
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  {/* Settings */}
+                  <Link
+                    to="/settings"
+                    className={`p-2 rounded-lg transition-colors ${
+                      isActive('/settings')
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <Cog6ToothIcon className="w-5 h-5" />
+                  </Link>
+                  
+                  {/* User Profile */}
+                  <div className="relative group">
+                    <button className="flex items-center space-x-2 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                      <UserIcon className="w-5 h-5" />
+                      {user?.name && (
+                        <span className="hidden lg:block text-sm font-medium">
+                          {user.name}
+                        </span>
+                      )}
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user?.name || 'User'}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {user?.email}
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <Bars3Icon className="w-6 h-6" />
+                <div className="flex items-center space-x-2">
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Get Started
+                  </Link>
+                </div>
               )}
-            </motion.button>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="w-6 h-6" />
+                ) : (
+                  <Bars3Icon className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
+      </nav>
 
-        {/* Simplified Mobile Navigation */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden border-t border-gray-200/30 dark:border-gray-700/30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl"
-            >
-              <div className="py-6 space-y-6 max-h-screen overflow-y-auto">
-                {isAuthenticated ? (
-                  // Organized categories for authenticated users
-                  <>
-                    {authenticatedNavigation.map((category) => (
-                      <CategorySection key={category.category} category={category} isMobile />
-                    ))}
-                    
-                    {/* Mobile User Actions */}
-                    <div className="pt-4 border-t border-gray-200/30 dark:border-gray-700/30 space-y-2">
-                      <NavItem 
-                        item={{ name: 'Profile', href: '/profile', icon: UserIcon }} 
-                        isMobile 
-                      />
-                      
-                      <button
-                        onClick={() => {
-                          handleLogout()
-                          setMobileMenuOpen(false)
-                        }}
-                        className="w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-all duration-300"
-                      >
-                        <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                        <span>Logout</span>
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  // Simple list for non-authenticated users
-                  <div className="space-y-2">
-                    {publicNavigation.map((item) => (
-                      <NavItem key={item.name} item={item} isMobile />
-                    ))}
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="fixed top-16 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 md:hidden"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="space-y-2">
+                {mainNavItems.map((item) => {
+                  if (item.protected && !isAuthenticated) return null
+                  const Icon = item.icon
+                  const active = isActive(item.href)
+                  
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center space-x-3 p-3 rounded-xl transition-colors ${
+                        active
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <div>
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {item.description}
+                        </div>
+                      </div>
+                      {item.primary && (
+                        <BoltIcon className="w-4 h-4 text-yellow-500 animate-pulse ml-auto" />
+                      )}
+                    </Link>
+                  )
+                })}
+                
+                {/* Mobile Auth Actions */}
+                {!isAuthenticated && (
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full p-3 text-center text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full p-3 text-center bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                      Get Started
+                    </Link>
                   </div>
                 )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
