@@ -283,6 +283,27 @@ async def quick_ai_response_legacy(request: ChatRequest):
         logger.error(f"Error in ULTRA FAST quick AI response: {e}")
         raise HTTPException(status_code=500, detail=f"Quick AI response failed: {str(e)}")
 
+@router.post("/architecture/analyze")
+async def analyze_architectural_requirements(request: ChatRequest):
+    """Analyze architectural requirements for a given message/project"""
+    
+    try:
+        analysis = await enhanced_ai_service.architectural_intelligence.analyze_architectural_requirements(
+            request.message, 
+            context=[]  # Could be expanded to include project context
+        )
+        
+        return {
+            "message": request.message,
+            "architectural_analysis": analysis,
+            "timestamp": datetime.utcnow().isoformat(),
+            "intelligence_version": "v3_enhanced"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in architectural analysis: {e}")
+        raise HTTPException(status_code=500, detail=f"Architectural analysis failed: {str(e)}")
+
 @router.delete("/chat/{session_id}")
 async def end_conversation(session_id: str):
     """End a conversation session and clean up resources"""
