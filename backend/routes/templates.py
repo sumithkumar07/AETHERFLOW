@@ -54,6 +54,20 @@ async def get_template_categories():
         "categories": enhanced_template_library.get_categories()
     }
 
+@router.get("/popular")
+async def get_popular_templates(limit: int = Query(10, description="Number of popular templates")):
+    """Get most popular templates"""
+    return {
+        "templates": enhanced_template_library.get_popular_templates(limit)
+    }
+
+@router.get("/recent")  
+async def get_recent_templates(limit: int = Query(10, description="Number of recent templates")):
+    """Get most recently added templates"""
+    return {
+        "templates": enhanced_template_library.get_recent_templates(limit)
+    }
+
 @router.get("/{template_id}")
 async def get_template_details(template_id: str):
     """Get template details"""
