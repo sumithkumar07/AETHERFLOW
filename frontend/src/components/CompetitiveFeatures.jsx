@@ -26,7 +26,7 @@ const CompetitiveFeatures = ({ isVisible = false, onClose }) => {
       id: 'autonomous_planning',
       name: 'Natural Language Planning',
       description: 'Devin-like autonomous task planning with AI roadmaps',
-      icon: BrainIcon,
+      icon: CpuChipIcon,
       color: 'from-purple-500 to-pink-500',
       features: [
         'Break large goals into tasks autonomously',
