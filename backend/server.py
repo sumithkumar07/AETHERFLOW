@@ -46,6 +46,7 @@ from routes.autonomous_planning import router as autonomous_planning_router
 from routes.git_cicd_integration import router as git_cicd_router
 from routes.memory_system import router as memory_system_router
 from routes.conversational_debugging import router as conversational_debugging_router
+from routes.enhanced_editor import router as enhanced_editor_router
 
 from models.database import init_db
 
