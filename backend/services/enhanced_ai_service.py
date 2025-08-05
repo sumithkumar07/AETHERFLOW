@@ -331,17 +331,26 @@ Always focus on practical next steps and clear deliverables."""
         user_message: str, 
         agents: List[AgentRole]
     ) -> Dict[str, Any]:
-        """Generate collaborative response from multiple agents"""
+        """Generate collaborative response from multiple agents - OPTIMIZED FOR SPEED"""
+        
+        # 🚀 PERFORMANCE FIX: Use parallel processing instead of sequential
+        tasks = []
+        for agent in agents:
+            task = self._single_agent_response(context, user_message, agent)
+            tasks.append(task)
+        
+        # Execute all agent requests in parallel - MAJOR SPEED IMPROVEMENT
+        agent_responses = await asyncio.gather(*tasks, return_exceptions=True)
         
         responses = []
-        
-        # Get responses from each agent
-        for agent in agents:
-            response = await self._single_agent_response(context, user_message, agent)
+        for i, response in enumerate(agent_responses):
+            if isinstance(response, Exception):
+                logger.warning(f"Agent {agents[i].value} failed: {response}")
+                continue
             if "error" not in response:
                 responses.append({
                     "agent": response["agent"],
-                    "role": agent.value,
+                    "role": agents[i].value,
                     "content": response["content"]
                 })
         
