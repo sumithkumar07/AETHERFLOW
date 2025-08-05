@@ -305,7 +305,7 @@ const CompetitiveFeatures = ({ isVisible = false, onClose }) => {
                         onClick={handleCreateRoadmap}
                         className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                       >
-                        <BrainIcon className="w-4 h-4" />
+                        <CpuChipIcon className="w-4 h-4" />
                         <span>Create AI Roadmap</span>
                       </button>
                       
