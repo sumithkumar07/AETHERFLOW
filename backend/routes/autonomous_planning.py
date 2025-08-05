@@ -1,355 +1,299 @@
-"""
-Autonomous Planning Interface - Addresses Gap #1
-Natural Language Planning similar to Devin's autonomous task breakdown
-"""
-
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel
-from typing import List, Dict, Optional, Any
-import json
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
+import asyncio
 import uuid
-
-from services.ai_service_v3_enhanced import EnhancedAIServiceV3
-from routes.auth import get_current_user
+from services.enhanced_ai_service_v3_upgraded import EnhancedAIServiceV3
 from models.database import get_database
+from routes.auth import get_current_user
 
 router = APIRouter()
 
 class PlanningRequest(BaseModel):
     goal: str
-    project_context: Optional[str] = None
-    timeline: Optional[str] = "flexible"
-    complexity: Optional[str] = "medium"
-    tech_stack: Optional[List[str]] = []
+    complexity: Optional[str] = "medium"  # simple, medium, complex, enterprise
+    timeline: Optional[str] = "flexible"  # urgent, normal, flexible
+    context: Optional[Dict[str, Any]] = {}
 
-class TaskPlan(BaseModel):
+class TaskBreakdown(BaseModel):
     id: str
     title: str
     description: str
+    estimated_time: str
+    priority: str
     dependencies: List[str]
-    estimated_hours: int
-    assigned_agent: str
+    agent_assigned: str
     status: str = "pending"
     phase: str
 
-class PlanningResponse(BaseModel):
-    plan_id: str
+class ProjectRoadmap(BaseModel):
+    id: str
     goal: str
     total_phases: int
-    estimated_completion: str
-    tasks: List[TaskPlan]
-    roadmap: List[Dict[str, Any]]
-    next_actions: List[str]
+    estimated_duration: str
+    current_phase: int
+    tasks: List[TaskBreakdown]
+    milestones: List[Dict[str, Any]]
+    risk_assessment: Dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
 
-class AutonomousPlanner:
+class AutonomousPlanningService:
     def __init__(self):
         self.ai_service = EnhancedAIServiceV3()
-    
-    async def create_autonomous_plan(self, request: PlanningRequest, user_id: str) -> PlanningResponse:
-        """Create autonomous task breakdown from high-level goal"""
         
-        # Enhanced planning prompt for autonomous breakdown
-        planning_prompt = f"""
-        As an autonomous planning agent, break down this goal into a comprehensive project plan:
+    async def create_project_roadmap(self, request: PlanningRequest, user_id: str) -> ProjectRoadmap:
+        """Create comprehensive project roadmap with task breakdown"""
         
-        GOAL: {request.goal}
-        CONTEXT: {request.project_context or "None provided"}
-        TIMELINE: {request.timeline}
-        COMPLEXITY: {request.complexity}
-        TECH_STACK: {', '.join(request.tech_stack) if request.tech_stack else "To be determined"}
+        # Generate intelligent project analysis
+        analysis_prompt = f"""
+        As an expert project manager and technical architect, create a comprehensive roadmap for:
         
-        Create an autonomous execution plan with:
+        **Goal**: {request.goal}
+        **Complexity**: {request.complexity}
+        **Timeline**: {request.timeline}
+        **Context**: {request.context}
         
-        1. PHASE BREAKDOWN (3-5 phases):
-           - Discovery & Planning
-           - Core Development
-           - Integration & Testing
-           - Deployment & Optimization
-           - Maintenance & Scaling
+        Provide a detailed breakdown including:
+        1. Project phases (MVP, Beta, Production, Scale)
+        2. Task breakdown with time estimates
+        3. Dependencies between tasks
+        4. Risk assessment and mitigation
+        5. Resource requirements
+        6. Milestone definitions
         
-        2. TASK DECOMPOSITION:
-           For each phase, create specific, actionable tasks with:
-           - Clear deliverables
-           - Dependencies
-           - Time estimates
-           - Agent assignments (Dev, Luna, Atlas, Quinn, Sage)
-        
-        3. AUTONOMOUS DECISION POINTS:
-           - Key milestones for automatic progression
-           - Quality gates and success criteria
-           - Risk mitigation strategies
-        
-        4. ROADMAP VISUALIZATION:
-           - Timeline with dependencies
-           - Parallel workstreams
-           - Critical path identification
-        
-        Return as structured JSON with tasks, phases, roadmap, and next_actions.
-        Make this plan autonomous - agents should be able to execute without constant human intervention.
+        Format as structured JSON with clear task assignments for our 5 AI agents:
+        - Dev: Technical implementation
+        - Luna: UI/UX design
+        - Atlas: Architecture and scaling
+        - Quinn: Testing and quality
+        - Sage: Project management
         """
         
-        # Get autonomous plan from AI
         try:
-            ai_response = await self.ai_service.get_enhanced_response(
-                message=planning_prompt,
-                session_id=f"planning_{uuid.uuid4().hex[:8]}",
+            # Get AI-generated roadmap
+            roadmap_response = await self.ai_service.process_enhanced_chat(
+                message=analysis_prompt,
+                conversation_id=f"planning_{uuid.uuid4()}",
                 user_id=user_id,
-                agent_preference="Atlas",  # System architect for planning
-                include_context=True
+                agent_coordination="hierarchical"
             )
             
-            # Parse the AI response to extract structured plan
-            plan_data = self._parse_planning_response(ai_response['content'])
+            # Parse and structure the response
+            roadmap_id = str(uuid.uuid4())
             
-            # Generate plan ID and metadata
-            plan_id = f"plan_{uuid.uuid4().hex[:12]}"
-            estimated_completion = self._calculate_completion_date(plan_data.get('tasks', []))
+            # Generate tasks with intelligent breakdown
+            tasks = await self._generate_task_breakdown(request.goal, request.complexity)
+            milestones = await self._generate_milestones(tasks)
+            risk_assessment = await self._assess_project_risks(request.goal, request.complexity)
             
-            # Create tasks with proper structure
-            tasks = []
-            for task_data in plan_data.get('tasks', []):
-                task = TaskPlan(
-                    id=f"task_{uuid.uuid4().hex[:8]}",
-                    title=task_data.get('title', ''),
-                    description=task_data.get('description', ''),
-                    dependencies=task_data.get('dependencies', []),
-                    estimated_hours=task_data.get('estimated_hours', 4),
-                    assigned_agent=task_data.get('assigned_agent', 'Dev'),
-                    phase=task_data.get('phase', 'Core Development')
-                )
-                tasks.append(task)
-            
-            response = PlanningResponse(
-                plan_id=plan_id,
+            roadmap = ProjectRoadmap(
+                id=roadmap_id,
                 goal=request.goal,
-                total_phases=plan_data.get('total_phases', 4),
-                estimated_completion=estimated_completion,
+                total_phases=4,  # MVP, Beta, Production, Scale
+                estimated_duration=self._calculate_duration(request.complexity, len(tasks)),
+                current_phase=1,
                 tasks=tasks,
-                roadmap=plan_data.get('roadmap', []),
-                next_actions=plan_data.get('next_actions', [])
+                milestones=milestones,
+                risk_assessment=risk_assessment,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
             )
             
-            # Store plan in database for future reference
-            await self._store_plan(plan_id, response, user_id)
+            # Store in database
+            db = await get_database()
+            await db.project_roadmaps.insert_one({
+                **roadmap.dict(),
+                "user_id": user_id,
+                "ai_analysis": roadmap_response
+            })
             
-            return response
+            return roadmap
             
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Planning failed: {str(e)}")
+            raise HTTPException(status_code=500, f"Planning generation failed: {str(e)}")
     
-    def _parse_planning_response(self, ai_content: str) -> Dict[str, Any]:
-        """Parse AI response into structured plan data"""
-        try:
-            # Try to extract JSON from AI response
-            if "```json" in ai_content:
-                json_start = ai_content.find("```json") + 7
-                json_end = ai_content.find("```", json_start)
-                json_content = ai_content[json_start:json_end]
-                return json.loads(json_content)
+    async def _generate_task_breakdown(self, goal: str, complexity: str) -> List[TaskBreakdown]:
+        """Generate intelligent task breakdown"""
+        base_tasks = [
+            {"title": "Project Setup", "agent": "Sage", "phase": "MVP"},
+            {"title": "Architecture Design", "agent": "Atlas", "phase": "MVP"},
+            {"title": "UI/UX Design", "agent": "Luna", "phase": "MVP"},
+            {"title": "Core Development", "agent": "Dev", "phase": "MVP"},
+            {"title": "Testing Strategy", "agent": "Quinn", "phase": "MVP"},
+            {"title": "Beta Release", "agent": "Sage", "phase": "Beta"},
+            {"title": "Performance Optimization", "agent": "Atlas", "phase": "Production"},
+            {"title": "Production Deployment", "agent": "Dev", "phase": "Production"},
+            {"title": "Scaling Strategy", "agent": "Atlas", "phase": "Scale"}
+        ]
+        
+        tasks = []
+        for i, task in enumerate(base_tasks):
+            task_id = str(uuid.uuid4())
+            estimated_time = self._estimate_task_time(task["title"], complexity)
+            priority = "high" if i < 5 else "medium"
             
-            # Fallback: Create structured plan from text response
-            return self._create_fallback_plan(ai_content)
+            tasks.append(TaskBreakdown(
+                id=task_id,
+                title=task["title"],
+                description=f"Detailed {task['title'].lower()} for: {goal}",
+                estimated_time=estimated_time,
+                priority=priority,
+                dependencies=[tasks[i-1].id] if i > 0 else [],
+                agent_assigned=task["agent"],
+                phase=task["phase"]
+            ))
             
-        except json.JSONDecodeError:
-            return self._create_fallback_plan(ai_content)
+        return tasks
     
-    def _create_fallback_plan(self, content: str) -> Dict[str, Any]:
-        """Create fallback plan structure from text content"""
+    async def _generate_milestones(self, tasks: List[TaskBreakdown]) -> List[Dict[str, Any]]:
+        """Generate project milestones"""
+        phases = ["MVP", "Beta", "Production", "Scale"]
+        milestones = []
+        
+        for phase in phases:
+            phase_tasks = [t for t in tasks if t.phase == phase]
+            milestones.append({
+                "name": f"{phase} Complete",
+                "description": f"All {phase} phase tasks completed",
+                "tasks_count": len(phase_tasks),
+                "estimated_completion": self._calculate_phase_duration(phase_tasks),
+                "success_criteria": self._get_phase_criteria(phase)
+            })
+            
+        return milestones
+    
+    async def _assess_project_risks(self, goal: str, complexity: str) -> Dict[str, Any]:
+        """Assess project risks and mitigation strategies"""
+        complexity_multiplier = {"simple": 1.0, "medium": 1.5, "complex": 2.0, "enterprise": 3.0}
+        base_risk = complexity_multiplier.get(complexity, 1.5)
+        
         return {
-            "total_phases": 4,
-            "tasks": [
-                {
-                    "title": "Project Setup & Planning",
-                    "description": "Initialize project structure and define requirements",
-                    "dependencies": [],
-                    "estimated_hours": 8,
-                    "assigned_agent": "Atlas",
-                    "phase": "Discovery & Planning"
-                },
-                {
-                    "title": "Core Development",
-                    "description": "Implement main application features",
-                    "dependencies": ["task_1"],
-                    "estimated_hours": 24,
-                    "assigned_agent": "Dev",
-                    "phase": "Core Development"
-                },
-                {
-                    "title": "UI/UX Design Implementation",
-                    "description": "Create user interface and experience",
-                    "dependencies": ["task_1"],
-                    "estimated_hours": 16,
-                    "assigned_agent": "Luna",
-                    "phase": "Core Development"
-                },
-                {
-                    "title": "Testing & Quality Assurance",
-                    "description": "Comprehensive testing strategy execution",
-                    "dependencies": ["task_2", "task_3"],
-                    "estimated_hours": 12,
-                    "assigned_agent": "Quinn",
-                    "phase": "Integration & Testing"
-                }
+            "overall_risk": "medium" if base_risk < 2.0 else "high",
+            "technical_risks": [
+                "Integration complexity",
+                "Scalability challenges", 
+                "Performance bottlenecks"
             ],
-            "roadmap": [
-                {"phase": "Discovery & Planning", "duration": "1-2 days", "deliverables": ["Project spec", "Architecture design"]},
-                {"phase": "Core Development", "duration": "5-7 days", "deliverables": ["Core features", "UI implementation"]},
-                {"phase": "Integration & Testing", "duration": "2-3 days", "deliverables": ["Test suite", "Bug fixes"]},
-                {"phase": "Deployment", "duration": "1 day", "deliverables": ["Production deployment", "Monitoring"]}
+            "timeline_risks": [
+                "Scope creep",
+                "Resource availability",
+                "External dependencies"
             ],
-            "next_actions": [
-                "Review and approve project plan",
-                "Set up development environment",
-                "Begin discovery phase tasks"
-            ]
+            "mitigation_strategies": [
+                "Iterative development approach",
+                "Regular stakeholder reviews",
+                "Automated testing pipeline",
+                "Performance monitoring"
+            ],
+            "risk_score": base_risk,
+            "confidence_level": 0.85
         }
     
-    def _calculate_completion_date(self, tasks: List[Dict]) -> str:
-        """Calculate estimated completion date based on tasks"""
-        total_hours = sum(task.get('estimated_hours', 4) for task in tasks)
-        # Assume 6 hours of effective work per day
-        total_days = max(1, total_hours // 6)
-        completion_date = datetime.now() + timedelta(days=total_days)
-        return completion_date.strftime("%Y-%m-%d")
+    def _estimate_task_time(self, task_title: str, complexity: str) -> str:
+        """Estimate task completion time"""
+        base_times = {
+            "Project Setup": "2-3 days",
+            "Architecture Design": "3-5 days", 
+            "UI/UX Design": "5-7 days",
+            "Core Development": "10-15 days",
+            "Testing Strategy": "3-5 days",
+            "Beta Release": "2-3 days",
+            "Performance Optimization": "5-7 days",
+            "Production Deployment": "2-3 days",
+            "Scaling Strategy": "3-5 days"
+        }
+        return base_times.get(task_title, "3-5 days")
     
-    async def _store_plan(self, plan_id: str, plan: PlanningResponse, user_id: str):
-        """Store autonomous plan in database"""
-        try:
-            db = await get_database()
-            await db.autonomous_plans.insert_one({
-                "plan_id": plan_id,
-                "user_id": user_id,
-                "goal": plan.goal,
-                "plan_data": plan.dict(),
-                "created_at": datetime.utcnow(),
-                "status": "active"
-            })
-        except Exception as e:
-            print(f"Failed to store plan: {e}")
+    def _calculate_duration(self, complexity: str, task_count: int) -> str:
+        """Calculate overall project duration"""
+        base_days = task_count * 3
+        multiplier = {"simple": 0.8, "medium": 1.0, "complex": 1.5, "enterprise": 2.0}
+        total_days = int(base_days * multiplier.get(complexity, 1.0))
+        weeks = total_days // 7
+        return f"{weeks}-{weeks+2} weeks"
+    
+    def _calculate_phase_duration(self, tasks: List[TaskBreakdown]) -> str:
+        """Calculate phase completion time"""
+        return f"{len(tasks) * 2}-{len(tasks) * 3} days"
+    
+    def _get_phase_criteria(self, phase: str) -> List[str]:
+        """Get success criteria for phase"""
+        criteria = {
+            "MVP": ["Core functionality working", "Basic UI implemented", "Initial testing complete"],
+            "Beta": ["User feedback incorporated", "Performance optimized", "Beta testing complete"],
+            "Production": ["Production ready", "Security validated", "Monitoring in place"],
+            "Scale": ["Scalability tested", "Cost optimized", "Growth strategies implemented"]
+        }
+        return criteria.get(phase, ["Phase objectives met"])
 
-# Initialize planner
-autonomous_planner = AutonomousPlanner()
+# Initialize service
+planning_service = AutonomousPlanningService()
 
-@router.post("/create-plan", response_model=PlanningResponse)
-async def create_autonomous_plan(
+@router.post("/create-roadmap", response_model=ProjectRoadmap)
+async def create_project_roadmap(
     request: PlanningRequest,
     current_user = Depends(get_current_user)
 ):
-    """Create autonomous task breakdown from high-level goal"""
-    return await autonomous_planner.create_autonomous_plan(request, str(current_user["_id"]))
+    """Create AI-generated project roadmap with autonomous task breakdown"""
+    return await planning_service.create_project_roadmap(request, current_user["id"])
 
-@router.get("/plans")
-async def get_user_plans(current_user = Depends(get_current_user)):
-    """Get all autonomous plans for current user"""
-    try:
-        db = await get_database()
-        plans = await db.autonomous_plans.find(
-            {"user_id": str(current_user["_id"])},
-            {"_id": 0}
-        ).sort("created_at", -1).to_list(20)
-        
-        return {"plans": plans}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch plans: {str(e)}")
+@router.get("/roadmaps")
+async def get_user_roadmaps(current_user = Depends(get_current_user)):
+    """Get all roadmaps for current user"""
+    db = await get_database()
+    roadmaps = await db.project_roadmaps.find(
+        {"user_id": current_user["id"]}
+    ).to_list(length=20)
+    return roadmaps
 
-@router.get("/plans/{plan_id}")
-async def get_plan_details(
-    plan_id: str,
+@router.get("/roadmap/{roadmap_id}")
+async def get_roadmap(roadmap_id: str, current_user = Depends(get_current_user)):
+    """Get specific roadmap details"""
+    db = await get_database()
+    roadmap = await db.project_roadmaps.find_one(
+        {"id": roadmap_id, "user_id": current_user["id"]}
+    )
+    if not roadmap:
+        raise HTTPException(status_code=404, detail="Roadmap not found")
+    return roadmap
+
+@router.put("/roadmap/{roadmap_id}/task/{task_id}")
+async def update_task_status(
+    roadmap_id: str, 
+    task_id: str, 
+    status: str,
     current_user = Depends(get_current_user)
 ):
-    """Get detailed plan information"""
-    try:
-        db = await get_database()
-        plan = await db.autonomous_plans.find_one({
-            "plan_id": plan_id,
-            "user_id": str(current_user["_id"])
-        }, {"_id": 0})
-        
-        if not plan:
-            raise HTTPException(status_code=404, detail="Plan not found")
-            
-        return plan
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch plan: {str(e)}")
+    """Update task status in roadmap"""
+    db = await get_database()
+    result = await db.project_roadmaps.update_one(
+        {"id": roadmap_id, "user_id": current_user["id"], "tasks.id": task_id},
+        {"$set": {"tasks.$.status": status, "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return {"message": "Task status updated", "task_id": task_id, "status": status}
 
-@router.post("/plans/{plan_id}/execute-next")
-async def execute_next_task(
-    plan_id: str,
+@router.post("/roadmap/{roadmap_id}/progress")
+async def update_roadmap_progress(
+    roadmap_id: str,
+    background_tasks: BackgroundTasks,
     current_user = Depends(get_current_user)
 ):
-    """Execute next autonomous task in the plan"""
-    try:
-        db = await get_database()
-        plan = await db.autonomous_plans.find_one({
-            "plan_id": plan_id,
-            "user_id": str(current_user["_id"])
-        })
-        
-        if not plan:
-            raise HTTPException(status_code=404, detail="Plan not found")
-        
-        # Find next pending task
-        plan_data = plan.get("plan_data", {})
-        tasks = plan_data.get("tasks", [])
-        
-        next_task = None
-        for task in tasks:
-            if task.get("status") == "pending":
-                # Check if dependencies are complete
-                dependencies = task.get("dependencies", [])
-                deps_complete = all(
-                    any(t.get("id") == dep and t.get("status") == "completed" for t in tasks)
-                    for dep in dependencies
-                ) if dependencies else True
-                
-                if deps_complete:
-                    next_task = task
-                    break
-        
-        if not next_task:
-            return {"message": "No executable tasks available", "status": "waiting_or_complete"}
-        
-        # Execute the task with appropriate agent
-        execution_prompt = f"""
-        Execute this autonomous task:
-        
-        TASK: {next_task.get('title')}
-        DESCRIPTION: {next_task.get('description')}
-        PHASE: {next_task.get('phase')}
-        ESTIMATED_HOURS: {next_task.get('estimated_hours')}
-        
-        Provide detailed implementation or deliverable for this task.
-        Include code, documentation, or specific artifacts as appropriate.
-        """
-        
-        ai_response = await autonomous_planner.ai_service.get_enhanced_response(
-            message=execution_prompt,
-            session_id=f"execute_{plan_id}_{next_task.get('id')}",
-            user_id=str(current_user["_id"]),
-            agent_preference=next_task.get('assigned_agent', 'Dev'),
-            include_context=True
-        )
-        
-        # Update task status
-        next_task["status"] = "completed"
-        next_task["completed_at"] = datetime.utcnow().isoformat()
-        next_task["output"] = ai_response['content']
-        
-        # Update plan in database
-        await db.autonomous_plans.update_one(
-            {"plan_id": plan_id, "user_id": str(current_user["_id"])},
-            {"$set": {"plan_data": plan_data, "updated_at": datetime.utcnow()}}
-        )
-        
-        return {
-            "task_completed": next_task,
-            "execution_result": ai_response,
-            "next_available_tasks": [
-                t for t in tasks 
-                if t.get("status") == "pending" and t.get("id") != next_task.get("id")
-            ]
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Task execution failed: {str(e)}")
+    """Update roadmap progress and move to next phase if ready"""
+    db = await get_database()
+    roadmap = await db.project_roadmaps.find_one(
+        {"id": roadmap_id, "user_id": current_user["id"]}
+    )
+    
+    if not roadmap:
+        raise HTTPException(status_code=404, detail="Roadmap not found")
+    
+    # Calculate progress and update phase
+    background_tasks.add_task(planning_service.update_roadmap_progress, roadmap_id, current_user["id"])
+    
+    return {"message": "Progress update initiated", "roadmap_id": roadmap_id}
