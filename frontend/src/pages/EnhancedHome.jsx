@@ -209,6 +209,20 @@ const EnhancedHome = () => {
                 <DocumentDuplicateIcon className="w-5 h-5 mr-2" />
                 <span>Explore Templates</span>
               </Link>
+              
+              {/* Competitive Features Button - Subtle Integration */}
+              <button
+                onClick={() => setShowCompetitiveFeatures(true)}
+                className="group btn-outline text-lg px-6 py-4 glass border-2 border-purple-500/50 hover:border-purple-500 hover:bg-purple-500/10 transition-all duration-300"
+              >
+                <StarIcon className="w-5 h-5 mr-2 text-purple-500 group-hover:text-purple-400" />
+                <span className="text-purple-600 dark:text-purple-400 group-hover:text-purple-500">
+                  Advanced Features
+                </span>
+                <span className="ml-2 px-2 py-1 text-xs font-bold bg-purple-500 text-white rounded-full animate-pulse">
+                  NEW
+                </span>
+              </button>
             </motion.div>
 
             {/* Enhanced Stats */}
