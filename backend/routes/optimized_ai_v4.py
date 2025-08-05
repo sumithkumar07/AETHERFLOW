@@ -171,7 +171,6 @@ async def quick_ai_response(
         raise HTTPException(status_code=500, detail=f"Quick response failed: {str(e)}")
 
 @router.get("/v4/agents/available")
-@monitor_performance("get_agents")
 async def get_available_agents(
     current_user: User = Depends(get_current_user)
 ):
