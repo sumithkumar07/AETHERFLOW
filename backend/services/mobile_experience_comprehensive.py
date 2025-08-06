@@ -377,6 +377,17 @@ class MobileExperienceComprehensive:
     # PROGRESSIVE WEB APP OPTIMIZATION
     # =============================================================================
     
+    async def get_pwa_manifest(self) -> Dict[str, Any]:
+        """Get PWA manifest - wrapper method for compatibility"""
+        app_config = {
+            "name": "Aether AI Platform",
+            "short_name": "Aether AI", 
+            "description": "AI-powered development platform",
+            "background_color": "#1a1a1a",
+            "theme_color": "#3b82f6"
+        }
+        return await self.generate_pwa_manifest(app_config)
+
     async def generate_pwa_manifest(self, app_config: Dict[str, Any]) -> Dict[str, Any]:
         """Generate PWA manifest with mobile optimizations"""
         
