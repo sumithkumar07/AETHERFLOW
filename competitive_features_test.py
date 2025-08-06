@@ -536,7 +536,20 @@ class CompetitiveFeaturesTester:
         
         feature_status = {}
         for i, feature in enumerate(features, 1):
-            feature_tests = [r for r in self.test_results if feature.lower().replace(" ", "_") in r["test"].lower() or feature.lower() in r["test"].lower()]
+            # Better feature matching logic
+            if feature == "Enterprise Compliance":
+                feature_tests = [r for r in self.test_results if "compliance" in r["test"].lower() or "soc2" in r["test"].lower() or "gdpr" in r["test"].lower() or "hipaa" in r["test"].lower()]
+            elif feature == "Mobile Experience":
+                feature_tests = [r for r in self.test_results if "mobile" in r["test"].lower() or "pwa" in r["test"].lower() or "offline" in r["test"].lower()]
+            elif feature == "Advanced Analytics":
+                feature_tests = [r for r in self.test_results if "analytics" in r["test"].lower() or "real-time" in r["test"].lower()]
+            elif feature == "Enhanced Onboarding":
+                feature_tests = [r for r in self.test_results if "onboarding" in r["test"].lower() or "wizard" in r["test"].lower() or "deployment" in r["test"].lower()]
+            elif feature == "Workflow Builder":
+                feature_tests = [r for r in self.test_results if "workflow" in r["test"].lower() or "node" in r["test"].lower()]
+            else:
+                feature_tests = [r for r in self.test_results if feature.lower().replace(" ", "_") in r["test"].lower()]
+            
             if feature_tests:
                 feature_passed = len([r for r in feature_tests if r["status"] == "PASS"])
                 feature_total = len(feature_tests)
