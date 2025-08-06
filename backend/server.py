@@ -190,21 +190,33 @@ app.include_router(comprehensive_ai_router, prefix="/api/ai/comprehensive", tags
 # Include Phase 1 Optimized AI Routes - Enterprise Performance
 app.include_router(optimized_ai_v4_router, prefix="/api/ai", tags=["Optimized AI v4 - Enterprise"])
 
-# Include Gap-Closing Enhancement Routes - All Competitive Features
-app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
-app.include_router(git_cicd_router, prefix="/api/git", tags=["Git & CI/CD Integration"])
-app.include_router(memory_system_router, prefix="/api/memory", tags=["Memory System"])
-app.include_router(conversational_debugging_router, prefix="/api/debug", tags=["Conversational Debugging"])
-app.include_router(enhanced_editor_router, prefix="/api/editor", tags=["Enhanced Editor & VS Code"])
-app.include_router(enhanced_templates_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates"])
+# Include Gap-Closing Enhancement Routes - All Competitive Features (with error handling)
+if autonomous_planning_router:
+    app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
+if git_cicd_router:
+    app.include_router(git_cicd_router, prefix="/api/git", tags=["Git & CI/CD Integration"])
+if memory_system_router:
+    app.include_router(memory_system_router, prefix="/api/memory", tags=["Memory System"])
+if conversational_debugging_router:
+    app.include_router(conversational_debugging_router, prefix="/api/debug", tags=["Conversational Debugging"])
+if enhanced_editor_router:
+    app.include_router(enhanced_editor_router, prefix="/api/editor", tags=["Enhanced Editor & VS Code"])
+if enhanced_templates_router:
+    app.include_router(enhanced_templates_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates"])
 
-# Include ALL NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION 
-app.include_router(competitive_features_api_router, prefix="/api/competitive", tags=["Competitive Features API - Main Interface"])
-app.include_router(natural_language_planning_router, prefix="/api/planning/nl", tags=["Natural Language Planning"])
-app.include_router(persistent_memory_router, prefix="/api/memory/persistent", tags=["Persistent Memory System"])
-app.include_router(git_cicd_enhanced_router, prefix="/api/git/enhanced", tags=["Enhanced Git & CI/CD"])
-app.include_router(enhanced_templates_expanded_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates Expanded"])
-app.include_router(conversational_debugging_enhanced_router, prefix="/api/debugging/enhanced", tags=["Enhanced Conversational Debugging"])
+# Include ALL NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION (with error handling)
+if competitive_features_api_router:
+    app.include_router(competitive_features_api_router, prefix="/api/competitive", tags=["Competitive Features API - Main Interface"])
+if natural_language_planning_router:
+    app.include_router(natural_language_planning_router, prefix="/api/planning/nl", tags=["Natural Language Planning"])
+if persistent_memory_router:
+    app.include_router(persistent_memory_router, prefix="/api/memory/persistent", tags=["Persistent Memory System"])
+if git_cicd_enhanced_router:
+    app.include_router(git_cicd_enhanced_router, prefix="/api/git/enhanced", tags=["Enhanced Git & CI/CD"])
+if enhanced_templates_expanded_router:
+    app.include_router(enhanced_templates_expanded_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates Expanded"])
+if conversational_debugging_enhanced_router:
+    app.include_router(conversational_debugging_enhanced_router, prefix="/api/debugging/enhanced", tags=["Enhanced Conversational Debugging"])
 
 # Include NEW COMPETITIVE FEATURES COMPLETE - All 5 Priority Features
 # TEMPORARILY DISABLED DUE TO IMPORT ISSUES - NEEDS FIXING
