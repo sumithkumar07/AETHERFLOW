@@ -15,11 +15,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 try:
-    from services.visual_workflow_builder_complete import get_workflow_builder
+    from services.visual_workflow_builder_comprehensive import get_workflow_builder
     workflow_builder_available = True
 except ImportError:
-    workflow_builder_available = False
-    logger.warning("Visual Workflow Builder service not available")
+    try:
+        from services.workflow_builder_complete import get_workflow_builder
+        workflow_builder_available = True
+    except ImportError:
+        workflow_builder_available = False
+        logger.warning("Visual Workflow Builder service not available")
 
 router = APIRouter()
 
