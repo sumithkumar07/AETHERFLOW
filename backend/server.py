@@ -154,8 +154,9 @@ app.include_router(enhanced_templates_expanded_router, prefix="/api/templates/en
 app.include_router(conversational_debugging_enhanced_router, prefix="/api/debugging/enhanced", tags=["Enhanced Conversational Debugging"])
 
 # Include NEW COMPETITIVE FEATURES COMPLETE - All 5 Priority Features
-from routes.competitive_features_complete import router as competitive_features_complete_router
-app.include_router(competitive_features_complete_router, prefix="/api/competitive-complete", tags=["All 5 Competitive Features - Complete"])
+# TEMPORARILY DISABLED DUE TO IMPORT ISSUES - NEEDS FIXING
+# from routes.competitive_features_complete import router as competitive_features_complete_router
+# app.include_router(competitive_features_complete_router, prefix="/api/competitive-complete", tags=["All 5 Competitive Features - Complete"])
 
 # Include ALL 5 COMPETITIVE FEATURES - BACKEND IMPLEMENTATION COMPLETE
 from routes.enterprise_compliance_api import router as enterprise_compliance_api_router
