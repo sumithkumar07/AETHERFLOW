@@ -130,6 +130,10 @@ app.include_router(enhanced_ai_new_router, prefix="/api/ai/v2", tags=["Enhanced 
 app.include_router(enhanced_ai_v2_router, prefix="/api/ai/v2/enhanced", tags=["Enhanced AI v2 Advanced"])
 app.include_router(enhanced_ai_v3_router, prefix="/api/ai/v3", tags=["Enhanced AI v3 Multi-Agent"])
 
+# Import and include comprehensive AI enhancement router
+from routes.comprehensive_ai_api import router as comprehensive_ai_router
+app.include_router(comprehensive_ai_router, prefix="/api/ai/comprehensive", tags=["Comprehensive AI Enhancement v2.0"])
+
 # Include Phase 1 Optimized AI Routes - Enterprise Performance
 app.include_router(optimized_ai_v4_router, prefix="/api/ai", tags=["Optimized AI v4 - Enterprise"])
 
