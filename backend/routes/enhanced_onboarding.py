@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 
 from services.enhanced_onboarding_service import enhanced_onboarding_service
-from auth import get_current_user
+from routes.auth import get_current_user
 
 router = APIRouter()
 
