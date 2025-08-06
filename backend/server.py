@@ -57,6 +57,13 @@ from routes.enhanced_templates_expanded import router as enhanced_templates_expa
 from routes.conversational_debugging_enhanced import router as conversational_debugging_enhanced_router
 from routes.competitive_features_api import router as competitive_features_api_router
 
+# Import 5 MISSING COMPETITIVE FEATURES - JANUARY 2025 IMPLEMENTATION
+from routes.enterprise_compliance import router as enterprise_compliance_router
+from routes.mobile_experience import router as mobile_experience_router
+from routes.advanced_analytics import router as advanced_analytics_router
+from routes.enhanced_onboarding import router as enhanced_onboarding_router
+from routes.workflow_builder import router as workflow_builder_router
+
 from models.database import init_db
 
 # Load environment variables
