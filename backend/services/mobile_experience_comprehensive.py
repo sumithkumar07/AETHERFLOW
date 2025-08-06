@@ -856,3 +856,14 @@ self.addEventListener('push', (event) => {{
     async def _setup_pwa_optimization(self):
         """Setup Progressive Web App optimization"""
         logger.info("🌐 PWA optimization configured")
+
+# Global mobile system instance
+_mobile_system = None
+
+async def get_mobile_system() -> MobileExperienceComprehensive:
+    """Get the global mobile experience system instance"""
+    global _mobile_system
+    if _mobile_system is None:
+        _mobile_system = MobileExperienceComprehensive()
+        await _mobile_system.initialize()
+    return _mobile_system
