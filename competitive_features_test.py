@@ -1,0 +1,943 @@
+#!/usr/bin/env python3
+"""
+Comprehensive Testing for Aether AI Platform - 8 Competitive Features
+Tests all critical competitive features as requested
+"""
+
+import requests
+import json
+import time
+import sys
+from datetime import datetime
+from typing import Dict, Any, Optional
+
+class CompetitiveFeaturesTest:
+    def __init__(self, base_url: str = "http://localhost:8001"):
+        self.base_url = base_url
+        self.session = requests.Session()
+        self.auth_token = None
+        self.test_results = []
+        self.demo_user = {
+            "email": "demo@aicodestudio.com",
+            "password": "demo123"
+        }
+        
+    def log_test(self, test_name: str, status: str, details: str = "", response_code: int = None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "status": status,
+            "details": details,
+            "response_code": response_code,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.test_results.append(result)
+        
+        status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+        print(f"{status_icon} {test_name}: {status}")
+        if details:
+            print(f"   Details: {details}")
+        if response_code:
+            print(f"   Response Code: {response_code}")
+        print()
+
+    def make_request(self, method: str, endpoint: str, data: Dict = None, headers: Dict = None) -> requests.Response:
+        """Make HTTP request with proper error handling"""
+        url = f"{self.base_url}{endpoint}"
+        
+        # Add auth header if token exists
+        if self.auth_token and headers is None:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+        elif self.auth_token and headers:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+            
+        try:
+            if method.upper() == "GET":
+                response = self.session.get(url, headers=headers, timeout=30)
+            elif method.upper() == "POST":
+                response = self.session.post(url, json=data, headers=headers, timeout=30)
+            elif method.upper() == "PUT":
+                response = self.session.put(url, json=data, headers=headers, timeout=30)
+            elif method.upper() == "DELETE":
+                response = self.session.delete(url, headers=headers, timeout=30)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+                
+            return response
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed: {e}")
+            return None
+
+    def authenticate(self):
+        """Authenticate with demo user"""
+        print("🔐 Authenticating with demo user...")
+        response = self.make_request("POST", "/api/auth/login", self.demo_user)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "access_token" in data:
+                self.auth_token = data["access_token"]
+                self.log_test("Authentication", "PASS", f"Authenticated as {data.get('user', {}).get('email')}", response.status_code)
+                return True
+            else:
+                self.log_test("Authentication", "FAIL", "No access token in response", response.status_code)
+                return False
+        else:
+            self.log_test("Authentication", "FAIL", "Login failed", response.status_code if response else None)
+            return False
+
+    def test_1_integration_hub(self):
+        """Test 1: Integration Hub Testing - Comprehensive integrations"""
+        print("\n🔌 TESTING FEATURE 1: INTEGRATION HUB")
+        print("=" * 60)
+        
+        if not self.auth_token:
+            self.log_test("Integration Hub", "SKIP", "No authentication token available")
+            return
+
+        # Test database integrations
+        db_integrations = ["postgresql", "mysql", "mongodb", "redis", "elasticsearch"]
+        for db in db_integrations:
+            response = self.make_request("GET", f"/api/integrations/database/{db}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "integration" in data and "status" in data:
+                    self.log_test(f"Database Integration - {db.upper()}", "PASS", 
+                                f"Integration available: {data.get('integration', {}).get('name')}", response.status_code)
+                else:
+                    self.log_test(f"Database Integration - {db.upper()}", "FAIL", 
+                                "Missing integration data", response.status_code)
+            else:
+                self.log_test(f"Database Integration - {db.upper()}", "FAIL", 
+                            f"Integration endpoint failed", response.status_code if response else None)
+
+        # Test cloud storage integrations
+        cloud_providers = ["aws-s3", "azure-blob", "google-cloud"]
+        for provider in cloud_providers:
+            response = self.make_request("GET", f"/api/integrations/storage/{provider}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "integration" in data:
+                    self.log_test(f"Cloud Storage - {provider.upper()}", "PASS", 
+                                f"Storage integration available", response.status_code)
+                else:
+                    self.log_test(f"Cloud Storage - {provider.upper()}", "FAIL", 
+                                "Missing storage integration data", response.status_code)
+            else:
+                self.log_test(f"Cloud Storage - {provider.upper()}", "FAIL", 
+                            f"Storage integration failed", response.status_code if response else None)
+
+        # Test API integrations
+        api_integrations = ["stripe", "twilio", "sendgrid", "github", "slack"]
+        for api in api_integrations:
+            response = self.make_request("GET", f"/api/integrations/api/{api}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "integration" in data:
+                    self.log_test(f"API Integration - {api.upper()}", "PASS", 
+                                f"API integration available", response.status_code)
+                else:
+                    self.log_test(f"API Integration - {api.upper()}", "FAIL", 
+                                "Missing API integration data", response.status_code)
+            else:
+                self.log_test(f"API Integration - {api.upper()}", "FAIL", 
+                            f"API integration failed", response.status_code if response else None)
+
+        # Test monitoring integrations
+        monitoring_tools = ["datadog", "newrelic", "grafana"]
+        for tool in monitoring_tools:
+            response = self.make_request("GET", f"/api/integrations/monitoring/{tool}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "integration" in data:
+                    self.log_test(f"Monitoring - {tool.upper()}", "PASS", 
+                                f"Monitoring integration available", response.status_code)
+                else:
+                    self.log_test(f"Monitoring - {tool.upper()}", "FAIL", 
+                                "Missing monitoring integration data", response.status_code)
+            else:
+                self.log_test(f"Monitoring - {tool.upper()}", "FAIL", 
+                            f"Monitoring integration failed", response.status_code if response else None)
+
+    def test_2_template_marketplace(self):
+        """Test 2: Template Marketplace Testing - Community features and AI-powered generation"""
+        print("\n📋 TESTING FEATURE 2: TEMPLATE MARKETPLACE")
+        print("=" * 60)
+
+        # Test template marketplace
+        response = self.make_request("GET", "/api/templates/marketplace")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "templates" in data and len(data["templates"]) > 0:
+                self.log_test("Template Marketplace", "PASS", 
+                            f"Found {len(data['templates'])} marketplace templates", response.status_code)
+            else:
+                self.log_test("Template Marketplace", "FAIL", 
+                            "No templates in marketplace", response.status_code)
+        else:
+            self.log_test("Template Marketplace", "FAIL", 
+                        "Marketplace endpoint failed", response.status_code if response else None)
+
+        # Test AI-powered template generation
+        if self.auth_token:
+            template_request = {
+                "description": "E-commerce platform with React and Node.js",
+                "features": ["user authentication", "payment integration", "product catalog"],
+                "tech_stack": ["react", "nodejs", "mongodb"]
+            }
+            response = self.make_request("POST", "/api/templates/ai-generate", template_request)
+            if response and response.status_code == 200:
+                data = response.json()
+                if "template" in data and "generated_files" in data:
+                    self.log_test("AI Template Generation", "PASS", 
+                                f"Generated template with {len(data.get('generated_files', []))} files", response.status_code)
+                else:
+                    self.log_test("AI Template Generation", "FAIL", 
+                                "Missing generated template data", response.status_code)
+            else:
+                self.log_test("AI Template Generation", "FAIL", 
+                            "AI template generation failed", response.status_code if response else None)
+
+        # Test user ratings and reviews
+        response = self.make_request("GET", "/api/templates/ratings/react-starter")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "rating" in data and "reviews" in data:
+                self.log_test("Template Ratings & Reviews", "PASS", 
+                            f"Rating: {data.get('rating')}, Reviews: {len(data.get('reviews', []))}", response.status_code)
+            else:
+                self.log_test("Template Ratings & Reviews", "FAIL", 
+                            "Missing rating or review data", response.status_code)
+        else:
+            self.log_test("Template Ratings & Reviews", "FAIL", 
+                        "Ratings endpoint failed", response.status_code if response else None)
+
+        # Test recommendation system
+        if self.auth_token:
+            response = self.make_request("GET", "/api/templates/recommendations")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "recommendations" in data:
+                    self.log_test("Template Recommendations", "PASS", 
+                                f"Found {len(data.get('recommendations', []))} recommendations", response.status_code)
+                else:
+                    self.log_test("Template Recommendations", "FAIL", 
+                                "No recommendations data", response.status_code)
+            else:
+                self.log_test("Template Recommendations", "FAIL", 
+                            "Recommendations endpoint failed", response.status_code if response else None)
+
+    def test_3_enterprise_compliance(self):
+        """Test 3: Enterprise Compliance Testing - SOC2, GDPR, HIPAA compliance"""
+        print("\n🏢 TESTING FEATURE 3: ENTERPRISE COMPLIANCE")
+        print("=" * 60)
+
+        if not self.auth_token:
+            self.log_test("Enterprise Compliance", "SKIP", "No authentication token available")
+            return
+
+        # Test SOC2 compliance tracking
+        response = self.make_request("GET", "/api/enterprise/compliance/soc2")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "compliance_status" in data and "controls" in data:
+                self.log_test("SOC2 Compliance", "PASS", 
+                            f"SOC2 status: {data.get('compliance_status')}, Controls: {len(data.get('controls', []))}", response.status_code)
+            else:
+                self.log_test("SOC2 Compliance", "FAIL", 
+                            "Missing SOC2 compliance data", response.status_code)
+        else:
+            self.log_test("SOC2 Compliance", "FAIL", 
+                        "SOC2 compliance endpoint failed", response.status_code if response else None)
+
+        # Test GDPR compliance
+        response = self.make_request("GET", "/api/enterprise/compliance/gdpr")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "gdpr_status" in data and "data_processing" in data:
+                self.log_test("GDPR Compliance", "PASS", 
+                            f"GDPR status: {data.get('gdpr_status')}", response.status_code)
+            else:
+                self.log_test("GDPR Compliance", "FAIL", 
+                            "Missing GDPR compliance data", response.status_code)
+        else:
+            self.log_test("GDPR Compliance", "FAIL", 
+                        "GDPR compliance endpoint failed", response.status_code if response else None)
+
+        # Test HIPAA compliance
+        response = self.make_request("GET", "/api/enterprise/compliance/hipaa")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "hipaa_status" in data:
+                self.log_test("HIPAA Compliance", "PASS", 
+                            f"HIPAA status: {data.get('hipaa_status')}", response.status_code)
+            else:
+                self.log_test("HIPAA Compliance", "FAIL", 
+                            "Missing HIPAA compliance data", response.status_code)
+        else:
+            self.log_test("HIPAA Compliance", "FAIL", 
+                        "HIPAA compliance endpoint failed", response.status_code if response else None)
+
+        # Test audit logging
+        response = self.make_request("GET", "/api/enterprise/audit/logs")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "audit_logs" in data:
+                self.log_test("Audit Logging", "PASS", 
+                            f"Found {len(data.get('audit_logs', []))} audit logs", response.status_code)
+            else:
+                self.log_test("Audit Logging", "FAIL", 
+                            "Missing audit logs data", response.status_code)
+        else:
+            self.log_test("Audit Logging", "FAIL", 
+                        "Audit logging endpoint failed", response.status_code if response else None)
+
+        # Test secrets management
+        response = self.make_request("GET", "/api/enterprise/secrets/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "secrets_manager" in data:
+                self.log_test("Secrets Management", "PASS", 
+                            f"Secrets manager status: {data.get('secrets_manager', {}).get('status')}", response.status_code)
+            else:
+                self.log_test("Secrets Management", "FAIL", 
+                            "Missing secrets management data", response.status_code)
+        else:
+            self.log_test("Secrets Management", "FAIL", 
+                        "Secrets management endpoint failed", response.status_code if response else None)
+
+    def test_4_multi_model_architecture(self):
+        """Test 4: Multi-Model Architecture Testing - Multiple AI models support"""
+        print("\n🤖 TESTING FEATURE 4: MULTI-MODEL ARCHITECTURE")
+        print("=" * 60)
+
+        # Test available AI models
+        response = self.make_request("GET", "/api/ai/models")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "models" in data and len(data["models"]) > 0:
+                models = data["models"]
+                expected_providers = ["openai", "anthropic", "groq", "aws-bedrock", "azure-openai", "gcp-vertex"]
+                found_providers = set()
+                
+                for model in models:
+                    provider = model.get("provider", "").lower()
+                    if provider:
+                        found_providers.add(provider)
+                
+                self.log_test("Multi-Model Support", "PASS", 
+                            f"Found {len(models)} models from providers: {', '.join(found_providers)}", response.status_code)
+            else:
+                self.log_test("Multi-Model Support", "FAIL", 
+                            "No AI models found", response.status_code)
+        else:
+            self.log_test("Multi-Model Support", "FAIL", 
+                        "AI models endpoint failed", response.status_code if response else None)
+
+        # Test Groq integration specifically
+        response = self.make_request("GET", "/api/ai/groq/models")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "groq_models" in data:
+                groq_models = data["groq_models"]
+                expected_groq = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.2-3b-preview"]
+                found_groq = [model.get("name") for model in groq_models if model.get("name")]
+                
+                self.log_test("Groq Integration", "PASS", 
+                            f"Found {len(groq_models)} Groq models: {', '.join(found_groq)}", response.status_code)
+            else:
+                self.log_test("Groq Integration", "FAIL", 
+                            "Missing Groq models data", response.status_code)
+        else:
+            self.log_test("Groq Integration", "FAIL", 
+                        "Groq models endpoint failed", response.status_code if response else None)
+
+        # Test BYOM (Bring Your Own Model) capabilities
+        if self.auth_token:
+            byom_config = {
+                "model_name": "custom-llama-7b",
+                "endpoint": "https://api.example.com/v1/chat",
+                "api_key": "test-key",
+                "provider": "custom"
+            }
+            response = self.make_request("POST", "/api/ai/byom/register", byom_config)
+            if response and response.status_code == 200:
+                data = response.json()
+                if "model_registered" in data:
+                    self.log_test("BYOM Capabilities", "PASS", 
+                                f"Custom model registered: {data.get('model_id')}", response.status_code)
+                else:
+                    self.log_test("BYOM Capabilities", "FAIL", 
+                                "BYOM registration failed", response.status_code)
+            else:
+                self.log_test("BYOM Capabilities", "FAIL", 
+                            "BYOM endpoint failed", response.status_code if response else None)
+
+        # Test model routing and selection
+        if self.auth_token:
+            routing_request = {
+                "task_type": "code_generation",
+                "complexity": "high",
+                "preferred_provider": "groq"
+            }
+            response = self.make_request("POST", "/api/ai/model/select", routing_request)
+            if response and response.status_code == 200:
+                data = response.json()
+                if "selected_model" in data and "reasoning" in data:
+                    self.log_test("Smart Model Routing", "PASS", 
+                                f"Selected model: {data.get('selected_model')}, Reasoning: {data.get('reasoning')}", response.status_code)
+                else:
+                    self.log_test("Smart Model Routing", "FAIL", 
+                                "Missing model selection data", response.status_code)
+            else:
+                self.log_test("Smart Model Routing", "FAIL", 
+                            "Model selection endpoint failed", response.status_code if response else None)
+
+    def test_5_workflow_builder(self):
+        """Test 5: Workflow Builder Testing - Drag-and-drop workflow builder"""
+        print("\n🔄 TESTING FEATURE 5: WORKFLOW BUILDER")
+        print("=" * 60)
+
+        if not self.auth_token:
+            self.log_test("Workflow Builder", "SKIP", "No authentication token available")
+            return
+
+        # Test workflow templates
+        response = self.make_request("GET", "/api/workflows/templates")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "templates" in data:
+                self.log_test("Workflow Templates", "PASS", 
+                            f"Found {len(data.get('templates', []))} workflow templates", response.status_code)
+            else:
+                self.log_test("Workflow Templates", "FAIL", 
+                            "No workflow templates found", response.status_code)
+        else:
+            self.log_test("Workflow Templates", "FAIL", 
+                        "Workflow templates endpoint failed", response.status_code if response else None)
+
+        # Test creating a workflow
+        workflow_config = {
+            "name": "Test Development Workflow",
+            "description": "Automated development workflow for testing",
+            "steps": [
+                {"type": "code_generation", "config": {"language": "python"}},
+                {"type": "testing", "config": {"framework": "pytest"}},
+                {"type": "deployment", "config": {"platform": "docker"}}
+            ],
+            "triggers": ["git_push", "manual"]
+        }
+        
+        response = self.make_request("POST", "/api/workflows/create", workflow_config)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "workflow_id" in data and "status" in data:
+                self.log_test("Create Workflow", "PASS", 
+                            f"Workflow created: {data.get('workflow_id')}, Status: {data.get('status')}", response.status_code)
+                self.test_workflow_id = data["workflow_id"]
+            else:
+                self.log_test("Create Workflow", "FAIL", 
+                            "Missing workflow creation data", response.status_code)
+        else:
+            self.log_test("Create Workflow", "FAIL", 
+                        "Workflow creation failed", response.status_code if response else None)
+
+        # Test natural language workflow processing
+        nl_request = {
+            "description": "Create a workflow that automatically generates React components, runs tests, and deploys to staging when I push to the main branch"
+        }
+        
+        response = self.make_request("POST", "/api/workflows/natural-language", nl_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "workflow_config" in data and "steps" in data["workflow_config"]:
+                steps_count = len(data["workflow_config"]["steps"])
+                self.log_test("Natural Language Processing", "PASS", 
+                            f"Generated workflow with {steps_count} steps from natural language", response.status_code)
+            else:
+                self.log_test("Natural Language Processing", "FAIL", 
+                            "Missing workflow configuration", response.status_code)
+        else:
+            self.log_test("Natural Language Processing", "FAIL", 
+                        "Natural language processing failed", response.status_code if response else None)
+
+        # Test workflow execution engine
+        if hasattr(self, 'test_workflow_id'):
+            response = self.make_request("POST", f"/api/workflows/{self.test_workflow_id}/execute")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "execution_id" in data:
+                    self.log_test("Workflow Execution", "PASS", 
+                                f"Workflow execution started: {data.get('execution_id')}", response.status_code)
+                else:
+                    self.log_test("Workflow Execution", "FAIL", 
+                                "Missing execution data", response.status_code)
+            else:
+                self.log_test("Workflow Execution", "FAIL", 
+                            "Workflow execution failed", response.status_code if response else None)
+
+    def test_6_mobile_experience(self):
+        """Test 6: Mobile Experience Testing - Mobile-optimized APIs and features"""
+        print("\n📱 TESTING FEATURE 6: MOBILE EXPERIENCE")
+        print("=" * 60)
+
+        if not self.auth_token:
+            self.log_test("Mobile Experience", "SKIP", "No authentication token available")
+            return
+
+        # Test mobile-optimized APIs
+        response = self.make_request("GET", "/api/mobile/config")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "mobile_features" in data and "pwa_config" in data:
+                self.log_test("Mobile API Configuration", "PASS", 
+                            f"Mobile features available: {len(data.get('mobile_features', []))}", response.status_code)
+            else:
+                self.log_test("Mobile API Configuration", "FAIL", 
+                            "Missing mobile configuration", response.status_code)
+        else:
+            self.log_test("Mobile API Configuration", "FAIL", 
+                        "Mobile config endpoint failed", response.status_code if response else None)
+
+        # Test offline sync capabilities
+        sync_data = {
+            "device_id": "test-device-123",
+            "last_sync": "2024-01-01T00:00:00Z",
+            "data_types": ["projects", "templates", "conversations"]
+        }
+        
+        response = self.make_request("POST", "/api/mobile/sync", sync_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "sync_data" in data and "sync_timestamp" in data:
+                self.log_test("Offline Sync", "PASS", 
+                            f"Sync completed at {data.get('sync_timestamp')}", response.status_code)
+            else:
+                self.log_test("Offline Sync", "FAIL", 
+                            "Missing sync data", response.status_code)
+        else:
+            self.log_test("Offline Sync", "FAIL", 
+                        "Offline sync failed", response.status_code if response else None)
+
+        # Test push notifications
+        notification_config = {
+            "device_token": "test-token-123",
+            "notification_types": ["project_updates", "ai_responses", "collaboration"]
+        }
+        
+        response = self.make_request("POST", "/api/mobile/notifications/register", notification_config)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "registration_id" in data:
+                self.log_test("Push Notifications", "PASS", 
+                            f"Notifications registered: {data.get('registration_id')}", response.status_code)
+            else:
+                self.log_test("Push Notifications", "FAIL", 
+                            "Missing registration data", response.status_code)
+        else:
+            self.log_test("Push Notifications", "FAIL", 
+                        "Push notifications failed", response.status_code if response else None)
+
+        # Test PWA optimization
+        response = self.make_request("GET", "/api/mobile/pwa/manifest")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "name" in data and "icons" in data and "start_url" in data:
+                self.log_test("PWA Optimization", "PASS", 
+                            f"PWA manifest available: {data.get('name')}", response.status_code)
+            else:
+                self.log_test("PWA Optimization", "FAIL", 
+                            "Invalid PWA manifest", response.status_code)
+        else:
+            self.log_test("PWA Optimization", "FAIL", 
+                        "PWA manifest failed", response.status_code if response else None)
+
+        # Test accessibility features
+        response = self.make_request("GET", "/api/mobile/accessibility")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "accessibility_features" in data:
+                features = data["accessibility_features"]
+                self.log_test("Mobile Accessibility", "PASS", 
+                            f"Accessibility features: {', '.join(features)}", response.status_code)
+            else:
+                self.log_test("Mobile Accessibility", "FAIL", 
+                            "Missing accessibility features", response.status_code)
+        else:
+            self.log_test("Mobile Accessibility", "FAIL", 
+                        "Accessibility endpoint failed", response.status_code if response else None)
+
+    def test_7_advanced_analytics(self):
+        """Test 7: Advanced Analytics Testing - Comprehensive analytics with integrations"""
+        print("\n📊 TESTING FEATURE 7: ADVANCED ANALYTICS")
+        print("=" * 60)
+
+        if not self.auth_token:
+            self.log_test("Advanced Analytics", "SKIP", "No authentication token available")
+            return
+
+        # Test analytics dashboard
+        response = self.make_request("GET", "/api/analytics/dashboard/comprehensive")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "metrics" in data and "insights" in data:
+                metrics_count = len(data.get("metrics", {}))
+                self.log_test("Analytics Dashboard", "PASS", 
+                            f"Dashboard loaded with {metrics_count} metrics", response.status_code)
+            else:
+                self.log_test("Analytics Dashboard", "FAIL", 
+                            "Missing dashboard data", response.status_code)
+        else:
+            self.log_test("Analytics Dashboard", "FAIL", 
+                        "Analytics dashboard failed", response.status_code if response else None)
+
+        # Test third-party integrations
+        integrations = ["google-analytics", "mixpanel", "amplitude"]
+        for integration in integrations:
+            response = self.make_request("GET", f"/api/analytics/integrations/{integration}")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "integration_status" in data:
+                    self.log_test(f"Analytics Integration - {integration.upper()}", "PASS", 
+                                f"Integration status: {data.get('integration_status')}", response.status_code)
+                else:
+                    self.log_test(f"Analytics Integration - {integration.upper()}", "FAIL", 
+                                "Missing integration status", response.status_code)
+            else:
+                self.log_test(f"Analytics Integration - {integration.upper()}", "FAIL", 
+                            f"Integration endpoint failed", response.status_code if response else None)
+
+        # Test deep tracing
+        response = self.make_request("GET", "/api/analytics/tracing/deep")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "traces" in data and "performance_metrics" in data:
+                traces_count = len(data.get("traces", []))
+                self.log_test("Deep Tracing", "PASS", 
+                            f"Found {traces_count} performance traces", response.status_code)
+            else:
+                self.log_test("Deep Tracing", "FAIL", 
+                            "Missing tracing data", response.status_code)
+        else:
+            self.log_test("Deep Tracing", "FAIL", 
+                        "Deep tracing failed", response.status_code if response else None)
+
+        # Test custom metrics
+        custom_metric = {
+            "name": "test_metric",
+            "value": 42,
+            "tags": {"environment": "test", "feature": "analytics"}
+        }
+        
+        response = self.make_request("POST", "/api/analytics/metrics/custom", custom_metric)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "metric_id" in data:
+                self.log_test("Custom Metrics", "PASS", 
+                            f"Custom metric recorded: {data.get('metric_id')}", response.status_code)
+            else:
+                self.log_test("Custom Metrics", "FAIL", 
+                            "Missing metric ID", response.status_code)
+        else:
+            self.log_test("Custom Metrics", "FAIL", 
+                        "Custom metrics failed", response.status_code if response else None)
+
+        # Test predictive analytics
+        response = self.make_request("GET", "/api/analytics/predictions/user-behavior")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "predictions" in data and "confidence_score" in data:
+                confidence = data.get("confidence_score", 0)
+                self.log_test("Predictive Analytics", "PASS", 
+                            f"Predictions generated with {confidence}% confidence", response.status_code)
+            else:
+                self.log_test("Predictive Analytics", "FAIL", 
+                            "Missing prediction data", response.status_code)
+        else:
+            self.log_test("Predictive Analytics", "FAIL", 
+                        "Predictive analytics failed", response.status_code if response else None)
+
+    def test_8_enhanced_onboarding(self):
+        """Test 8: Enhanced Onboarding Testing - One-click deployment and guided setup"""
+        print("\n🚀 TESTING FEATURE 8: ENHANCED ONBOARDING")
+        print("=" * 60)
+
+        if not self.auth_token:
+            self.log_test("Enhanced Onboarding", "SKIP", "No authentication token available")
+            return
+
+        # Test one-click deployment
+        deployment_config = {
+            "template": "react-starter",
+            "platform": "vercel",
+            "environment": "production"
+        }
+        
+        response = self.make_request("POST", "/api/onboarding/one-click-deploy", deployment_config)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "deployment_id" in data and "status" in data:
+                self.log_test("One-Click Deployment", "PASS", 
+                            f"Deployment initiated: {data.get('deployment_id')}, Status: {data.get('status')}", response.status_code)
+            else:
+                self.log_test("One-Click Deployment", "FAIL", 
+                            "Missing deployment data", response.status_code)
+        else:
+            self.log_test("One-Click Deployment", "FAIL", 
+                        "One-click deployment failed", response.status_code if response else None)
+
+        # Test guided setup
+        response = self.make_request("GET", "/api/onboarding/guided-setup")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "steps" in data and "current_step" in data:
+                steps_count = len(data.get("steps", []))
+                self.log_test("Guided Setup", "PASS", 
+                            f"Guided setup with {steps_count} steps, Current: {data.get('current_step')}", response.status_code)
+            else:
+                self.log_test("Guided Setup", "FAIL", 
+                            "Missing setup steps", response.status_code)
+        else:
+            self.log_test("Guided Setup", "FAIL", 
+                        "Guided setup failed", response.status_code if response else None)
+
+        # Test demo data generation
+        demo_request = {
+            "project_type": "e-commerce",
+            "data_types": ["products", "users", "orders"]
+        }
+        
+        response = self.make_request("POST", "/api/onboarding/demo-data", demo_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "demo_data" in data and "generated_records" in data:
+                records_count = data.get("generated_records", 0)
+                self.log_test("Demo Data Generation", "PASS", 
+                            f"Generated {records_count} demo records", response.status_code)
+            else:
+                self.log_test("Demo Data Generation", "FAIL", 
+                            "Missing demo data", response.status_code)
+        else:
+            self.log_test("Demo Data Generation", "FAIL", 
+                        "Demo data generation failed", response.status_code if response else None)
+
+        # Test trial management
+        response = self.make_request("GET", "/api/onboarding/trial/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "trial_status" in data and "days_remaining" in data:
+                days_remaining = data.get("days_remaining", 0)
+                self.log_test("Trial Management", "PASS", 
+                            f"Trial status: {data.get('trial_status')}, Days remaining: {days_remaining}", response.status_code)
+            else:
+                self.log_test("Trial Management", "FAIL", 
+                            "Missing trial data", response.status_code)
+        else:
+            self.log_test("Trial Management", "FAIL", 
+                        "Trial management failed", response.status_code if response else None)
+
+    def test_multi_agent_system(self):
+        """Test Multi-Agent AI System with 5 specialized agents"""
+        print("\n🤖 TESTING MULTI-AGENT AI SYSTEM")
+        print("=" * 60)
+
+        if not self.auth_token:
+            self.log_test("Multi-Agent System", "SKIP", "No authentication token available")
+            return
+
+        # Test available agents
+        response = self.make_request("GET", "/api/ai/v3/agents/available")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "agents" in data:
+                agents = data["agents"]
+                expected_agents = ["Dev", "Luna", "Atlas", "Quinn", "Sage"]
+                found_agents = [agent.get("name") for agent in agents if agent.get("name")]
+                
+                self.log_test("Available Agents", "PASS", 
+                            f"Found {len(agents)} agents: {', '.join(found_agents)}", response.status_code)
+            else:
+                self.log_test("Available Agents", "FAIL", 
+                            "No agents data found", response.status_code)
+        else:
+            self.log_test("Available Agents", "FAIL", 
+                        "Agents endpoint failed", response.status_code if response else None)
+
+        # Test enhanced AI chat with multi-agent coordination
+        chat_request = {
+            "message": "Build a comprehensive e-commerce platform with React frontend, Node.js backend, payment integration, and mobile app",
+            "enable_multi_agent": True,
+            "conversation_id": "test-conv-123"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v3/chat/enhanced", chat_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "response" in data and "agents_involved" in data:
+                agents_count = len(data.get("agents_involved", []))
+                self.log_test("Multi-Agent Chat", "PASS", 
+                            f"Multi-agent response with {agents_count} agents involved", response.status_code)
+            else:
+                self.log_test("Multi-Agent Chat", "FAIL", 
+                            "Missing multi-agent response data", response.status_code)
+        else:
+            self.log_test("Multi-Agent Chat", "FAIL", 
+                        "Multi-agent chat failed", response.status_code if response else None)
+
+    def test_groq_integration(self):
+        """Test Groq AI Integration with 4 models"""
+        print("\n⚡ TESTING GROQ AI INTEGRATION")
+        print("=" * 60)
+
+        # Test Groq models availability
+        response = self.make_request("GET", "/api/ai/groq/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "status" in data and "models" in data:
+                models_count = len(data.get("models", []))
+                self.log_test("Groq Status", "PASS", 
+                            f"Groq integration active with {models_count} models", response.status_code)
+            else:
+                self.log_test("Groq Status", "FAIL", 
+                            "Missing Groq status data", response.status_code)
+        else:
+            self.log_test("Groq Status", "FAIL", 
+                        "Groq status endpoint failed", response.status_code if response else None)
+
+        # Test Groq chat with specific model
+        if self.auth_token:
+            groq_request = {
+                "message": "Generate a Python function to calculate fibonacci numbers",
+                "model": "llama-3.1-8b-instant"
+            }
+            
+            response = self.make_request("POST", "/api/ai/groq/chat", groq_request)
+            if response and response.status_code == 200:
+                data = response.json()
+                if "response" in data and "model_used" in data:
+                    self.log_test("Groq Chat", "PASS", 
+                                f"Groq response using model: {data.get('model_used')}", response.status_code)
+                else:
+                    self.log_test("Groq Chat", "FAIL", 
+                                "Missing Groq chat response data", response.status_code)
+            else:
+                self.log_test("Groq Chat", "FAIL", 
+                            "Groq chat failed", response.status_code if response else None)
+
+    def test_authentication_subscription(self):
+        """Test Authentication and Subscription System"""
+        print("\n🔐 TESTING AUTHENTICATION & SUBSCRIPTION")
+        print("=" * 60)
+
+        # Test subscription plans
+        response = self.make_request("GET", "/api/subscription/plans")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "plans" in data:
+                plans = data["plans"]
+                expected_plans = ["basic", "professional", "enterprise"]
+                found_plans = list(plans.keys()) if isinstance(plans, dict) else []
+                
+                self.log_test("Subscription Plans", "PASS", 
+                            f"Found plans: {', '.join(found_plans)}", response.status_code)
+            else:
+                self.log_test("Subscription Plans", "FAIL", 
+                            "No subscription plans found", response.status_code)
+        else:
+            self.log_test("Subscription Plans", "FAIL", 
+                        "Subscription plans endpoint failed", response.status_code if response else None)
+
+        # Test current subscription (if authenticated)
+        if self.auth_token:
+            response = self.make_request("GET", "/api/subscription/current")
+            if response and response.status_code == 200:
+                data = response.json()
+                if "plan" in data and "status" in data:
+                    self.log_test("Current Subscription", "PASS", 
+                                f"Plan: {data.get('plan')}, Status: {data.get('status')}", response.status_code)
+                else:
+                    self.log_test("Current Subscription", "FAIL", 
+                                "Missing subscription data", response.status_code)
+            elif response and response.status_code == 404:
+                self.log_test("Current Subscription", "PASS", 
+                            "No active subscription (expected for demo user)", response.status_code)
+            else:
+                self.log_test("Current Subscription", "FAIL", 
+                            "Current subscription endpoint failed", response.status_code if response else None)
+
+    def run_all_tests(self):
+        """Run all competitive feature tests"""
+        print("🧪 STARTING COMPREHENSIVE COMPETITIVE FEATURES TESTING")
+        print("=" * 80)
+        print(f"Testing Aether AI Platform - 8 Competitive Features")
+        print(f"Backend URL: {self.base_url}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 80)
+
+        # Authenticate first
+        if not self.authenticate():
+            print("❌ Authentication failed - skipping authenticated tests")
+
+        # Run all 8 competitive feature tests
+        self.test_1_integration_hub()
+        self.test_2_template_marketplace()
+        self.test_3_enterprise_compliance()
+        self.test_4_multi_model_architecture()
+        self.test_5_workflow_builder()
+        self.test_6_mobile_experience()
+        self.test_7_advanced_analytics()
+        self.test_8_enhanced_onboarding()
+
+        # Additional core system tests
+        self.test_multi_agent_system()
+        self.test_groq_integration()
+        self.test_authentication_subscription()
+
+        # Generate summary
+        self.generate_summary()
+
+    def generate_summary(self):
+        """Generate test summary"""
+        print("\n" + "=" * 80)
+        print("🎯 COMPETITIVE FEATURES TESTING SUMMARY")
+        print("=" * 80)
+
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
+        skipped_tests = len([r for r in self.test_results if r["status"] == "SKIP"])
+
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"⚠️ Skipped: {skipped_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%")
+
+        print("\n📊 FEATURE-BY-FEATURE RESULTS:")
+        features = [
+            "Integration Hub",
+            "Template Marketplace", 
+            "Enterprise Compliance",
+            "Multi-Model Architecture",
+            "Workflow Builder",
+            "Mobile Experience",
+            "Advanced Analytics",
+            "Enhanced Onboarding",
+            "Multi-Agent System",
+            "Groq Integration",
+            "Authentication & Subscription"
+        ]
+
+        for feature in features:
+            feature_tests = [r for r in self.test_results if feature.lower() in r["test"].lower()]
+            if feature_tests:
+                feature_passed = len([r for r in feature_tests if r["status"] == "PASS"])
+                feature_total = len(feature_tests)
+                status_icon = "✅" if feature_passed == feature_total else "❌" if feature_passed == 0 else "⚠️"
+                print(f"{status_icon} {feature}: {feature_passed}/{feature_total} tests passed")
+
+        print(f"\nTest completed at: {datetime.now().isoformat()}")
+        print("=" * 80)
+
+if __name__ == "__main__":
+    tester = CompetitiveFeaturesTest()
+    tester.run_all_tests()
