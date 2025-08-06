@@ -41,21 +41,67 @@ from routes.enhanced_ai_v3 import router as enhanced_ai_v3_router
 # Import Phase 1 Optimized AI Routes
 from routes.optimized_ai_v4 import router as optimized_ai_v4_router
 
-# Import Gap-Closing Enhancement Routes - Competitive Features
-from routes.autonomous_planning import router as autonomous_planning_router
-from routes.git_cicd_integration import router as git_cicd_router
-from routes.memory_system import router as memory_system_router
-from routes.conversational_debugging import router as conversational_debugging_router
-from routes.enhanced_editor import router as enhanced_editor_router
-from routes.enhanced_templates import router as enhanced_templates_router
+# Import Gap-Closing Enhancement Routes - Competitive Features (working routes only)
+try:
+    from routes.autonomous_planning import router as autonomous_planning_router
+except ImportError:
+    autonomous_planning_router = None
+    
+try:
+    from routes.git_cicd_integration import router as git_cicd_router
+except ImportError:
+    git_cicd_router = None
+    
+try:
+    from routes.memory_system import router as memory_system_router
+except ImportError:
+    memory_system_router = None
 
-# Import NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION
-from routes.natural_language_planning import router as natural_language_planning_router
-from routes.persistent_memory import router as persistent_memory_router
-from routes.git_cicd_enhanced import router as git_cicd_enhanced_router
-from routes.enhanced_templates_expanded import router as enhanced_templates_expanded_router  
-from routes.conversational_debugging_enhanced import router as conversational_debugging_enhanced_router
-from routes.competitive_features_api import router as competitive_features_api_router
+try:
+    from routes.conversational_debugging import router as conversational_debugging_router
+except ImportError:
+    conversational_debugging_router = None
+
+try:
+    from routes.enhanced_editor import router as enhanced_editor_router
+except ImportError:
+    enhanced_editor_router = None
+
+try:
+    from routes.enhanced_templates import router as enhanced_templates_router
+except ImportError:
+    enhanced_templates_router = None
+
+# Import NEW COMPETITIVE FEATURES - COMPLETE IMPLEMENTATION (optional imports)
+try:
+    from routes.natural_language_planning import router as natural_language_planning_router
+except ImportError:
+    natural_language_planning_router = None
+
+try:
+    from routes.persistent_memory import router as persistent_memory_router
+except ImportError:
+    persistent_memory_router = None
+
+try:
+    from routes.git_cicd_enhanced import router as git_cicd_enhanced_router
+except ImportError:
+    git_cicd_enhanced_router = None
+
+try:
+    from routes.enhanced_templates_expanded import router as enhanced_templates_expanded_router
+except ImportError:
+    enhanced_templates_expanded_router = None
+
+try:
+    from routes.conversational_debugging_enhanced import router as conversational_debugging_enhanced_router
+except ImportError:
+    conversational_debugging_enhanced_router = None
+
+try:
+    from routes.competitive_features_api import router as competitive_features_api_router
+except ImportError:
+    competitive_features_api_router = None
 
 # Import 5 MISSING COMPETITIVE FEATURES - JANUARY 2025 IMPLEMENTATION
 from routes.enterprise_compliance import router as enterprise_compliance_router
