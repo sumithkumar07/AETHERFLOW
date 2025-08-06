@@ -153,6 +153,10 @@ app.include_router(git_cicd_enhanced_router, prefix="/api/git/enhanced", tags=["
 app.include_router(enhanced_templates_expanded_router, prefix="/api/templates/enhanced", tags=["Enhanced Templates Expanded"])
 app.include_router(conversational_debugging_enhanced_router, prefix="/api/debugging/enhanced", tags=["Enhanced Conversational Debugging"])
 
+# Include NEW COMPETITIVE FEATURES COMPLETE - All 5 Priority Features
+from routes.competitive_features_complete import router as competitive_features_complete_router
+app.include_router(competitive_features_complete_router, prefix="/api/competitive-complete", tags=["All 5 Competitive Features - Complete"])
+
 # Legacy routes (maintain backward compatibility)
 app.include_router(git_cicd_router, prefix="/api/cicd", tags=["Git & CI/CD Integration"])
 app.include_router(conversational_debugging_router, prefix="/api/debugging", tags=["Conversational Debugging"])
