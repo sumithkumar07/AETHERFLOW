@@ -108,3 +108,4 @@ distro>=1.9.0
 # Phase 1 Optimization Dependencies
 cachetools>=5.3.0
 multidict>=6.6.0attrs>=25.3.0
+yarl>=1.20.1
