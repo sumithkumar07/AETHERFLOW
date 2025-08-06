@@ -1067,58 +1067,333 @@ class BackendTester:
             self.log_test("Rate Limiting Test", "SKIP", 
                         "Rate limits not reached in test")
 
-    def test_subscription_database_models(self):
-        """Test that subscription database collections are working"""
-        print("🗄️ Testing Subscription Database Models...")
+    def test_8_competitive_features(self):
+        """Test all 8 competitive features comprehensively"""
+        print("🎯 TESTING 8 COMPETITIVE FEATURES - DECEMBER 2024")
+        print("=" * 60)
         
         if not self.auth_token:
-            self.log_test("Database Models Test", "SKIP", "No authentication token available")
+            self.log_test("8 Competitive Features Test", "SKIP", "No authentication token available")
             return
         
-        # Test that subscription endpoints return data indicating database is working
-        response = self.make_request("GET", "/api/subscription/current")
-        if response and response.status_code in [200, 404]:
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and "created_at" in data:
-                    self.log_test("Subscriptions Collection", "PASS", 
-                                "Subscriptions collection working - data retrieved", response.status_code)
-                else:
-                    self.log_test("Subscriptions Collection", "FAIL", 
-                                "Subscription data missing required fields", response.status_code)
-            else:
-                self.log_test("Subscriptions Collection", "PASS", 
-                            "Subscriptions collection accessible (no subscription found)", response.status_code)
-        else:
-            self.log_test("Subscriptions Collection", "FAIL", 
-                        "Subscriptions collection not accessible", response.status_code if response else None)
+        # Test each competitive feature
+        self.test_multi_agent_ai_system()
+        self.test_template_marketplace()
+        self.test_mobile_experience()
+        self.test_enhanced_onboarding()
+        self.test_enterprise_compliance()
+        self.test_advanced_analytics()
+        self.test_visual_workflow_builder()
+        self.test_integration_hub()
+
+    def test_multi_agent_ai_system(self):
+        """Test Multi-Agent AI System - Feature 1"""
+        print("🤖 Testing Multi-Agent AI System...")
         
-        # Test usage records through usage endpoint
-        response = self.make_request("GET", "/api/subscription/usage")
-        if response and response.status_code in [200, 404]:
-            if response.status_code == 200:
-                self.log_test("Usage Records Collection", "PASS", 
-                            "Usage records collection working", response.status_code)
-            else:
-                self.log_test("Usage Records Collection", "PASS", 
-                            "Usage records collection accessible (no data found)", response.status_code)
-        else:
-            self.log_test("Usage Records Collection", "FAIL", 
-                        "Usage records collection not accessible", response.status_code if response else None)
-        
-        # Test billing events through billing history
-        response = self.make_request("GET", "/api/subscription/billing/history")
+        # Test available agents
+        response = self.make_request("GET", "/api/ai/v3/agents/available")
         if response and response.status_code == 200:
             data = response.json()
-            if "billing_events" in data:
-                self.log_test("Billing Events Collection", "PASS", 
-                            f"Billing events collection working - {data.get('total', 0)} events", response.status_code)
+            if "agents" in data and len(data["agents"]) >= 5:
+                agents = data["agents"]
+                expected_agents = ["Dev", "Luna", "Atlas", "Quinn", "Sage"]
+                found_agents = [agent.get("name") for agent in agents if isinstance(agent, dict)]
+                
+                if all(agent in found_agents for agent in expected_agents):
+                    self.log_test("Multi-Agent System - Available Agents", "PASS", 
+                                f"Found all 5 specialized agents: {', '.join(found_agents)}", response.status_code)
+                else:
+                    self.log_test("Multi-Agent System - Available Agents", "FAIL", 
+                                f"Missing expected agents. Found: {found_agents}", response.status_code)
             else:
-                self.log_test("Billing Events Collection", "FAIL", 
-                            "Billing events data structure invalid", response.status_code)
+                self.log_test("Multi-Agent System - Available Agents", "FAIL", 
+                            f"Insufficient agents found: {len(data.get('agents', []))}", response.status_code)
         else:
-            self.log_test("Billing Events Collection", "FAIL", 
-                        "Billing events collection not accessible", response.status_code if response else None)
+            self.log_test("Multi-Agent System - Available Agents", "FAIL", 
+                        "Agents endpoint failed", response.status_code if response else None)
+        
+        # Test enhanced chat with multi-agent coordination
+        chat_request = {
+            "message": "Build a scalable e-commerce platform with React, Node.js, and MongoDB",
+            "enable_multi_agent": True,
+            "conversation_id": "test_conv_123"
+        }
+        
+        response = self.make_request("POST", "/api/ai/v3/chat/enhanced", chat_request)
+        if response and response.status_code == 200:
+            data = response.json()
+            if ("response" in data and "agents_involved" in data and 
+                "coordination_summary" in data and len(data.get("response", "")) > 100):
+                self.log_test("Multi-Agent Enhanced Chat", "PASS", 
+                            f"Multi-agent response generated with {len(data.get('agents_involved', []))} agents", response.status_code)
+            else:
+                self.log_test("Multi-Agent Enhanced Chat", "FAIL", 
+                            "Enhanced chat missing multi-agent features", response.status_code)
+        else:
+            self.log_test("Multi-Agent Enhanced Chat", "FAIL", 
+                        "Enhanced chat endpoint failed", response.status_code if response else None)
+
+    def test_template_marketplace(self):
+        """Test Template Marketplace - Feature 2"""
+        print("📁 Testing Template Marketplace...")
+        
+        # Test templates endpoint
+        response = self.make_request("GET", "/api/templates/")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "templates" in data and len(data["templates"]) >= 20:
+                templates = data["templates"]
+                
+                # Check template quality
+                quality_check = True
+                categories = set()
+                for template in templates:
+                    if not all(key in template for key in ["name", "description", "category", "tech_stack"]):
+                        quality_check = False
+                        break
+                    categories.add(template.get("category"))
+                
+                if quality_check and len(categories) >= 6:
+                    self.log_test("Template Marketplace - Quality", "PASS", 
+                                f"Found {len(templates)} high-quality templates across {len(categories)} categories", response.status_code)
+                else:
+                    self.log_test("Template Marketplace - Quality", "FAIL", 
+                                f"Template quality issues. Categories: {len(categories)}, Quality: {quality_check}", response.status_code)
+            else:
+                self.log_test("Template Marketplace - Quantity", "FAIL", 
+                            f"Insufficient templates: {len(data.get('templates', []))}/20 required", response.status_code)
+        else:
+            self.log_test("Template Marketplace", "FAIL", 
+                        "Templates endpoint failed", response.status_code if response else None)
+
+    def test_mobile_experience(self):
+        """Test Mobile Experience - Feature 3"""
+        print("📱 Testing Mobile Experience...")
+        
+        # Test mobile health endpoint
+        response = self.make_request("GET", "/api/mobile/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "mobile_optimized" in data and "pwa_ready" in data:
+                self.log_test("Mobile Experience - Health", "PASS", 
+                            f"Mobile optimization: {data.get('mobile_optimized')}, PWA: {data.get('pwa_ready')}", response.status_code)
+            else:
+                self.log_test("Mobile Experience - Health", "FAIL", 
+                            "Missing mobile optimization indicators", response.status_code)
+        else:
+            self.log_test("Mobile Experience - Health", "FAIL", 
+                        "Mobile health endpoint not implemented", response.status_code if response else None)
+        
+        # Test device capabilities
+        response = self.make_request("GET", "/api/mobile/device-capabilities")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "supported_features" in data:
+                self.log_test("Mobile Device Capabilities", "PASS", 
+                            f"Device capabilities available: {len(data.get('supported_features', []))} features", response.status_code)
+            else:
+                self.log_test("Mobile Device Capabilities", "FAIL", 
+                            "Device capabilities data missing", response.status_code)
+        else:
+            self.log_test("Mobile Device Capabilities", "FAIL", 
+                        "Device capabilities endpoint not implemented", response.status_code if response else None)
+
+    def test_enhanced_onboarding(self):
+        """Test Enhanced Onboarding - Feature 4"""
+        print("🚀 Testing Enhanced Onboarding...")
+        
+        # Test onboarding health
+        response = self.make_request("GET", "/api/onboarding/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "one_click_deploy" in data and "guided_setup" in data:
+                self.log_test("Enhanced Onboarding - Health", "PASS", 
+                            f"One-click deploy: {data.get('one_click_deploy')}, Guided setup: {data.get('guided_setup')}", response.status_code)
+            else:
+                self.log_test("Enhanced Onboarding - Health", "FAIL", 
+                            "Missing onboarding features", response.status_code)
+        else:
+            self.log_test("Enhanced Onboarding - Health", "FAIL", 
+                        "Onboarding health endpoint not implemented", response.status_code if response else None)
+        
+        # Test deployment capabilities
+        response = self.make_request("GET", "/api/onboarding/deployment")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "deployment_options" in data:
+                self.log_test("Enhanced Onboarding - Deployment", "PASS", 
+                            f"Deployment options available: {len(data.get('deployment_options', []))}", response.status_code)
+            else:
+                self.log_test("Enhanced Onboarding - Deployment", "FAIL", 
+                            "Deployment options missing", response.status_code)
+        else:
+            self.log_test("Enhanced Onboarding - Deployment", "FAIL", 
+                        "Deployment endpoint not implemented", response.status_code if response else None)
+
+    def test_enterprise_compliance(self):
+        """Test Enterprise Compliance - Feature 5"""
+        print("🏢 Testing Enterprise Compliance...")
+        
+        # Test compliance health
+        response = self.make_request("GET", "/api/compliance/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "soc2_ready" in data and "gdpr_compliant" in data and "hipaa_ready" in data:
+                self.log_test("Enterprise Compliance - Health", "PASS", 
+                            f"SOC2: {data.get('soc2_ready')}, GDPR: {data.get('gdpr_compliant')}, HIPAA: {data.get('hipaa_ready')}", response.status_code)
+            else:
+                self.log_test("Enterprise Compliance - Health", "FAIL", 
+                            "Missing compliance standards", response.status_code)
+        else:
+            self.log_test("Enterprise Compliance - Health", "FAIL", 
+                        "Compliance health endpoint not implemented", response.status_code if response else None)
+        
+        # Test compliance standards
+        response = self.make_request("GET", "/api/compliance/standards")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "standards" in data and len(data.get("standards", [])) >= 3:
+                standards = data["standards"]
+                expected_standards = ["SOC2", "GDPR", "HIPAA"]
+                found_standards = [std.get("name") for std in standards if isinstance(std, dict)]
+                
+                if all(std in found_standards for std in expected_standards):
+                    self.log_test("Enterprise Compliance - Standards", "PASS", 
+                                f"All compliance standards available: {', '.join(found_standards)}", response.status_code)
+                else:
+                    self.log_test("Enterprise Compliance - Standards", "FAIL", 
+                                f"Missing standards. Found: {found_standards}", response.status_code)
+            else:
+                self.log_test("Enterprise Compliance - Standards", "FAIL", 
+                            f"Insufficient compliance standards: {len(data.get('standards', []))}", response.status_code)
+        else:
+            self.log_test("Enterprise Compliance - Standards", "FAIL", 
+                        "Compliance standards endpoint not implemented", response.status_code if response else None)
+
+    def test_advanced_analytics(self):
+        """Test Advanced Analytics - Feature 6"""
+        print("📊 Testing Advanced Analytics...")
+        
+        # Test analytics health
+        response = self.make_request("GET", "/api/analytics/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "dashboard_ready" in data and "third_party_integrations" in data:
+                self.log_test("Advanced Analytics - Health", "PASS", 
+                            f"Dashboard: {data.get('dashboard_ready')}, Integrations: {len(data.get('third_party_integrations', []))}", response.status_code)
+            else:
+                self.log_test("Advanced Analytics - Health", "FAIL", 
+                            "Missing analytics capabilities", response.status_code)
+        else:
+            self.log_test("Advanced Analytics - Health", "FAIL", 
+                        "Analytics health endpoint not implemented", response.status_code if response else None)
+        
+        # Test analytics providers
+        response = self.make_request("GET", "/api/analytics/providers")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "providers" in data and len(data.get("providers", [])) >= 3:
+                providers = data["providers"]
+                expected_providers = ["Google Analytics", "Mixpanel", "Amplitude"]
+                found_providers = [p.get("name") for p in providers if isinstance(p, dict)]
+                
+                if any(provider in found_providers for provider in expected_providers):
+                    self.log_test("Advanced Analytics - Providers", "PASS", 
+                                f"Analytics providers available: {', '.join(found_providers)}", response.status_code)
+                else:
+                    self.log_test("Advanced Analytics - Providers", "FAIL", 
+                                f"No major analytics providers found: {found_providers}", response.status_code)
+            else:
+                self.log_test("Advanced Analytics - Providers", "FAIL", 
+                            f"Insufficient analytics providers: {len(data.get('providers', []))}", response.status_code)
+        else:
+            self.log_test("Advanced Analytics - Providers", "FAIL", 
+                        "Analytics providers endpoint not implemented", response.status_code if response else None)
+
+    def test_visual_workflow_builder(self):
+        """Test Visual Workflow Builder - Feature 7"""
+        print("🔄 Testing Visual Workflow Builder...")
+        
+        # Test workflows health
+        response = self.make_request("GET", "/api/workflows/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "drag_drop_ready" in data and "visual_builder" in data:
+                self.log_test("Visual Workflow Builder - Health", "PASS", 
+                            f"Drag-drop: {data.get('drag_drop_ready')}, Visual builder: {data.get('visual_builder')}", response.status_code)
+            else:
+                self.log_test("Visual Workflow Builder - Health", "FAIL", 
+                            "Missing workflow builder capabilities", response.status_code)
+        else:
+            self.log_test("Visual Workflow Builder - Health", "FAIL", 
+                        "Workflow health endpoint not implemented", response.status_code if response else None)
+        
+        # Test workflow templates
+        response = self.make_request("GET", "/api/workflows/templates")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "templates" in data and len(data.get("templates", [])) >= 5:
+                templates = data["templates"]
+                self.log_test("Visual Workflow Builder - Templates", "PASS", 
+                            f"Workflow templates available: {len(templates)}", response.status_code)
+            else:
+                self.log_test("Visual Workflow Builder - Templates", "FAIL", 
+                            f"Insufficient workflow templates: {len(data.get('templates', []))}", response.status_code)
+        else:
+            self.log_test("Visual Workflow Builder - Templates", "FAIL", 
+                        "Workflow templates endpoint not implemented", response.status_code if response else None)
+
+    def test_integration_hub(self):
+        """Test Integration Hub - Feature 8"""
+        print("🔌 Testing Integration Hub...")
+        
+        # Test integration categories
+        response = self.make_request("GET", "/api/integrations/categories")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "categories" in data and len(data.get("categories", [])) >= 6:
+                categories = data["categories"]
+                expected_categories = ["Database", "Cloud Storage", "APIs", "Monitoring", "Authentication", "Payment"]
+                found_categories = [cat.get("name") for cat in categories if isinstance(cat, dict)]
+                
+                matching_categories = sum(1 for cat in expected_categories if any(cat.lower() in found.lower() for found in found_categories))
+                
+                if matching_categories >= 4:
+                    self.log_test("Integration Hub - Categories", "PASS", 
+                                f"Integration categories available: {', '.join(found_categories)}", response.status_code)
+                else:
+                    self.log_test("Integration Hub - Categories", "FAIL", 
+                                f"Missing key integration categories. Found: {found_categories}", response.status_code)
+            else:
+                self.log_test("Integration Hub - Categories", "FAIL", 
+                            f"Insufficient integration categories: {len(data.get('categories', []))}", response.status_code)
+        else:
+            self.log_test("Integration Hub - Categories", "FAIL", 
+                        "Integration categories endpoint failed", response.status_code if response else None)
+        
+        # Test integration providers
+        response = self.make_request("GET", "/api/integrations/providers")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "providers" in data and len(data.get("providers", [])) >= 10:
+                providers = data["providers"]
+                expected_providers = ["Stripe", "AWS", "MongoDB", "PostgreSQL", "GitHub", "Slack"]
+                found_providers = [p.get("name") for p in providers if isinstance(p, dict)]
+                
+                matching_providers = sum(1 for provider in expected_providers if any(provider.lower() in found.lower() for found in found_providers))
+                
+                if matching_providers >= 3:
+                    self.log_test("Integration Hub - Providers", "PASS", 
+                                f"Integration providers available: {len(providers)} total, including major providers", response.status_code)
+                else:
+                    self.log_test("Integration Hub - Providers", "FAIL", 
+                                f"Missing major integration providers. Found: {found_providers[:5]}...", response.status_code)
+            else:
+                self.log_test("Integration Hub - Providers", "FAIL", 
+                            f"Insufficient integration providers: {len(data.get('providers', []))}", response.status_code)
+        else:
+            self.log_test("Integration Hub - Providers", "FAIL", 
+                        "Integration providers endpoint failed", response.status_code if response else None)
 
     def test_multi_agent_capabilities(self):
         """Test multi-agent intelligence system"""
