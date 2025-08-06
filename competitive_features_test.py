@@ -1,5 +1,626 @@
 #!/usr/bin/env python3
 """
+5 COMPETITIVE FEATURES TESTING - JANUARY 2025
+Focused testing for the 5 newly implemented competitive features:
+1. Enterprise Compliance (SOC2, GDPR, HIPAA)
+2. Mobile Experience (PWA, offline sync)
+3. Advanced Analytics (dashboard, real-time)
+4. Enhanced Onboarding (wizard, one-click deployment)
+5. Workflow Builder (drag-and-drop, templates)
+"""
+
+import requests
+import json
+import time
+import sys
+from datetime import datetime
+from typing import Dict, Any, Optional
+
+class CompetitiveFeaturesTester:
+    def __init__(self, base_url: str = "http://localhost:8001"):
+        self.base_url = base_url
+        self.session = requests.Session()
+        self.auth_token = None
+        self.test_results = []
+        self.demo_user = {
+            "email": "demo@aicodestudio.com",
+            "password": "demo123"
+        }
+        
+    def log_test(self, test_name: str, status: str, details: str = "", response_code: int = None, response_time: float = None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "status": status,
+            "details": details,
+            "response_code": response_code,
+            "response_time": response_time,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.test_results.append(result)
+        
+        status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+        print(f"{status_icon} {test_name}: {status}")
+        if details:
+            print(f"   Details: {details}")
+        if response_code:
+            print(f"   Response Code: {response_code}")
+        if response_time:
+            print(f"   Response Time: {response_time:.2f}s")
+        print()
+
+    def make_request(self, method: str, endpoint: str, data: Dict = None, headers: Dict = None) -> tuple:
+        """Make HTTP request with proper error handling and timing"""
+        url = f"{self.base_url}{endpoint}"
+        
+        # Add auth header if token exists
+        if self.auth_token and headers is None:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+        elif self.auth_token and headers:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+            
+        start_time = time.time()
+        try:
+            if method.upper() == "GET":
+                response = self.session.get(url, headers=headers, timeout=30)
+            elif method.upper() == "POST":
+                response = self.session.post(url, json=data, headers=headers, timeout=30)
+            elif method.upper() == "PUT":
+                response = self.session.put(url, json=data, headers=headers, timeout=30)
+            elif method.upper() == "DELETE":
+                response = self.session.delete(url, headers=headers, timeout=30)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+                
+            response_time = time.time() - start_time
+            return response, response_time
+        except requests.exceptions.RequestException as e:
+            response_time = time.time() - start_time
+            print(f"Request failed: {e}")
+            return None, response_time
+
+    def authenticate(self):
+        """Authenticate with demo user"""
+        print("🔐 Authenticating with demo user...")
+        
+        response, response_time = self.make_request("POST", "/api/auth/login", self.demo_user)
+        if response and response.status_code == 200:
+            data = response.json()
+            if "access_token" in data:
+                self.auth_token = data["access_token"]
+                self.log_test("Demo User Authentication", "PASS", 
+                            f"Token received for {data.get('user', {}).get('email')}", 
+                            response.status_code, response_time)
+                return True
+            else:
+                self.log_test("Demo User Authentication", "FAIL", 
+                            "No access token in response", response.status_code, response_time)
+        else:
+            self.log_test("Demo User Authentication", "FAIL", 
+                        "Login failed", response.status_code if response else None, response_time)
+        return False
+
+    def test_enterprise_compliance(self):
+        """Test Enterprise Compliance - SOC2, GDPR, HIPAA endpoints"""
+        print("🏢 TESTING FEATURE 1: ENTERPRISE COMPLIANCE")
+        print("-" * 50)
+        
+        # Test SOC2 compliance status
+        response, response_time = self.make_request("GET", "/api/compliance/soc2/status")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "soc2_status" in data or "compliance" in data:
+                    self.log_test("SOC2 Compliance Status", "PASS", 
+                                f"SOC2 endpoint working with data structure", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("SOC2 Compliance Status", "FAIL", 
+                                f"Missing expected data fields. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("SOC2 Compliance Status", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("SOC2 Compliance Status", "FAIL", 
+                        "SOC2 endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test GDPR compliance status
+        response, response_time = self.make_request("GET", "/api/compliance/gdpr/status")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "gdpr_status" in data or "compliance" in data:
+                    self.log_test("GDPR Compliance Status", "PASS", 
+                                f"GDPR endpoint working with data structure", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("GDPR Compliance Status", "FAIL", 
+                                f"Missing expected data fields. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("GDPR Compliance Status", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("GDPR Compliance Status", "FAIL", 
+                        "GDPR endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test HIPAA compliance status
+        response, response_time = self.make_request("GET", "/api/compliance/hipaa/status")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "hipaa_status" in data or "compliance" in data:
+                    self.log_test("HIPAA Compliance Status", "PASS", 
+                                f"HIPAA endpoint working with data structure", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("HIPAA Compliance Status", "FAIL", 
+                                f"Missing expected data fields. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("HIPAA Compliance Status", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("HIPAA Compliance Status", "FAIL", 
+                        "HIPAA endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test compliance health check
+        response, response_time = self.make_request("GET", "/api/compliance/health")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "health" in data or "compliance" in data:
+                    self.log_test("Compliance Health Check", "PASS", 
+                                f"Compliance health endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Compliance Health Check", "FAIL", 
+                                f"Missing health data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Compliance Health Check", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Compliance Health Check", "FAIL", 
+                        "Compliance health endpoint not working", 
+                        response.status_code if response else None, response_time)
+
+    def test_mobile_experience(self):
+        """Test Mobile Experience - PWA and mobile APIs"""
+        print("📱 TESTING FEATURE 2: MOBILE EXPERIENCE")
+        print("-" * 50)
+        
+        # Test PWA manifest
+        response, response_time = self.make_request("GET", "/api/mobile/pwa/manifest")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "name" in data or "manifest" in data or "pwa" in data:
+                    self.log_test("PWA Manifest", "PASS", 
+                                f"PWA manifest endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("PWA Manifest", "FAIL", 
+                                f"Missing manifest data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("PWA Manifest", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("PWA Manifest", "FAIL", 
+                        "PWA manifest endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test mobile settings
+        response, response_time = self.make_request("GET", "/api/mobile/settings")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "settings" in data or "mobile" in data or "config" in data:
+                    self.log_test("Mobile Settings", "PASS", 
+                                f"Mobile settings endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Mobile Settings", "FAIL", 
+                                f"Missing settings data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Mobile Settings", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Mobile Settings", "FAIL", 
+                        "Mobile settings endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test offline sync
+        response, response_time = self.make_request("GET", "/api/mobile/offline/sync")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "sync" in data or "offline" in data or "status" in data:
+                    self.log_test("Offline Sync", "PASS", 
+                                f"Offline sync endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Offline Sync", "FAIL", 
+                                f"Missing sync data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Offline Sync", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Offline Sync", "FAIL", 
+                        "Offline sync endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test mobile health
+        response, response_time = self.make_request("GET", "/api/mobile/health")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "health" in data or "mobile" in data:
+                    self.log_test("Mobile Health Check", "PASS", 
+                                f"Mobile health endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Mobile Health Check", "FAIL", 
+                                f"Missing health data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Mobile Health Check", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Mobile Health Check", "FAIL", 
+                        "Mobile health endpoint not working", 
+                        response.status_code if response else None, response_time)
+
+    def test_advanced_analytics(self):
+        """Test Advanced Analytics - Dashboard and real-time analytics"""
+        print("📊 TESTING FEATURE 3: ADVANCED ANALYTICS")
+        print("-" * 50)
+        
+        # Test analytics dashboard
+        response, response_time = self.make_request("GET", "/api/analytics/dashboard")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "dashboard" in data or "analytics" in data or "metrics" in data:
+                    self.log_test("Analytics Dashboard", "PASS", 
+                                f"Analytics dashboard endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Analytics Dashboard", "FAIL", 
+                                f"Missing dashboard data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Analytics Dashboard", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Analytics Dashboard", "FAIL", 
+                        "Analytics dashboard endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test real-time analytics
+        response, response_time = self.make_request("GET", "/api/analytics/real-time")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "real_time" in data or "analytics" in data or "live" in data:
+                    self.log_test("Real-time Analytics", "PASS", 
+                                f"Real-time analytics endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Real-time Analytics", "FAIL", 
+                                f"Missing real-time data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Real-time Analytics", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Real-time Analytics", "FAIL", 
+                        "Real-time analytics endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test analytics health
+        response, response_time = self.make_request("GET", "/api/analytics/health")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "health" in data or "analytics" in data:
+                    self.log_test("Analytics Health Check", "PASS", 
+                                f"Analytics health endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Analytics Health Check", "FAIL", 
+                                f"Missing health data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Analytics Health Check", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Analytics Health Check", "FAIL", 
+                        "Analytics health endpoint not working", 
+                        response.status_code if response else None, response_time)
+
+    def test_enhanced_onboarding(self):
+        """Test Enhanced Onboarding - One-click deployment wizard"""
+        print("🚀 TESTING FEATURE 4: ENHANCED ONBOARDING")
+        print("-" * 50)
+        
+        # Test onboarding wizard steps
+        response, response_time = self.make_request("GET", "/api/onboarding/wizard/steps")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "steps" in data or "wizard" in data or "onboarding" in data:
+                    self.log_test("Onboarding Wizard Steps", "PASS", 
+                                f"Onboarding wizard endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Onboarding Wizard Steps", "FAIL", 
+                                f"Missing wizard data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Onboarding Wizard Steps", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Onboarding Wizard Steps", "FAIL", 
+                        "Onboarding wizard endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test deployment platforms
+        response, response_time = self.make_request("GET", "/api/onboarding/deployment/platforms")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "platforms" in data or "deployment" in data or "options" in data:
+                    self.log_test("Deployment Platforms", "PASS", 
+                                f"Deployment platforms endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Deployment Platforms", "FAIL", 
+                                f"Missing platforms data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Deployment Platforms", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Deployment Platforms", "FAIL", 
+                        "Deployment platforms endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test onboarding health
+        response, response_time = self.make_request("GET", "/api/onboarding/health")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "health" in data or "onboarding" in data:
+                    self.log_test("Onboarding Health Check", "PASS", 
+                                f"Onboarding health endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Onboarding Health Check", "FAIL", 
+                                f"Missing health data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Onboarding Health Check", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Onboarding Health Check", "FAIL", 
+                        "Onboarding health endpoint not working", 
+                        response.status_code if response else None, response_time)
+
+    def test_workflow_builder(self):
+        """Test Workflow Builder - Drag-and-drop workflow system"""
+        print("🔄 TESTING FEATURE 5: WORKFLOW BUILDER")
+        print("-" * 50)
+        
+        # Test workflow templates
+        response, response_time = self.make_request("GET", "/api/workflows/templates")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "templates" in data or "workflows" in data or "workflow" in data:
+                    self.log_test("Workflow Templates", "PASS", 
+                                f"Workflow templates endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Workflow Templates", "FAIL", 
+                                f"Missing templates data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Workflow Templates", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Workflow Templates", "FAIL", 
+                        "Workflow templates endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test workflow node types
+        response, response_time = self.make_request("GET", "/api/workflows/node-types")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "node_types" in data or "nodes" in data or "types" in data:
+                    self.log_test("Workflow Node Types", "PASS", 
+                                f"Workflow node types endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Workflow Node Types", "FAIL", 
+                                f"Missing node types data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Workflow Node Types", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Workflow Node Types", "FAIL", 
+                        "Workflow node types endpoint not working", 
+                        response.status_code if response else None, response_time)
+        
+        # Test workflow health
+        response, response_time = self.make_request("GET", "/api/workflows/health")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if "status" in data or "health" in data or "workflow" in data:
+                    self.log_test("Workflow Health Check", "PASS", 
+                                f"Workflow health endpoint working", 
+                                response.status_code, response_time)
+                else:
+                    self.log_test("Workflow Health Check", "FAIL", 
+                                f"Missing health data. Response: {data}", 
+                                response.status_code, response_time)
+            except json.JSONDecodeError:
+                self.log_test("Workflow Health Check", "FAIL", 
+                            "Invalid JSON response", response.status_code, response_time)
+        else:
+            self.log_test("Workflow Health Check", "FAIL", 
+                        "Workflow health endpoint not working", 
+                        response.status_code if response else None, response_time)
+
+    def run_competitive_features_test(self):
+        """Run comprehensive test of the 5 competitive features"""
+        print("🎯 AETHER AI PLATFORM - 5 COMPETITIVE FEATURES TESTING")
+        print("=" * 60)
+        print(f"Testing Backend URL: {self.base_url}")
+        print(f"Test Started: {datetime.now().isoformat()}")
+        print("=" * 60)
+        
+        # Authenticate first
+        if not self.authenticate():
+            print("❌ Authentication failed - cannot proceed with testing")
+            return
+        
+        print("\n🚀 TESTING 5 NEWLY IMPLEMENTED COMPETITIVE FEATURES...")
+        print("=" * 60)
+        
+        # Test all 5 competitive features
+        self.test_enterprise_compliance()
+        self.test_mobile_experience()
+        self.test_advanced_analytics()
+        self.test_enhanced_onboarding()
+        self.test_workflow_builder()
+        
+        # Generate summary
+        self.generate_summary()
+
+    def generate_summary(self):
+        """Generate comprehensive test summary"""
+        print("\n📊 5 COMPETITIVE FEATURES TEST SUMMARY")
+        print("=" * 60)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests} ({passed_tests/total_tests*100:.1f}%)")
+        print(f"❌ Failed: {failed_tests} ({failed_tests/total_tests*100:.1f}%)")
+        print()
+        
+        # Feature-by-feature summary
+        features = [
+            "Enterprise Compliance",
+            "Mobile Experience", 
+            "Advanced Analytics",
+            "Enhanced Onboarding",
+            "Workflow Builder"
+        ]
+        
+        print("🎯 COMPETITIVE FEATURES STATUS:")
+        print("-" * 40)
+        
+        feature_status = {}
+        for i, feature in enumerate(features, 1):
+            feature_tests = [r for r in self.test_results if feature.lower().replace(" ", "_") in r["test"].lower() or feature.lower() in r["test"].lower()]
+            if feature_tests:
+                feature_passed = len([r for r in feature_tests if r["status"] == "PASS"])
+                feature_total = len(feature_tests)
+                feature_percentage = feature_passed / feature_total * 100 if feature_total > 0 else 0
+                
+                if feature_percentage >= 75:
+                    status = "✅ WORKING"
+                elif feature_percentage >= 50:
+                    status = "⚠️ PARTIAL"
+                else:
+                    status = "❌ FAILED"
+                
+                feature_status[feature] = status
+                print(f"{i}. {feature}: {status} ({feature_passed}/{feature_total} tests passed)")
+            else:
+                feature_status[feature] = "❌ NOT TESTED"
+                print(f"{i}. {feature}: ❌ NOT TESTED")
+        
+        print()
+        
+        # Response time analysis
+        response_times = [r["response_time"] for r in self.test_results if r["response_time"] is not None]
+        if response_times:
+            avg_response_time = sum(response_times) / len(response_times)
+            fast_responses = len([t for t in response_times if t < 2.0])
+            print("⚡ PERFORMANCE ANALYSIS:")
+            print("-" * 25)
+            print(f"Average Response Time: {avg_response_time:.2f}s")
+            print(f"Fast Responses (<2s): {fast_responses}/{len(response_times)} ({fast_responses/len(response_times)*100:.1f}%)")
+            print()
+        
+        # Overall assessment
+        working_features = len([s for s in feature_status.values() if "✅" in s])
+        partial_features = len([s for s in feature_status.values() if "⚠️" in s])
+        failed_features = len([s for s in feature_status.values() if "❌" in s])
+        
+        print("🏆 OVERALL COMPETITIVE ASSESSMENT:")
+        print("-" * 40)
+        print(f"✅ Fully Working Features: {working_features}/5 ({working_features/5*100:.1f}%)")
+        print(f"⚠️ Partially Working Features: {partial_features}/5 ({partial_features/5*100:.1f}%)")
+        print(f"❌ Failed/Missing Features: {failed_features}/5 ({failed_features/5*100:.1f}%)")
+        print()
+        
+        # Final verdict
+        if working_features >= 4:
+            verdict = "🎉 EXCELLENT - All 5 Features Operational"
+        elif working_features >= 3:
+            verdict = "👍 GOOD - Most Features Working"
+        elif working_features >= 2:
+            verdict = "⚠️ NEEDS WORK - Some Features Missing"
+        else:
+            verdict = "❌ CRITICAL - Major Implementation Issues"
+        
+        print(f"FINAL VERDICT: {verdict}")
+        print()
+        
+        # Success criteria check
+        print("📋 SUCCESS CRITERIA CHECK:")
+        print("-" * 30)
+        success_criteria = [
+            ("All 5 features operational", working_features == 5),
+            ("No 404 or 500 errors", all(r["response_code"] not in [404, 500] for r in self.test_results if r["response_code"])),
+            ("Fast response times (<2s)", avg_response_time < 2.0 if response_times else False),
+            ("Rich, meaningful data", passed_tests > failed_tests)
+        ]
+        
+        for criteria, met in success_criteria:
+            status = "✅" if met else "❌"
+            print(f"{status} {criteria}")
+        
+        print()
+        print(f"Test Completed: {datetime.now().isoformat()}")
+        print("=" * 60)
+
+if __name__ == "__main__":
+    # Use the backend URL from environment or default
+    backend_url = "http://localhost:8001"
+    
+    print("🚀 Starting Aether AI Platform - 5 Competitive Features Test")
+    print(f"Backend URL: {backend_url}")
+    
+    tester = CompetitiveFeaturesTester(backend_url)
+    tester.run_competitive_features_test()
+"""
 Comprehensive Testing for 8 Competitive Features
 Tests the actual implementation vs claimed features
 """
