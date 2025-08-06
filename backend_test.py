@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-COMPREHENSIVE 8 COMPETITIVE FEATURES TESTING - DECEMBER 2024
+COMPREHENSIVE 8 COMPETITIVE FEATURES TESTING - JANUARY 2025
 Backend API Testing for Aether AI Platform
 Tests all 8 competitive features for production readiness
 """
@@ -12,7 +12,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-class BackendTester:
+class CompetitiveFeaturesTester:
     def __init__(self, base_url: str = "http://localhost:8001"):
         self.base_url = base_url
         self.session = requests.Session()
@@ -69,1026 +69,155 @@ class BackendTester:
             print(f"Request failed: {e}")
             return None
 
-    def test_health_endpoints(self):
-        """Test basic health check endpoints"""
-        print("🔍 Testing Health Check Endpoints...")
+    def authenticate(self):
+        """Authenticate with demo user"""
+        print("🔐 Authenticating with demo user...")
         
-        # Test root endpoint
-        response = self.make_request("GET", "/")
-        if response and response.status_code == 200:
-            try:
-                data = response.json()
-                if "message" in data and "status" in data:
-                    self.log_test("Root Health Check", "PASS", 
-                                f"API running: {data.get('message')}", response.status_code)
-                else:
-                    self.log_test("Root Health Check", "FAIL", 
-                                "Missing required fields in response", response.status_code)
-            except:
-                self.log_test("Root Health Check", "FAIL", 
-                            f"Non-JSON response: {response.text[:200]}", response.status_code)
-        else:
-            self.log_test("Root Health Check", "FAIL", 
-                        "Endpoint not accessible", response.status_code if response else None)
-        
-        # Test detailed health check
-        response = self.make_request("GET", "/api/health")
-        if response and response.status_code == 200:
-            try:
-                data = response.json()
-                if "status" in data and "services" in data:
-                    self.log_test("Detailed Health Check", "PASS", 
-                                f"Services: {data.get('services')}", response.status_code)
-                else:
-                    self.log_test("Detailed Health Check", "FAIL", 
-                                "Missing service status information", response.status_code)
-            except:
-                self.log_test("Detailed Health Check", "FAIL", 
-                            f"Non-JSON response: {response.text[:200]}", response.status_code)
-        else:
-            self.log_test("Detailed Health Check", "FAIL", 
-                        "Health endpoint not accessible", response.status_code if response else None)
-
-    def test_authentication_system(self):
-        """Test authentication endpoints"""
-        print("🔐 Testing Authentication System...")
-        
-        # Test user registration
-        import random
-        test_user = {
-            "email": f"testuser{random.randint(1000,9999)}@example.com",
-            "name": "Test User",
-            "password": "testpassword123"
-        }
-        
-        response = self.make_request("POST", "/api/auth/register", test_user)
-        if response and response.status_code == 200:
-            data = response.json()
-            if "access_token" in data and "user" in data:
-                self.log_test("User Registration", "PASS", 
-                            f"User created: {data['user']['email']}", response.status_code)
-            else:
-                self.log_test("User Registration", "FAIL", 
-                            "Missing token or user data", response.status_code)
-        elif response and response.status_code == 400:
-            # User might already exist
-            self.log_test("User Registration", "SKIP", 
-                        "User already exists (expected)", response.status_code)
-        else:
-            self.log_test("User Registration", "FAIL", 
-                        "Registration endpoint failed", response.status_code if response else None)
-        
-        # Test demo user login
         response = self.make_request("POST", "/api/auth/login", self.demo_user)
         if response and response.status_code == 200:
             data = response.json()
             if "access_token" in data:
                 self.auth_token = data["access_token"]
-                self.log_test("Demo User Login", "PASS", 
+                self.log_test("Demo User Authentication", "PASS", 
                             f"Token received for {data.get('user', {}).get('email')}", response.status_code)
+                return True
             else:
-                self.log_test("Demo User Login", "FAIL", 
+                self.log_test("Demo User Authentication", "FAIL", 
                             "No access token in response", response.status_code)
         else:
-            self.log_test("Demo User Login", "FAIL", 
+            self.log_test("Demo User Authentication", "FAIL", 
                         "Login failed", response.status_code if response else None)
+        return False
+
+    def test_1_integration_hub(self):
+        """Test Integration Hub - 12+ integrations across categories"""
+        print("🔌 TESTING FEATURE 1: INTEGRATION HUB")
+        print("-" * 50)
         
-        # Test getting current user profile (requires auth)
-        if self.auth_token:
-            response = self.make_request("GET", "/api/auth/me")
-            if response and response.status_code == 200:
-                data = response.json()
-                if "email" in data and "name" in data:
-                    self.log_test("Get User Profile", "PASS", 
-                                f"Profile retrieved: {data.get('email')}", response.status_code)
+        # Test main integrations endpoint
+        response = self.make_request("GET", "/api/integrations/")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "integrations" in data and len(data["integrations"]) >= 12:
+                integrations = data["integrations"]
+                self.log_test("Integration Hub - Count", "PASS", 
+                            f"Found {len(integrations)} integrations (12+ required)", response.status_code)
+                
+                # Check integration quality
+                quality_check = True
+                categories = set()
+                for integration in integrations:
+                    if not all(key in integration for key in ["name", "category", "description"]):
+                        quality_check = False
+                        break
+                    categories.add(integration.get("category"))
+                
+                if quality_check:
+                    self.log_test("Integration Hub - Quality", "PASS", 
+                                f"All integrations have complete metadata across {len(categories)} categories", response.status_code)
                 else:
-                    self.log_test("Get User Profile", "FAIL", 
-                                "Missing user profile data", response.status_code)
+                    self.log_test("Integration Hub - Quality", "FAIL", 
+                                "Some integrations missing required metadata", response.status_code)
             else:
-                self.log_test("Get User Profile", "FAIL", 
-                            "Profile endpoint failed", response.status_code if response else None)
+                self.log_test("Integration Hub - Count", "FAIL", 
+                            f"Insufficient integrations: {len(data.get('integrations', []))}/12 required", response.status_code)
+        else:
+            self.log_test("Integration Hub", "FAIL", 
+                        "Integrations endpoint failed", response.status_code if response else None)
+        
+        # Test integration categories
+        response = self.make_request("GET", "/api/integrations/categories")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "categories" in data and len(data["categories"]) >= 4:
+                self.log_test("Integration Categories", "PASS", 
+                            f"Found {len(data['categories'])} integration categories", response.status_code)
+            else:
+                self.log_test("Integration Categories", "FAIL", 
+                            f"Insufficient categories: {len(data.get('categories', []))}", response.status_code)
+        else:
+            self.log_test("Integration Categories", "FAIL", 
+                        "Categories endpoint failed", response.status_code if response else None)
 
-    def test_ai_chat_integration(self):
-        """Test AI chat functionality"""
-        print("🤖 Testing AI Chat Integration...")
+    def test_2_template_marketplace(self):
+        """Test Template Marketplace - 20+ professional templates"""
+        print("📁 TESTING FEATURE 2: TEMPLATE MARKETPLACE")
+        print("-" * 50)
         
-        if not self.auth_token:
-            self.log_test("AI Chat Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test AI chat endpoint with proper model
-        chat_request = {
-            "message": "Build a simple todo app with React",
-            "model": "codellama:13b",
-            "agent": "developer"
-        }
-        
-        response = self.make_request("POST", "/api/ai/chat", chat_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            if "response" in data and "model_used" in data:
-                self.log_test("AI Chat Message", "PASS", 
-                            f"AI responded with model: {data.get('model_used')}", response.status_code)
-            else:
-                self.log_test("AI Chat Message", "FAIL", 
-                            f"Missing response or model info. Got: {list(data.keys())}", response.status_code)
-        else:
-            self.log_test("AI Chat Message", "FAIL", 
-                        "AI chat endpoint failed", response.status_code if response else None)
-        
-        # Test AI models endpoint
-        response = self.make_request("GET", "/api/ai/models")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "models" in data and len(data["models"]) > 0:
-                self.log_test("AI Models", "PASS", 
-                            f"Found {len(data['models'])} AI models", response.status_code)
-            else:
-                self.log_test("AI Models", "FAIL", 
-                            "No AI models found", response.status_code)
-        else:
-            self.log_test("AI Models", "FAIL", 
-                        "AI models endpoint failed", response.status_code if response else None)
-        
-        # Test AI agents endpoint
-        response = self.make_request("GET", "/api/ai/agents")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "agents" in data and len(data["agents"]) > 0:
-                self.log_test("AI Agents", "PASS", 
-                            f"Found {len(data['agents'])} AI agents", response.status_code)
-            else:
-                self.log_test("AI Agents", "FAIL", 
-                            "No AI agents found", response.status_code)
-        else:
-            self.log_test("AI Agents", "FAIL", 
-                        "AI agents endpoint failed", response.status_code if response else None)
-        
-        # Test AI status endpoint
-        response = self.make_request("GET", "/api/ai/status")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "service" in data and "status" in data:
-                self.log_test("AI Status", "PASS", 
-                            f"AI service status: {data.get('status')}", response.status_code)
-            else:
-                self.log_test("AI Status", "FAIL", 
-                            "Missing AI status info", response.status_code)
-        else:
-            self.log_test("AI Status", "FAIL", 
-                        "AI status endpoint failed", response.status_code if response else None)
-        
-        # Test getting conversations
-        response = self.make_request("GET", "/api/ai/conversations")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "conversations" in data:
-                self.log_test("Get Conversations", "PASS", 
-                            f"Found {len(data['conversations'])} conversations", response.status_code)
-            else:
-                self.log_test("Get Conversations", "FAIL", 
-                            "No conversations data", response.status_code)
-        else:
-            self.log_test("Get Conversations", "FAIL", 
-                        "Conversations endpoint failed", response.status_code if response else None)
-
-    def test_project_management(self):
-        """Test project management endpoints"""
-        print("📁 Testing Project Management...")
-        
-        if not self.auth_token:
-            self.log_test("Project Management Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test creating a project
-        project_data = {
-            "name": "Test Project",
-            "description": "A test project for API validation",
-            "type": "react_app",
-            "requirements": "React, Node.js, TypeScript"
-        }
-        
-        response = self.make_request("POST", "/api/projects/", project_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if "project" in data and data["project"].get("name") == project_data["name"]:
-                self.log_test("Create Project", "PASS", 
-                            f"Project created: {data['project']['name']}", response.status_code)
-                self.test_project_id = data["project"]["_id"]
-            else:
-                self.log_test("Create Project", "FAIL", 
-                            "Project creation response invalid", response.status_code)
-        else:
-            self.log_test("Create Project", "FAIL", 
-                        "Project creation failed", response.status_code if response else None)
-        
-        # Test getting projects
-        response = self.make_request("GET", "/api/projects/")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "projects" in data:
-                self.log_test("Get Projects", "PASS", 
-                            f"Found {len(data['projects'])} projects", response.status_code)
-            else:
-                self.log_test("Get Projects", "FAIL", 
-                            "No projects data", response.status_code)
-        else:
-            self.log_test("Get Projects", "FAIL", 
-                        "Projects endpoint failed", response.status_code if response else None)
-
-    def test_template_system(self):
-        """Test template system endpoints"""
-        print("📋 Testing Template System...")
-        
-        # Test getting templates (public endpoint)
+        # Test templates endpoint
         response = self.make_request("GET", "/api/templates/")
         if response and response.status_code == 200:
             data = response.json()
-            if "templates" in data and len(data["templates"]) > 0:
-                self.log_test("Get Templates", "PASS", 
-                            f"Found {len(data['templates'])} templates", response.status_code)
+            if "templates" in data and len(data["templates"]) >= 20:
+                templates = data["templates"]
+                self.log_test("Template Marketplace - Count", "PASS", 
+                            f"Found {len(templates)} templates (20+ required)", response.status_code)
+                
+                # Check template quality
+                quality_check = True
+                categories = set()
+                tech_stacks = set()
+                for template in templates:
+                    if not all(key in template for key in ["name", "description", "category"]):
+                        quality_check = False
+                        break
+                    categories.add(template.get("category"))
+                    if "tech_stack" in template:
+                        tech_stacks.add(str(template.get("tech_stack")))
+                
+                if quality_check and len(categories) >= 8:
+                    self.log_test("Template Marketplace - Quality", "PASS", 
+                                f"Professional templates across {len(categories)} categories with {len(tech_stacks)} tech stacks", response.status_code)
+                else:
+                    self.log_test("Template Marketplace - Quality", "FAIL", 
+                                f"Quality issues. Categories: {len(categories)}, Quality: {quality_check}", response.status_code)
             else:
-                self.log_test("Get Templates", "FAIL", 
-                            "No templates found", response.status_code)
+                self.log_test("Template Marketplace - Count", "FAIL", 
+                            f"Insufficient templates: {len(data.get('templates', []))}/20 required", response.status_code)
         else:
-            self.log_test("Get Templates", "FAIL", 
+            self.log_test("Template Marketplace", "FAIL", 
                         "Templates endpoint failed", response.status_code if response else None)
         
-        # Test getting featured templates
+        # Test featured templates
         response = self.make_request("GET", "/api/templates/featured")
         if response and response.status_code == 200:
             data = response.json()
             if "templates" in data:
-                self.log_test("Get Featured Templates", "PASS", 
+                self.log_test("Featured Templates", "PASS", 
                             f"Found {len(data['templates'])} featured templates", response.status_code)
             else:
-                self.log_test("Get Featured Templates", "FAIL", 
+                self.log_test("Featured Templates", "FAIL", 
                             "No featured templates data", response.status_code)
         else:
-            self.log_test("Get Featured Templates", "FAIL", 
+            self.log_test("Featured Templates", "FAIL", 
                         "Featured templates endpoint failed", response.status_code if response else None)
-        
-        # Test getting specific template
-        response = self.make_request("GET", "/api/templates/react-starter")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "template" in data and data["template"].get("name"):
-                self.log_test("Get Specific Template", "PASS", 
-                            f"Template: {data['template']['name']}", response.status_code)
-            else:
-                self.log_test("Get Specific Template", "FAIL", 
-                            "Template data incomplete", response.status_code)
-        else:
-            self.log_test("Get Specific Template", "FAIL", 
-                        "Specific template endpoint failed", response.status_code if response else None)
 
-    def test_enterprise_features(self):
-        """Test enterprise features"""
-        print("🏢 Testing Enterprise Features...")
+    def test_3_multi_model_architecture(self):
+        """Test Multi-Model Architecture - 4 Groq models + 5 AI agents"""
+        print("🤖 TESTING FEATURE 3: MULTI-MODEL ARCHITECTURE")
+        print("-" * 50)
         
-        if not self.auth_token:
-            self.log_test("Enterprise Features Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test getting integrations
-        response = self.make_request("GET", "/api/enterprise/integrations")
+        # Test AI service status
+        response = self.make_request("GET", "/api/ai/v3/status")
         if response and response.status_code == 200:
             data = response.json()
-            if "integrations" in data:
-                self.log_test("Enterprise Integrations", "PASS", 
-                            f"Found {len(data['integrations'])} integrations", response.status_code)
-            else:
-                self.log_test("Enterprise Integrations", "FAIL", 
-                            "No integrations data", response.status_code)
-        else:
-            self.log_test("Enterprise Integrations", "FAIL", 
-                        "Enterprise integrations endpoint failed", response.status_code if response else None)
-        
-        # Test compliance dashboard
-        response = self.make_request("GET", "/api/enterprise/compliance/dashboard")
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Compliance Dashboard", "PASS", 
-                        "Compliance dashboard accessible", response.status_code)
-        else:
-            self.log_test("Compliance Dashboard", "FAIL", 
-                        "Compliance dashboard failed", response.status_code if response else None)
-        
-        # Test automation dashboard
-        response = self.make_request("GET", "/api/enterprise/automation/dashboard")
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Automation Dashboard", "PASS", 
-                        "Automation dashboard accessible", response.status_code)
-        else:
-            self.log_test("Automation Dashboard", "FAIL", 
-                        "Automation dashboard failed", response.status_code if response else None)
-
-    def test_agents_system(self):
-        """Test multi-agent system"""
-        print("🤖 Testing Multi-Agent System...")
-        
-        if not self.auth_token:
-            self.log_test("Agents System Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test getting agents
-        response = self.make_request("GET", "/api/agents/")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "agents" in data and isinstance(data["agents"], list):
-                self.log_test("Get Agents", "PASS", 
-                            f"Found {len(data['agents'])} agents", response.status_code)
-            else:
-                self.log_test("Get Agents", "FAIL", 
-                            "Invalid agents response format", response.status_code)
-        else:
-            self.log_test("Get Agents", "FAIL", 
-                        "Agents endpoint failed", response.status_code if response else None)
-        
-        # Test orchestration status
-        response = self.make_request("GET", "/api/agents/orchestration/status")
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Orchestration Status", "PASS", 
-                        "Orchestration system accessible", response.status_code)
-        else:
-            self.log_test("Orchestration Status", "FAIL", 
-                        "Orchestration status failed", response.status_code if response else None)
-        
-        # Test agent teams
-        response = self.make_request("GET", "/api/agents/teams")
-        if response and response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                self.log_test("Get Agent Teams", "PASS", 
-                            f"Found {len(data)} teams", response.status_code)
-            else:
-                self.log_test("Get Agent Teams", "FAIL", 
-                            "Invalid teams response format", response.status_code)
-        else:
-            self.log_test("Get Agent Teams", "FAIL", 
-                        "Agent teams endpoint failed", response.status_code if response else None)
-
-    def test_integrations_marketplace(self):
-        """Test integrations marketplace"""
-        print("🔌 Testing Integrations Marketplace...")
-        
-        if not self.auth_token:
-            self.log_test("Integrations Marketplace Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test getting available integrations (requires auth)
-        response = self.make_request("GET", "/api/integrations/")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "integrations" in data and len(data["integrations"]) > 0:
-                self.log_test("Get Available Integrations", "PASS", 
-                            f"Found {len(data['integrations'])} integrations", response.status_code)
-            else:
-                self.log_test("Get Available Integrations", "FAIL", 
-                            "No integrations found", response.status_code)
-        else:
-            self.log_test("Get Available Integrations", "FAIL", 
-                        "Integrations endpoint failed", response.status_code if response else None)
-        
-        # Test getting integration categories
-        response = self.make_request("GET", "/api/integrations/categories")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "categories" in data:
-                self.log_test("Get Integration Categories", "PASS", 
-                            f"Found {len(data['categories'])} categories", response.status_code)
-            else:
-                self.log_test("Get Integration Categories", "FAIL", 
-                            "No categories data", response.status_code)
-        else:
-            self.log_test("Get Integration Categories", "FAIL", 
-                        "Categories endpoint failed", response.status_code if response else None)
-        
-        # Test getting popular integrations
-        response = self.make_request("GET", "/api/integrations/popular")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "integrations" in data:
-                self.log_test("Get Popular Integrations", "PASS", 
-                            f"Found {len(data['integrations'])} popular integrations", response.status_code)
-            else:
-                self.log_test("Get Popular Integrations", "FAIL", 
-                            "No popular integrations data", response.status_code)
-        else:
-            self.log_test("Get Popular Integrations", "FAIL", 
-                        "Popular integrations endpoint failed", response.status_code if response else None)
-
-    def test_advanced_ai_features(self):
-        """Test advanced AI features"""
-        print("🧠 Testing Advanced AI Features...")
-        
-        if not self.auth_token:
-            self.log_test("Advanced AI Features Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test AI chat streaming
-        response = self.make_request("GET", "/api/ai/chat/stream")
-        if response and response.status_code == 200:
-            self.log_test("AI Chat Stream", "PASS", "AI chat streaming endpoint accessible", response.status_code)
-        else:
-            self.log_test("AI Chat Stream", "FAIL", "AI chat streaming endpoint failed", response.status_code if response else None)
-        
-        # Test advanced AI features
-        response = self.make_request("GET", "/api/advanced-ai/features")
-        if response and response.status_code == 200:
-            data = response.json()
-            self.log_test("Advanced AI Features", "PASS", f"Advanced AI features available", response.status_code)
-        else:
-            self.log_test("Advanced AI Features", "FAIL", "Advanced AI features endpoint failed", response.status_code if response else None)
-        
-        # Test architectural intelligence
-        response = self.make_request("GET", "/api/architectural-intelligence/insights/test-project")
-        if response and response.status_code == 200:
-            self.log_test("Architectural Intelligence", "PASS", "Architectural intelligence accessible", response.status_code)
-        else:
-            self.log_test("Architectural Intelligence", "FAIL", "Architectural intelligence failed", response.status_code if response else None)
-        
-        # Test smart documentation
-        response = self.make_request("GET", "/api/smart-documentation/generate/test-project")
-        if response and response.status_code == 200:
-            self.log_test("Smart Documentation", "PASS", "Smart documentation accessible", response.status_code)
-        else:
-            self.log_test("Smart Documentation", "FAIL", "Smart documentation failed", response.status_code if response else None)
-
-    def test_analytics_dashboard_integration(self):
-        """Test analytics dashboard endpoints"""
-        print("📊 Testing Analytics Dashboard Integration...")
-        
-        # Test analytics dashboard (public endpoint)
-        response = self.make_request("GET", "/api/analytics/dashboard")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "ai_insights" in data and "user_behavior" in data:
-                self.log_test("Analytics Dashboard", "PASS", 
-                            f"Dashboard data loaded with {len(data)} sections", response.status_code)
-            else:
-                self.log_test("Analytics Dashboard", "FAIL", 
-                            "Missing dashboard sections", response.status_code)
-        else:
-            self.log_test("Analytics Dashboard", "FAIL", 
-                        "Analytics dashboard endpoint failed", response.status_code if response else None)
-        
-        # Test real-time analytics
-        response = self.make_request("GET", "/api/analytics/realtime")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "active_users_now" in data and "requests_per_minute" in data:
-                self.log_test("Real-time Analytics", "PASS", 
-                            f"Real-time data: {data.get('active_users_now')} active users", response.status_code)
-            else:
-                self.log_test("Real-time Analytics", "FAIL", 
-                            "Missing real-time data", response.status_code)
-        else:
-            self.log_test("Real-time Analytics", "FAIL", 
-                        "Real-time analytics endpoint failed", response.status_code if response else None)
-        
-        # Test predictive analytics
-        response = self.make_request("GET", "/api/analytics/predictions?metric=users")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "predictions" in data and "confidence" in data:
-                self.log_test("Predictive Analytics", "PASS", 
-                            f"Predictions with {data.get('confidence')} confidence", response.status_code)
-            else:
-                self.log_test("Predictive Analytics", "FAIL", 
-                            "Missing prediction data", response.status_code)
-        else:
-            self.log_test("Predictive Analytics", "FAIL", 
-                        "Predictive analytics endpoint failed", response.status_code if response else None)
-
-    def test_collaboration_workflow_engine(self):
-        """Test collaboration and workflow engine"""
-        print("🤝 Testing Collaboration & Workflow Engine...")
-        
-        if not self.auth_token:
-            self.log_test("Collaboration Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test collaboration status
-        response = self.make_request("GET", "/api/collaboration/status/all")
-        if response and response.status_code == 200:
-            self.log_test("Collaboration Status", "PASS", "Collaboration status accessible", response.status_code)
-        else:
-            self.log_test("Collaboration Status", "FAIL", "Collaboration status failed", response.status_code if response else None)
-        
-        # Test active collaborators
-        response = self.make_request("GET", "/api/collaboration/users/test-project")
-        if response and response.status_code == 200:
-            self.log_test("Active Collaborators", "PASS", "Active collaborators accessible", response.status_code)
-        else:
-            self.log_test("Active Collaborators", "FAIL", "Active collaborators failed", response.status_code if response else None)
-        
-        # Test workflows
-        response = self.make_request("GET", "/api/workflows")
-        if response and response.status_code == 200:
-            self.log_test("Workflow Automation", "PASS", "Workflow automation accessible", response.status_code)
-        else:
-            self.log_test("Workflow Automation", "FAIL", "Workflow automation failed", response.status_code if response else None)
-        
-        # Test automation dashboard
-        response = self.make_request("GET", "/api/workflows/automation/dashboard")
-        if response and response.status_code == 200:
-            self.log_test("Automation Dashboard", "PASS", "Automation dashboard accessible", response.status_code)
-        else:
-            self.log_test("Automation Dashboard", "FAIL", "Automation dashboard failed", response.status_code if response else None)
-
-    def test_security_compliance(self):
-        """Test security and compliance features"""
-        print("🔒 Testing Security & Compliance...")
-        
-        if not self.auth_token:
-            self.log_test("Security Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test security status
-        response = self.make_request("GET", "/api/security/status")
-        if response and response.status_code == 200:
-            self.log_test("Security Dashboard", "PASS", "Security dashboard accessible", response.status_code)
-        else:
-            self.log_test("Security Dashboard", "FAIL", "Security dashboard failed", response.status_code if response else None)
-        
-        # Test compliance status
-        response = self.make_request("GET", "/api/security/compliance")
-        if response and response.status_code == 200:
-            self.log_test("Compliance Status", "PASS", "Compliance status accessible", response.status_code)
-        else:
-            self.log_test("Compliance Status", "FAIL", "Compliance status failed", response.status_code if response else None)
-        
-        # Test threat analysis
-        response = self.make_request("GET", "/api/security/threats")
-        if response and response.status_code == 200:
-            self.log_test("Threat Analysis", "PASS", "Threat analysis accessible", response.status_code)
-        else:
-            self.log_test("Threat Analysis", "FAIL", "Threat analysis failed", response.status_code if response else None)
-        
-        # Test security audits
-        response = self.make_request("GET", "/api/security/audits")
-        if response and response.status_code == 200:
-            self.log_test("Security Audits", "PASS", "Security audits accessible", response.status_code)
-        else:
-            self.log_test("Security Audits", "FAIL", "Security audits failed", response.status_code if response else None)
-
-    def test_advanced_services_integration(self):
-        """Test advanced services integration"""
-        print("🔧 Testing Advanced Services Integration...")
-        
-        if not self.auth_token:
-            self.log_test("Advanced Services Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test visual programming tools
-        response = self.make_request("GET", "/api/visual-programming/tools")
-        if response and response.status_code == 200:
-            self.log_test("Visual Programming Tools", "PASS", "Visual programming tools accessible", response.status_code)
-        else:
-            self.log_test("Visual Programming Tools", "FAIL", "Visual programming tools failed", response.status_code if response else None)
-        
-        # Test plugins
-        response = self.make_request("GET", "/api/plugins")
-        if response and response.status_code == 200:
-            self.log_test("Plugin Ecosystem", "PASS", "Plugin ecosystem accessible", response.status_code)
-        else:
-            self.log_test("Plugin Ecosystem", "FAIL", "Plugin ecosystem failed", response.status_code if response else None)
-        
-        # Test video explanations
-        response = self.make_request("GET", "/api/video-explanations")
-        if response and response.status_code == 200:
-            self.log_test("Video Services", "PASS", "Video services accessible", response.status_code)
-        else:
-            self.log_test("Video Services", "FAIL", "Video services failed", response.status_code if response else None)
-        
-        # Test SEO analysis
-        response = self.make_request("GET", "/api/seo/analysis/test-project")
-        if response and response.status_code == 200:
-            self.log_test("SEO Services", "PASS", "SEO services accessible", response.status_code)
-        else:
-            self.log_test("SEO Services", "FAIL", "SEO services failed", response.status_code if response else None)
-        
-        # Test internationalization
-        response = self.make_request("GET", "/api/i18n/support/test-project")
-        if response and response.status_code == 200:
-            self.log_test("Internationalization", "PASS", "Internationalization accessible", response.status_code)
-        else:
-            self.log_test("Internationalization", "FAIL", "Internationalization failed", response.status_code if response else None)
-
-    def test_cutting_edge_features(self):
-        """Test cutting-edge features"""
-        print("⚡ Testing Cutting-Edge Features...")
-        
-        if not self.auth_token:
-            self.log_test("Cutting-Edge Features Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test experimental sandbox features
-        response = self.make_request("GET", "/api/experimental-sandbox/features")
-        if response and response.status_code == 200:
-            self.log_test("Experimental Features", "PASS", "Experimental features accessible", response.status_code)
-        else:
-            self.log_test("Experimental Features", "FAIL", "Experimental features failed", response.status_code if response else None)
-        
-        # Test theme intelligence
-        response = self.make_request("GET", "/api/theme-intelligence/recommendations/test-project")
-        if response and response.status_code == 200:
-            self.log_test("Theme Intelligence", "PASS", "Theme intelligence accessible", response.status_code)
-        else:
-            self.log_test("Theme Intelligence", "FAIL", "Theme intelligence failed", response.status_code if response else None)
-        
-        # Test code quality engine
-        response = self.make_request("GET", "/api/code-quality/report/test-project")
-        if response and response.status_code == 200:
-            self.log_test("Code Quality Engine", "PASS", "Code quality engine accessible", response.status_code)
-        else:
-            self.log_test("Code Quality Engine", "FAIL", "Code quality engine failed", response.status_code if response else None)
-        
-        # Test workspace optimization
-        response = self.make_request("GET", "/api/workspace-optimization/insights")
-        if response and response.status_code == 200:
-            self.log_test("Workspace Intelligence", "PASS", "Workspace intelligence accessible", response.status_code)
-        else:
-            self.log_test("Workspace Intelligence", "FAIL", "Workspace intelligence failed", response.status_code if response else None)
-
-    def test_7_day_trial_system(self):
-        """Test the 7-day free trial system as requested"""
-        print("🎯 Testing 7-Day Free Trial System...")
-        
-        # Test 1: Auto-Trial Creation on Registration
-        print("📝 Testing Auto-Trial Creation on Registration...")
-        import random
-        trial_user = {
-            "email": f"trialuser{random.randint(10000,99999)}@example.com",
-            "name": "Trial Test User",
-            "password": "testpassword123"
-        }
-        
-        response = self.make_request("POST", "/api/auth/register", trial_user)
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("access_token" in data and "trial_created" in data and 
-                data.get("trial_created") == True and "message" in data):
-                self.log_test("Auto-Trial Creation on Registration", "PASS", 
-                            f"Trial created for new user: {data.get('message')}", response.status_code)
-                self.trial_auth_token = data["access_token"]
-                self.trial_user_email = trial_user["email"]
-            else:
-                self.log_test("Auto-Trial Creation on Registration", "FAIL", 
-                            "Registration successful but trial not created properly", response.status_code)
-        else:
-            self.log_test("Auto-Trial Creation on Registration", "FAIL", 
-                        "User registration failed", response.status_code if response else None)
-            return
-        
-        # Test 2: Trial Status API
-        print("📊 Testing Trial Status API...")
-        if hasattr(self, 'trial_auth_token'):
-            headers = {"Authorization": f"Bearer {self.trial_auth_token}"}
-            response = self.make_request("GET", "/api/subscription/trial/status", headers=headers)
-            if response and response.status_code == 200:
-                data = response.json()
-                if ("has_trial" in data and "is_trial_active" in data and 
-                    "trial_days_remaining" in data and data.get("is_trial_active") == True):
-                    days_remaining = data.get("trial_days_remaining", 0)
-                    self.log_test("Trial Status API", "PASS", 
-                                f"Trial active with {days_remaining} days remaining", response.status_code)
-                else:
-                    self.log_test("Trial Status API", "FAIL", 
-                                f"Trial status incorrect: {data}", response.status_code)
-            else:
-                self.log_test("Trial Status API", "FAIL", 
-                            "Trial status endpoint failed", response.status_code if response else None)
-        
-        # Test 3: Subscription Plans API with Trial Info
-        print("📋 Testing Subscription Plans API...")
-        response = self.make_request("GET", "/api/subscription/plans")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "plans" in data and "basic" in data["plans"]:
-                basic_plan = data["plans"]["basic"]
-                if ("trial" in basic_plan and 
-                    basic_plan["trial"].get("tokens_per_week") == 50000 and
-                    basic_plan["trial"].get("duration_days") == 7):
-                    self.log_test("Subscription Plans with Trial Config", "PASS", 
-                                f"Basic plan includes trial: 50K tokens/week for 7 days", response.status_code)
-                else:
-                    self.log_test("Subscription Plans with Trial Config", "FAIL", 
-                                f"Trial configuration missing or incorrect in basic plan", response.status_code)
-            else:
-                self.log_test("Subscription Plans with Trial Config", "FAIL", 
-                            "Plans data structure invalid", response.status_code)
-        else:
-            self.log_test("Subscription Plans with Trial Config", "FAIL", 
-                        "Plans endpoint failed", response.status_code if response else None)
-        
-        # Test 4: Trial Limits Verification
-        print("🔒 Testing Trial Limits...")
-        if hasattr(self, 'trial_auth_token'):
-            headers = {"Authorization": f"Bearer {self.trial_auth_token}"}
-            response = self.make_request("GET", "/api/subscription/current", headers=headers)
-            if response and response.status_code == 200:
-                data = response.json()
-                if ("status" in data and data.get("status") == "trialing" and
-                    "trial_limits" in data):
-                    trial_limits = data["trial_limits"]
-                    if trial_limits.get("tokens_per_month") == 50000:  # Trial gets 50K tokens
-                        self.log_test("Trial Limits Verification", "PASS", 
-                                    f"Trial user has correct limits: {trial_limits.get('tokens_per_month')} tokens", response.status_code)
-                    else:
-                        self.log_test("Trial Limits Verification", "FAIL", 
-                                    f"Trial limits incorrect: {trial_limits}", response.status_code)
-                else:
-                    self.log_test("Trial Limits Verification", "FAIL", 
-                                f"Trial subscription data incorrect: {data}", response.status_code)
-            else:
-                self.log_test("Trial Limits Verification", "FAIL", 
-                            "Current subscription endpoint failed", response.status_code if response else None)
-        
-        # Test 5: Trial Conversion
-        print("💳 Testing Trial Conversion...")
-        if hasattr(self, 'trial_auth_token'):
-            headers = {"Authorization": f"Bearer {self.trial_auth_token}"}
-            conversion_data = {
-                "plan": "professional",
-                "billing_interval": "monthly"
-            }
-            response = self.make_request("POST", "/api/subscription/trial/convert", conversion_data, headers=headers)
-            if response and response.status_code == 200:
-                data = response.json()
-                if ("message" in data and "subscription" in data and 
-                    "professional" in data.get("message", "")):
-                    self.log_test("Trial Conversion", "PASS", 
-                                f"Trial converted successfully: {data.get('message')}", response.status_code)
-                else:
-                    self.log_test("Trial Conversion", "FAIL", 
-                                f"Trial conversion response invalid: {data}", response.status_code)
-            else:
-                self.log_test("Trial Conversion", "FAIL", 
-                            "Trial conversion endpoint failed", response.status_code if response else None)
-
-    def test_subscription_system(self):
-        """Test complete subscription system with new pricing model"""
-        print("💳 Testing Subscription System...")
-        
-        # Test getting subscription plans (public endpoint)
-        response = self.make_request("GET", "/api/subscription/plans")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "plans" in data and "billing_intervals" in data:
-                plans = data["plans"]
-                # Verify new pricing model
-                expected_plans = ["basic", "professional", "enterprise"]
-                expected_prices = {
-                    "basic": {"monthly": 19, "tokens": 500000, "projects": 10},
-                    "professional": {"monthly": 49, "tokens": 2000000, "projects": 50, "team_members": 5},
-                    "enterprise": {"monthly": 179, "tokens": 10000000, "projects": -1, "team_members": -1}
-                }
+            if "groq_models" in data and len(data["groq_models"]) >= 4:
+                models = data["groq_models"]
+                expected_models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.2-3b-preview"]
+                found_models = [model.get("name") for model in models if isinstance(model, dict)]
                 
-                all_plans_valid = True
-                for plan_name in expected_plans:
-                    if plan_name not in plans:
-                        all_plans_valid = False
-                        break
-                    
-                    plan_config = plans[plan_name]
-                    expected = expected_prices[plan_name]
-                    
-                    if (plan_config.get("price_monthly") != expected["monthly"] or
-                        plan_config.get("features", {}).get("tokens_per_month") != expected["tokens"] or
-                        plan_config.get("features", {}).get("max_projects") != expected["projects"]):
-                        all_plans_valid = False
-                        break
-                
-                if all_plans_valid:
-                    self.log_test("Get Subscription Plans", "PASS", 
-                                f"All 3 plans with correct pricing: Basic ${expected_prices['basic']['monthly']}, Professional ${expected_prices['professional']['monthly']}, Enterprise ${expected_prices['enterprise']['monthly']}", response.status_code)
+                if all(model in found_models for model in expected_models):
+                    self.log_test("Multi-Model Architecture - Groq Models", "PASS", 
+                                f"All 4 Groq models available: {', '.join(found_models)}", response.status_code)
                 else:
-                    self.log_test("Get Subscription Plans", "FAIL", 
-                                "Plan pricing or features don't match expected values", response.status_code)
+                    self.log_test("Multi-Model Architecture - Groq Models", "FAIL", 
+                                f"Missing expected models. Found: {found_models}", response.status_code)
             else:
-                self.log_test("Get Subscription Plans", "FAIL", 
-                            "Missing plans or billing_intervals in response", response.status_code)
+                self.log_test("Multi-Model Architecture - Groq Models", "FAIL", 
+                            f"Insufficient models: {len(data.get('groq_models', []))}/4 required", response.status_code)
         else:
-            self.log_test("Get Subscription Plans", "FAIL", 
-                        "Plans endpoint failed", response.status_code if response else None)
-        
-        if not self.auth_token:
-            self.log_test("Subscription System Test", "SKIP", "No authentication token for user-specific tests")
-            return
-        
-        # Test creating a subscription (Basic plan)
-        subscription_data = {
-            "plan": "basic",
-            "billing_interval": "monthly"
-        }
-        
-        response = self.make_request("POST", "/api/subscription/create", subscription_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if "id" in data and "plan" in data and data["plan"] == "basic":
-                self.log_test("Create Basic Subscription", "PASS", 
-                            f"Subscription created: {data.get('id')}", response.status_code)
-                self.test_subscription_id = data["id"]
-            else:
-                self.log_test("Create Basic Subscription", "FAIL", 
-                            "Invalid subscription creation response", response.status_code)
-        elif response and response.status_code == 400:
-            # User might already have subscription
-            self.log_test("Create Basic Subscription", "SKIP", 
-                        "User already has subscription (expected)", response.status_code)
-        else:
-            self.log_test("Create Basic Subscription", "FAIL", 
-                        "Subscription creation failed", response.status_code if response else None)
-        
-        # Test getting current subscription
-        response = self.make_request("GET", "/api/subscription/current")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "plan" in data and "current_usage" in data and "plan_config" in data:
-                self.log_test("Get Current Subscription", "PASS", 
-                            f"Current plan: {data.get('plan')}, Status: {data.get('status')}", response.status_code)
-                self.current_subscription = data
-            else:
-                self.log_test("Get Current Subscription", "FAIL", 
-                            "Missing subscription data fields", response.status_code)
-        elif response and response.status_code == 404:
-            self.log_test("Get Current Subscription", "SKIP", 
-                        "No active subscription found", response.status_code)
-        else:
-            self.log_test("Get Current Subscription", "FAIL", 
-                        "Current subscription endpoint failed", response.status_code if response else None)
-        
-        # Test getting usage statistics
-        response = self.make_request("GET", "/api/subscription/usage")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "current_usage" in data and "limits" in data and "usage_percentage" in data:
-                self.log_test("Get Usage Statistics", "PASS", 
-                            f"Usage data retrieved with {len(data['current_usage'])} usage types", response.status_code)
-            else:
-                self.log_test("Get Usage Statistics", "FAIL", 
-                            "Missing usage statistics fields", response.status_code)
-        elif response and response.status_code == 404:
-            self.log_test("Get Usage Statistics", "SKIP", 
-                        "No usage data found", response.status_code)
-        else:
-            self.log_test("Get Usage Statistics", "FAIL", 
-                        "Usage statistics endpoint failed", response.status_code if response else None)
-        
-        # Test getting usage warnings
-        response = self.make_request("GET", "/api/subscription/usage/warnings")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "warnings" in data and "total_warnings" in data:
-                self.log_test("Get Usage Warnings", "PASS", 
-                            f"Found {data.get('total_warnings', 0)} usage warnings", response.status_code)
-            else:
-                self.log_test("Get Usage Warnings", "FAIL", 
-                            "Missing warnings data", response.status_code)
-        else:
-            self.log_test("Get Usage Warnings", "FAIL", 
-                        "Usage warnings endpoint failed", response.status_code if response else None)
-        
-        # Test usage limit checking
-        usage_check_data = {
-            "usage_type": "tokens",
-            "amount": 1000
-        }
-        
-        response = self.make_request("POST", "/api/subscription/usage/check", usage_check_data)
-        if response and response.status_code == 200:
-            data = response.json()
-            if "allowed" in data:
-                self.log_test("Check Usage Limits", "PASS", 
-                            f"Usage check result: {'Allowed' if data['allowed'] else 'Denied'}", response.status_code)
-            else:
-                self.log_test("Check Usage Limits", "FAIL", 
-                            "Missing allowed field in response", response.status_code)
-        else:
-            self.log_test("Check Usage Limits", "FAIL", 
-                        "Usage check endpoint failed", response.status_code if response else None)
-        
-        # Test subscription upgrade (Basic to Professional)
-        if hasattr(self, 'current_subscription') and self.current_subscription.get('plan') == 'basic':
-            upgrade_data = {
-                "new_plan": "professional"
-            }
-            
-            response = self.make_request("POST", "/api/subscription/upgrade", upgrade_data)
-            if response and response.status_code == 200:
-                data = response.json()
-                if "message" in data and "subscription" in data:
-                    self.log_test("Upgrade Subscription", "PASS", 
-                                f"Upgraded to Professional: {data.get('message')}", response.status_code)
-                else:
-                    self.log_test("Upgrade Subscription", "FAIL", 
-                                "Invalid upgrade response", response.status_code)
-            else:
-                self.log_test("Upgrade Subscription", "FAIL", 
-                            "Subscription upgrade failed", response.status_code if response else None)
-        else:
-            self.log_test("Upgrade Subscription", "SKIP", 
-                        "No basic subscription to upgrade from")
-        
-        # Test billing history
-        response = self.make_request("GET", "/api/subscription/billing/history")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "billing_events" in data and "total" in data:
-                self.log_test("Get Billing History", "PASS", 
-                            f"Found {data.get('total', 0)} billing events", response.status_code)
-            else:
-                self.log_test("Get Billing History", "FAIL", 
-                            "Missing billing history data", response.status_code)
-        else:
-            self.log_test("Get Billing History", "FAIL", 
-                        "Billing history endpoint failed", response.status_code if response else None)
-
-    def test_ai_chat_with_usage_tracking(self):
-        """Test AI chat integration with token usage tracking"""
-        print("🤖💳 Testing AI Chat with Usage Tracking...")
-        
-        if not self.auth_token:
-            self.log_test("AI Chat Usage Tracking Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test AI chat with usage tracking
-        chat_request = {
-            "message": "Create a simple React component for a todo list",
-            "model": "llama-3.1-8b-instant",
-            "agent": "developer"
-        }
-        
-        response = self.make_request("POST", "/api/ai/chat", chat_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("response" in data and "metadata" in data and 
-                "tokens_used" in data["metadata"] and "usage_tracked" in data["metadata"]):
-                tokens_used = data["metadata"]["tokens_used"]
-                usage_tracked = data["metadata"]["usage_tracked"]
-                remaining = data["metadata"].get("remaining_tokens", "unknown")
-                
-                self.log_test("AI Chat with Usage Tracking", "PASS", 
-                            f"Chat successful, tokens used: {tokens_used}, usage tracked: {usage_tracked}, remaining: {remaining}", response.status_code)
-            else:
-                self.log_test("AI Chat with Usage Tracking", "FAIL", 
-                            "Missing usage tracking metadata in response", response.status_code)
-        elif response and response.status_code == 429:
-            # Usage limit exceeded
-            data = response.json()
-            self.log_test("AI Chat Usage Limit", "PASS", 
-                        f"Usage limit properly enforced: {data.get('detail', {}).get('message', 'Limit exceeded')}", response.status_code)
-        else:
-            self.log_test("AI Chat with Usage Tracking", "FAIL", 
-                        "AI chat with usage tracking failed", response.status_code if response else None)
-        
-        # Test multiple requests to check rate limiting
-        for i in range(3):
-            response = self.make_request("POST", "/api/ai/chat", {
-                "message": f"Test message {i+1}",
-                "model": "llama-3.1-8b-instant"
-            })
-            
-            if response and response.status_code == 429:
-                self.log_test("Rate Limiting Test", "PASS", 
-                            f"Rate limiting working - request {i+1} blocked", response.status_code)
-                break
-            elif response and response.status_code == 200:
-                continue
-            else:
-                self.log_test("Rate Limiting Test", "FAIL", 
-                            f"Unexpected response on request {i+1}", response.status_code if response else None)
-                break
-        else:
-            self.log_test("Rate Limiting Test", "SKIP", 
-                        "Rate limits not reached in test")
-
-    def test_8_competitive_features(self):
-        """Test all 8 competitive features comprehensively"""
-        print("🎯 TESTING 8 COMPETITIVE FEATURES - DECEMBER 2024")
-        print("=" * 60)
-        
-        if not self.auth_token:
-            self.log_test("8 Competitive Features Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test each competitive feature
-        self.test_multi_agent_ai_system()
-        self.test_template_marketplace()
-        self.test_mobile_experience()
-        self.test_enhanced_onboarding()
-        self.test_enterprise_compliance()
-        self.test_advanced_analytics()
-        self.test_visual_workflow_builder()
-        self.test_integration_hub()
-
-    def test_multi_agent_ai_system(self):
-        """Test Multi-Agent AI System - Feature 1"""
-        print("🤖 Testing Multi-Agent AI System...")
+            self.log_test("Multi-Model Architecture - Status", "FAIL", 
+                        "AI status endpoint failed", response.status_code if response else None)
         
         # Test available agents
         response = self.make_request("GET", "/api/ai/v3/agents/available")
@@ -1100,77 +229,85 @@ class BackendTester:
                 found_agents = [agent.get("name") for agent in agents if isinstance(agent, dict)]
                 
                 if all(agent in found_agents for agent in expected_agents):
-                    self.log_test("Multi-Agent System - Available Agents", "PASS", 
-                                f"Found all 5 specialized agents: {', '.join(found_agents)}", response.status_code)
+                    self.log_test("Multi-Model Architecture - AI Agents", "PASS", 
+                                f"All 5 specialized agents available: {', '.join(found_agents)}", response.status_code)
                 else:
-                    self.log_test("Multi-Agent System - Available Agents", "FAIL", 
+                    self.log_test("Multi-Model Architecture - AI Agents", "FAIL", 
                                 f"Missing expected agents. Found: {found_agents}", response.status_code)
             else:
-                self.log_test("Multi-Agent System - Available Agents", "FAIL", 
-                            f"Insufficient agents found: {len(data.get('agents', []))}", response.status_code)
+                self.log_test("Multi-Model Architecture - AI Agents", "FAIL", 
+                            f"Insufficient agents: {len(data.get('agents', []))}/5 required", response.status_code)
         else:
-            self.log_test("Multi-Agent System - Available Agents", "FAIL", 
+            self.log_test("Multi-Model Architecture - Agents", "FAIL", 
                         "Agents endpoint failed", response.status_code if response else None)
+
+    def test_4_enterprise_compliance(self):
+        """Test Enterprise Compliance - SOC2, GDPR, HIPAA"""
+        print("🏢 TESTING FEATURE 4: ENTERPRISE COMPLIANCE")
+        print("-" * 50)
         
-        # Test enhanced chat with multi-agent coordination
-        chat_request = {
-            "message": "Build a scalable e-commerce platform with React, Node.js, and MongoDB",
-            "enable_multi_agent": True,
-            "conversation_id": "test_conv_123"
-        }
-        
-        response = self.make_request("POST", "/api/ai/v3/chat/enhanced", chat_request)
+        # Test compliance dashboard
+        response = self.make_request("GET", "/api/compliance/dashboard")
         if response and response.status_code == 200:
             data = response.json()
-            if ("response" in data and "agents_involved" in data and 
-                "coordination_summary" in data and len(data.get("response", "")) > 100):
-                self.log_test("Multi-Agent Enhanced Chat", "PASS", 
-                            f"Multi-agent response generated with {len(data.get('agents_involved', []))} agents", response.status_code)
+            if "compliance_status" in data:
+                self.log_test("Enterprise Compliance - Dashboard", "PASS", 
+                            f"Compliance dashboard accessible with status data", response.status_code)
             else:
-                self.log_test("Multi-Agent Enhanced Chat", "FAIL", 
-                            "Enhanced chat missing multi-agent features", response.status_code)
+                self.log_test("Enterprise Compliance - Dashboard", "FAIL", 
+                            "Missing compliance status data", response.status_code)
         else:
-            self.log_test("Multi-Agent Enhanced Chat", "FAIL", 
-                        "Enhanced chat endpoint failed", response.status_code if response else None)
-
-    def test_template_marketplace(self):
-        """Test Template Marketplace - Feature 2"""
-        print("📁 Testing Template Marketplace...")
+            self.log_test("Enterprise Compliance - Dashboard", "FAIL", 
+                        "Compliance dashboard endpoint failed", response.status_code if response else None)
         
-        # Test templates endpoint
-        response = self.make_request("GET", "/api/templates/")
+        # Test SOC2 compliance
+        response = self.make_request("GET", "/api/compliance/soc2/status")
         if response and response.status_code == 200:
             data = response.json()
-            if "templates" in data and len(data["templates"]) >= 20:
-                templates = data["templates"]
-                
-                # Check template quality
-                quality_check = True
-                categories = set()
-                for template in templates:
-                    if not all(key in template for key in ["name", "description", "category", "tech_stack"]):
-                        quality_check = False
-                        break
-                    categories.add(template.get("category"))
-                
-                if quality_check and len(categories) >= 6:
-                    self.log_test("Template Marketplace - Quality", "PASS", 
-                                f"Found {len(templates)} high-quality templates across {len(categories)} categories", response.status_code)
-                else:
-                    self.log_test("Template Marketplace - Quality", "FAIL", 
-                                f"Template quality issues. Categories: {len(categories)}, Quality: {quality_check}", response.status_code)
+            if "soc2_status" in data:
+                self.log_test("SOC2 Compliance", "PASS", 
+                            f"SOC2 compliance tracking available", response.status_code)
             else:
-                self.log_test("Template Marketplace - Quantity", "FAIL", 
-                            f"Insufficient templates: {len(data.get('templates', []))}/20 required", response.status_code)
+                self.log_test("SOC2 Compliance", "FAIL", 
+                            "Missing SOC2 status data", response.status_code)
         else:
-            self.log_test("Template Marketplace", "FAIL", 
-                        "Templates endpoint failed", response.status_code if response else None)
-
-    def test_mobile_experience(self):
-        """Test Mobile Experience - Feature 3"""
-        print("📱 Testing Mobile Experience...")
+            self.log_test("SOC2 Compliance", "FAIL", 
+                        "SOC2 endpoint not implemented", response.status_code if response else None)
         
-        # Test mobile health endpoint
+        # Test GDPR compliance
+        response = self.make_request("GET", "/api/compliance/gdpr/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "gdpr_status" in data:
+                self.log_test("GDPR Compliance", "PASS", 
+                            f"GDPR compliance tracking available", response.status_code)
+            else:
+                self.log_test("GDPR Compliance", "FAIL", 
+                            "Missing GDPR status data", response.status_code)
+        else:
+            self.log_test("GDPR Compliance", "FAIL", 
+                        "GDPR endpoint not implemented", response.status_code if response else None)
+        
+        # Test HIPAA compliance
+        response = self.make_request("GET", "/api/compliance/hipaa/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "hipaa_status" in data:
+                self.log_test("HIPAA Compliance", "PASS", 
+                            f"HIPAA compliance tracking available", response.status_code)
+            else:
+                self.log_test("HIPAA Compliance", "FAIL", 
+                            "Missing HIPAA status data", response.status_code)
+        else:
+            self.log_test("HIPAA Compliance", "FAIL", 
+                        "HIPAA endpoint not implemented", response.status_code if response else None)
+
+    def test_5_mobile_experience(self):
+        """Test Mobile Experience - PWA, offline sync"""
+        print("📱 TESTING FEATURE 5: MOBILE EXPERIENCE")
+        print("-" * 50)
+        
+        # Test mobile health
         response = self.make_request("GET", "/api/mobile/health")
         if response and response.status_code == 200:
             data = response.json()
@@ -1184,23 +321,93 @@ class BackendTester:
             self.log_test("Mobile Experience - Health", "FAIL", 
                         "Mobile health endpoint not implemented", response.status_code if response else None)
         
-        # Test device capabilities
-        response = self.make_request("GET", "/api/mobile/device-capabilities")
+        # Test PWA manifest
+        response = self.make_request("GET", "/api/mobile/pwa/manifest")
         if response and response.status_code == 200:
             data = response.json()
-            if "supported_features" in data:
-                self.log_test("Mobile Device Capabilities", "PASS", 
-                            f"Device capabilities available: {len(data.get('supported_features', []))} features", response.status_code)
+            if "name" in data and "icons" in data:
+                self.log_test("PWA Manifest", "PASS", 
+                            f"PWA manifest available with app name: {data.get('name')}", response.status_code)
             else:
-                self.log_test("Mobile Device Capabilities", "FAIL", 
-                            "Device capabilities data missing", response.status_code)
+                self.log_test("PWA Manifest", "FAIL", 
+                            "Invalid PWA manifest structure", response.status_code)
         else:
-            self.log_test("Mobile Device Capabilities", "FAIL", 
-                        "Device capabilities endpoint not implemented", response.status_code if response else None)
+            self.log_test("PWA Manifest", "FAIL", 
+                        "PWA manifest endpoint not implemented", response.status_code if response else None)
+        
+        # Test offline sync
+        response = self.make_request("GET", "/api/mobile/offline/sync")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "sync_enabled" in data:
+                self.log_test("Offline Sync", "PASS", 
+                            f"Offline sync capability: {data.get('sync_enabled')}", response.status_code)
+            else:
+                self.log_test("Offline Sync", "FAIL", 
+                            "Missing offline sync data", response.status_code)
+        else:
+            self.log_test("Offline Sync", "FAIL", 
+                        "Offline sync endpoint not implemented", response.status_code if response else None)
 
-    def test_enhanced_onboarding(self):
-        """Test Enhanced Onboarding - Feature 4"""
-        print("🚀 Testing Enhanced Onboarding...")
+    def test_6_advanced_analytics(self):
+        """Test Advanced Analytics - Dashboard, third-party"""
+        print("📊 TESTING FEATURE 6: ADVANCED ANALYTICS")
+        print("-" * 50)
+        
+        # Test analytics dashboard
+        response = self.make_request("GET", "/api/analytics/dashboard")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "metrics" in data and "charts" in data:
+                self.log_test("Advanced Analytics - Dashboard", "PASS", 
+                            f"Analytics dashboard with {len(data.get('metrics', []))} metrics", response.status_code)
+            else:
+                self.log_test("Advanced Analytics - Dashboard", "FAIL", 
+                            "Missing dashboard metrics or charts", response.status_code)
+        else:
+            self.log_test("Advanced Analytics - Dashboard", "FAIL", 
+                        "Analytics dashboard endpoint not implemented", response.status_code if response else None)
+        
+        # Test third-party integrations
+        response = self.make_request("GET", "/api/analytics/integrations")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "integrations" in data:
+                integrations = data["integrations"]
+                expected_integrations = ["google_analytics", "mixpanel", "amplitude"]
+                found_integrations = [i.get("name") for i in integrations if isinstance(i, dict)]
+                
+                if any(integration in found_integrations for integration in expected_integrations):
+                    self.log_test("Analytics Third-Party Integrations", "PASS", 
+                                f"Third-party analytics integrations available: {found_integrations}", response.status_code)
+                else:
+                    self.log_test("Analytics Third-Party Integrations", "FAIL", 
+                                f"No major analytics integrations found: {found_integrations}", response.status_code)
+            else:
+                self.log_test("Analytics Third-Party Integrations", "FAIL", 
+                            "Missing integrations data", response.status_code)
+        else:
+            self.log_test("Analytics Third-Party Integrations", "FAIL", 
+                        "Analytics integrations endpoint not implemented", response.status_code if response else None)
+        
+        # Test deep tracing
+        response = self.make_request("GET", "/api/analytics/tracing")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "tracing_enabled" in data:
+                self.log_test("Deep Tracing", "PASS", 
+                            f"Deep tracing capability: {data.get('tracing_enabled')}", response.status_code)
+            else:
+                self.log_test("Deep Tracing", "FAIL", 
+                            "Missing tracing data", response.status_code)
+        else:
+            self.log_test("Deep Tracing", "FAIL", 
+                        "Deep tracing endpoint not implemented", response.status_code if response else None)
+
+    def test_7_enhanced_onboarding(self):
+        """Test Enhanced Onboarding - Setup wizard"""
+        print("🚀 TESTING FEATURE 7: ENHANCED ONBOARDING")
+        print("-" * 50)
         
         # Test onboarding health
         response = self.make_request("GET", "/api/onboarding/health")
@@ -1216,758 +423,218 @@ class BackendTester:
             self.log_test("Enhanced Onboarding - Health", "FAIL", 
                         "Onboarding health endpoint not implemented", response.status_code if response else None)
         
-        # Test deployment capabilities
+        # Test setup wizard
+        response = self.make_request("GET", "/api/onboarding/wizard/steps")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "steps" in data and len(data["steps"]) >= 3:
+                self.log_test("Setup Wizard", "PASS", 
+                            f"Setup wizard with {len(data['steps'])} steps available", response.status_code)
+            else:
+                self.log_test("Setup Wizard", "FAIL", 
+                            f"Insufficient wizard steps: {len(data.get('steps', []))}", response.status_code)
+        else:
+            self.log_test("Setup Wizard", "FAIL", 
+                        "Setup wizard endpoint not implemented", response.status_code if response else None)
+        
+        # Test one-click deployment
         response = self.make_request("GET", "/api/onboarding/deployment")
         if response and response.status_code == 200:
             data = response.json()
             if "deployment_options" in data:
-                self.log_test("Enhanced Onboarding - Deployment", "PASS", 
+                self.log_test("One-Click Deployment", "PASS", 
                             f"Deployment options available: {len(data.get('deployment_options', []))}", response.status_code)
             else:
-                self.log_test("Enhanced Onboarding - Deployment", "FAIL", 
-                            "Deployment options missing", response.status_code)
+                self.log_test("One-Click Deployment", "FAIL", 
+                            "Missing deployment options", response.status_code)
         else:
-            self.log_test("Enhanced Onboarding - Deployment", "FAIL", 
-                        "Deployment endpoint not implemented", response.status_code if response else None)
+            self.log_test("One-Click Deployment", "FAIL", 
+                        "One-click deployment endpoint not implemented", response.status_code if response else None)
 
-    def test_enterprise_compliance(self):
-        """Test Enterprise Compliance - Feature 5"""
-        print("🏢 Testing Enterprise Compliance...")
+    def test_8_workflow_builder(self):
+        """Test Workflow Builder - Visual drag-and-drop"""
+        print("🔄 TESTING FEATURE 8: WORKFLOW BUILDER")
+        print("-" * 50)
         
-        # Test compliance health
-        response = self.make_request("GET", "/api/compliance/health")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "soc2_ready" in data and "gdpr_compliant" in data and "hipaa_ready" in data:
-                self.log_test("Enterprise Compliance - Health", "PASS", 
-                            f"SOC2: {data.get('soc2_ready')}, GDPR: {data.get('gdpr_compliant')}, HIPAA: {data.get('hipaa_ready')}", response.status_code)
-            else:
-                self.log_test("Enterprise Compliance - Health", "FAIL", 
-                            "Missing compliance standards", response.status_code)
-        else:
-            self.log_test("Enterprise Compliance - Health", "FAIL", 
-                        "Compliance health endpoint not implemented", response.status_code if response else None)
-        
-        # Test compliance standards
-        response = self.make_request("GET", "/api/compliance/standards")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "standards" in data and len(data.get("standards", [])) >= 3:
-                standards = data["standards"]
-                expected_standards = ["SOC2", "GDPR", "HIPAA"]
-                found_standards = [std.get("name") for std in standards if isinstance(std, dict)]
-                
-                if all(std in found_standards for std in expected_standards):
-                    self.log_test("Enterprise Compliance - Standards", "PASS", 
-                                f"All compliance standards available: {', '.join(found_standards)}", response.status_code)
-                else:
-                    self.log_test("Enterprise Compliance - Standards", "FAIL", 
-                                f"Missing standards. Found: {found_standards}", response.status_code)
-            else:
-                self.log_test("Enterprise Compliance - Standards", "FAIL", 
-                            f"Insufficient compliance standards: {len(data.get('standards', []))}", response.status_code)
-        else:
-            self.log_test("Enterprise Compliance - Standards", "FAIL", 
-                        "Compliance standards endpoint not implemented", response.status_code if response else None)
-
-    def test_advanced_analytics(self):
-        """Test Advanced Analytics - Feature 6"""
-        print("📊 Testing Advanced Analytics...")
-        
-        # Test analytics health
-        response = self.make_request("GET", "/api/analytics/health")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "dashboard_ready" in data and "third_party_integrations" in data:
-                self.log_test("Advanced Analytics - Health", "PASS", 
-                            f"Dashboard: {data.get('dashboard_ready')}, Integrations: {len(data.get('third_party_integrations', []))}", response.status_code)
-            else:
-                self.log_test("Advanced Analytics - Health", "FAIL", 
-                            "Missing analytics capabilities", response.status_code)
-        else:
-            self.log_test("Advanced Analytics - Health", "FAIL", 
-                        "Analytics health endpoint not implemented", response.status_code if response else None)
-        
-        # Test analytics providers
-        response = self.make_request("GET", "/api/analytics/providers")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "providers" in data and len(data.get("providers", [])) >= 3:
-                providers = data["providers"]
-                expected_providers = ["Google Analytics", "Mixpanel", "Amplitude"]
-                found_providers = [p.get("name") for p in providers if isinstance(p, dict)]
-                
-                if any(provider in found_providers for provider in expected_providers):
-                    self.log_test("Advanced Analytics - Providers", "PASS", 
-                                f"Analytics providers available: {', '.join(found_providers)}", response.status_code)
-                else:
-                    self.log_test("Advanced Analytics - Providers", "FAIL", 
-                                f"No major analytics providers found: {found_providers}", response.status_code)
-            else:
-                self.log_test("Advanced Analytics - Providers", "FAIL", 
-                            f"Insufficient analytics providers: {len(data.get('providers', []))}", response.status_code)
-        else:
-            self.log_test("Advanced Analytics - Providers", "FAIL", 
-                        "Analytics providers endpoint not implemented", response.status_code if response else None)
-
-    def test_visual_workflow_builder(self):
-        """Test Visual Workflow Builder - Feature 7"""
-        print("🔄 Testing Visual Workflow Builder...")
-        
-        # Test workflows health
+        # Test workflow health
         response = self.make_request("GET", "/api/workflows/health")
         if response and response.status_code == 200:
             data = response.json()
-            if "drag_drop_ready" in data and "visual_builder" in data:
-                self.log_test("Visual Workflow Builder - Health", "PASS", 
-                            f"Drag-drop: {data.get('drag_drop_ready')}, Visual builder: {data.get('visual_builder')}", response.status_code)
+            if "workflow_engine" in data:
+                self.log_test("Workflow Builder - Health", "PASS", 
+                            f"Workflow engine status: {data.get('workflow_engine')}", response.status_code)
             else:
-                self.log_test("Visual Workflow Builder - Health", "FAIL", 
-                            "Missing workflow builder capabilities", response.status_code)
+                self.log_test("Workflow Builder - Health", "FAIL", 
+                            "Missing workflow engine status", response.status_code)
         else:
-            self.log_test("Visual Workflow Builder - Health", "FAIL", 
+            self.log_test("Workflow Builder - Health", "FAIL", 
                         "Workflow health endpoint not implemented", response.status_code if response else None)
         
         # Test workflow templates
         response = self.make_request("GET", "/api/workflows/templates")
         if response and response.status_code == 200:
             data = response.json()
-            if "templates" in data and len(data.get("templates", [])) >= 5:
-                templates = data["templates"]
-                self.log_test("Visual Workflow Builder - Templates", "PASS", 
-                            f"Workflow templates available: {len(templates)}", response.status_code)
+            if "templates" in data and len(data["templates"]) >= 5:
+                self.log_test("Workflow Templates", "PASS", 
+                            f"Found {len(data['templates'])} workflow templates", response.status_code)
             else:
-                self.log_test("Visual Workflow Builder - Templates", "FAIL", 
+                self.log_test("Workflow Templates", "FAIL", 
                             f"Insufficient workflow templates: {len(data.get('templates', []))}", response.status_code)
         else:
-            self.log_test("Visual Workflow Builder - Templates", "FAIL", 
+            self.log_test("Workflow Templates", "FAIL", 
                         "Workflow templates endpoint not implemented", response.status_code if response else None)
-
-    def test_integration_hub(self):
-        """Test Integration Hub - Feature 8"""
-        print("🔌 Testing Integration Hub...")
         
-        # Test integration categories
-        response = self.make_request("GET", "/api/integrations/categories")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "categories" in data and len(data.get("categories", [])) >= 6:
-                categories = data["categories"]
-                expected_categories = ["Database", "Cloud Storage", "APIs", "Monitoring", "Authentication", "Payment"]
-                found_categories = [cat.get("name") for cat in categories if isinstance(cat, dict)]
-                
-                matching_categories = sum(1 for cat in expected_categories if any(cat.lower() in found.lower() for found in found_categories))
-                
-                if matching_categories >= 4:
-                    self.log_test("Integration Hub - Categories", "PASS", 
-                                f"Integration categories available: {', '.join(found_categories)}", response.status_code)
-                else:
-                    self.log_test("Integration Hub - Categories", "FAIL", 
-                                f"Missing key integration categories. Found: {found_categories}", response.status_code)
-            else:
-                self.log_test("Integration Hub - Categories", "FAIL", 
-                            f"Insufficient integration categories: {len(data.get('categories', []))}", response.status_code)
-        else:
-            self.log_test("Integration Hub - Categories", "FAIL", 
-                        "Integration categories endpoint failed", response.status_code if response else None)
-        
-        # Test integration providers
-        response = self.make_request("GET", "/api/integrations/providers")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "providers" in data and len(data.get("providers", [])) >= 10:
-                providers = data["providers"]
-                expected_providers = ["Stripe", "AWS", "MongoDB", "PostgreSQL", "GitHub", "Slack"]
-                found_providers = [p.get("name") for p in providers if isinstance(p, dict)]
-                
-                matching_providers = sum(1 for provider in expected_providers if any(provider.lower() in found.lower() for found in found_providers))
-                
-                if matching_providers >= 3:
-                    self.log_test("Integration Hub - Providers", "PASS", 
-                                f"Integration providers available: {len(providers)} total, including major providers", response.status_code)
-                else:
-                    self.log_test("Integration Hub - Providers", "FAIL", 
-                                f"Missing major integration providers. Found: {found_providers[:5]}...", response.status_code)
-            else:
-                self.log_test("Integration Hub - Providers", "FAIL", 
-                            f"Insufficient integration providers: {len(data.get('providers', []))}", response.status_code)
-        else:
-            self.log_test("Integration Hub - Providers", "FAIL", 
-                        "Integration providers endpoint failed", response.status_code if response else None)
-
-    def test_multi_agent_capabilities(self):
-        """Test multi-agent intelligence system"""
-        print("🤖 Testing Multi-Agent Intelligence System...")
-        
-        if not self.auth_token:
-            self.log_test("Multi-Agent System Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test agent capabilities
-        response = self.make_request("GET", "/api/agents/capabilities")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "agents" in data:
-                self.log_test("Agent Capabilities", "PASS", f"Found {len(data['agents'])} agent capabilities", response.status_code)
-            else:
-                self.log_test("Agent Capabilities", "FAIL", "No agent capabilities data", response.status_code)
-        else:
-            self.log_test("Agent Capabilities", "FAIL", "Agent capabilities endpoint failed", response.status_code if response else None)
-        
-    def test_enhanced_ai_v2_features(self):
-        """Test Enhanced AI v2 features with advanced capabilities"""
-        print("🚀 Testing Enhanced AI v2 Features...")
-        
-        if not self.auth_token:
-            self.log_test("Enhanced AI v2 Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test 1: Advanced Chat with Multi-Agent Coordination
-        print("🤖 Testing Advanced Chat with Multi-Agent Coordination...")
-        advanced_chat_request = {
-            "message": "I need to build a comprehensive React todo application with user authentication, real-time updates, and mobile responsiveness. Please provide a complete solution with testing strategy.",
-            "model": "llama-3.1-70b-versatile",
-            "agent": "developer",
-            "project_id": "test_project_123",
-            "conversation_id": "conv_test_123",
-            "context": [
-                {"role": "user", "content": "Previous context about React development"},
-                {"role": "assistant", "content": "I can help with React development"}
-            ],
-            "preferences": {"detailed_responses": True, "include_examples": True},
-            "enable_coordination": True,
-            "multi_agent_mode": True
+        # Test workflow creation
+        workflow_data = {
+            "name": "Test Workflow",
+            "description": "A test workflow for validation",
+            "steps": [
+                {"type": "trigger", "name": "Start"},
+                {"type": "action", "name": "Process"},
+                {"type": "condition", "name": "Check"},
+                {"type": "action", "name": "Complete"}
+            ]
         }
         
-        response = self.make_request("POST", "/api/ai/v2/enhanced/advanced-chat", advanced_chat_request)
+        response = self.make_request("POST", "/api/workflows/create", workflow_data)
         if response and response.status_code == 200:
             data = response.json()
-            required_fields = ["response", "agent", "model_used", "suggestions", "agent_insights", 
-                             "next_actions", "collaboration_opportunities", "metadata", "conversation_id"]
-            
-            if all(field in data for field in required_fields):
-                # Check for enhanced features
-                metadata = data.get("metadata", {})
-                if (metadata.get("advanced_processing_v2") and 
-                    "task_analysis" in metadata and 
-                    "tokens_used" in metadata):
-                    self.log_test("Advanced Chat with Multi-Agent Coordination", "PASS", 
-                                f"Enhanced AI response with {len(data.get('suggestions', []))} suggestions, "
-                                f"{len(data.get('next_actions', []))} next actions, "
-                                f"agent: {data.get('agent')}, tokens: {metadata.get('tokens_used')}", response.status_code)
-                else:
-                    self.log_test("Advanced Chat with Multi-Agent Coordination", "FAIL", 
-                                "Missing enhanced v2 features in metadata", response.status_code)
+            if "workflow_id" in data and "status" in data:
+                self.log_test("Workflow Creation", "PASS", 
+                            f"Workflow created with ID: {data.get('workflow_id')}", response.status_code)
             else:
-                missing_fields = [field for field in required_fields if field not in data]
-                self.log_test("Advanced Chat with Multi-Agent Coordination", "FAIL", 
-                            f"Missing required fields: {missing_fields}", response.status_code)
+                self.log_test("Workflow Creation", "FAIL", 
+                            "Invalid workflow creation response", response.status_code)
         else:
-            self.log_test("Advanced Chat with Multi-Agent Coordination", "FAIL", 
-                        "Advanced chat endpoint failed", response.status_code if response else None)
-        
-        # Test 2: Multi-Agent Chat Workflow
-        print("🤝 Testing Multi-Agent Chat Workflow...")
-        multi_agent_request = {
-            "message": "Create a complete e-commerce platform with payment integration, inventory management, and admin dashboard",
-            "task_complexity": "complex",
-            "preferred_agents": ["developer", "designer", "tester", "integrator"],
-            "project_id": "ecommerce_project",
-            "conversation_id": "multi_agent_conv"
-        }
-        
-        response = self.make_request("POST", "/api/ai/v2/enhanced/multi-agent-chat", multi_agent_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("workflow_id" in data and "agents_assigned" in data and 
-                "coordination_plan" in data and "next_steps" in data):
-                workflow_id = data["workflow_id"]
-                agents_count = len(data["agents_assigned"])
-                self.log_test("Multi-Agent Chat Workflow", "PASS", 
-                            f"Workflow created: {workflow_id}, {agents_count} agents assigned", response.status_code)
-                
-                # Store workflow_id for coordination status test
-                self.test_workflow_id = workflow_id
-            else:
-                self.log_test("Multi-Agent Chat Workflow", "FAIL", 
-                            "Missing workflow coordination data", response.status_code)
-        else:
-            self.log_test("Multi-Agent Chat Workflow", "FAIL", 
-                        "Multi-agent chat endpoint failed", response.status_code if response else None)
-        
-        # Test 3: Coordination Status
-        if hasattr(self, 'test_workflow_id'):
-            print("📊 Testing Coordination Status...")
-            response = self.make_request("GET", f"/api/ai/v2/enhanced/coordination-status/{self.test_workflow_id}")
-            if response and response.status_code == 200:
-                data = response.json()
-                if ("workflow_id" in data and "status" in data and "progress" in data):
-                    self.log_test("Coordination Status", "PASS", 
-                                f"Status: {data.get('status')}, Progress: {data.get('progress')}", response.status_code)
-                else:
-                    self.log_test("Coordination Status", "FAIL", 
-                                "Missing coordination status data", response.status_code)
-            else:
-                self.log_test("Coordination Status", "FAIL", 
-                            "Coordination status endpoint failed", response.status_code if response else None)
-        
-        # Test 4: Conversation Analysis
-        print("🔍 Testing Conversation Analysis...")
-        analysis_request = {
-            "conversation_id": "conv_test_123",
-            "analysis_depth": "deep"
-        }
-        
-        response = self.make_request("POST", "/api/ai/v2/enhanced/conversation-analysis", analysis_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("insights" in data and "suggested_actions" in data and "analysis_timestamp" in data):
-                insights_count = len(data.get("insights", {}))
-                actions_count = len(data.get("suggested_actions", []))
-                self.log_test("Conversation Analysis", "PASS", 
-                            f"Analysis completed with {insights_count} insights, {actions_count} suggested actions", response.status_code)
-            else:
-                self.log_test("Conversation Analysis", "FAIL", 
-                            "Missing conversation analysis data", response.status_code)
-        else:
-            self.log_test("Conversation Analysis", "FAIL", 
-                        "Conversation analysis endpoint failed", response.status_code if response else None)
-        
-        # Test 5: Intelligent Suggestions
-        print("💡 Testing Intelligent Suggestions...")
-        response = self.make_request("GET", "/api/ai/v2/enhanced/intelligent-suggestions?context=React development&agent=developer&complexity=high")
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("suggestions" in data and "user_context" in data and "generated_at" in data):
-                suggestions_count = len(data.get("suggestions", []))
-                self.log_test("Intelligent Suggestions", "PASS", 
-                            f"Generated {suggestions_count} intelligent suggestions", response.status_code)
-            else:
-                self.log_test("Intelligent Suggestions", "FAIL", 
-                            "Missing intelligent suggestions data", response.status_code)
-        else:
-            self.log_test("Intelligent Suggestions", "FAIL", 
-                        "Intelligent suggestions endpoint failed", response.status_code if response else None)
-        
-        # Test 6: Agent Capabilities
-        print("🎯 Testing Agent Capabilities...")
-        response = self.make_request("GET", "/api/ai/v2/enhanced/agent-capabilities")
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("agent_capabilities" in data and "total_agents" in data and "coordination_features" in data):
-                total_agents = data.get("total_agents", 0)
-                coordination_features = data.get("coordination_features", {})
-                enhanced_features_count = sum(1 for feature, enabled in coordination_features.items() if enabled)
-                self.log_test("Agent Capabilities", "PASS", 
-                            f"Found {total_agents} agents with {enhanced_features_count} coordination features", response.status_code)
-            else:
-                self.log_test("Agent Capabilities", "FAIL", 
-                            "Missing agent capabilities data", response.status_code)
-        else:
-            self.log_test("Agent Capabilities", "FAIL", 
-                        "Agent capabilities endpoint failed", response.status_code if response else None)
+            self.log_test("Workflow Creation", "FAIL", 
+                        "Workflow creation endpoint not implemented", response.status_code if response else None)
 
-    def test_enhanced_conversation_management(self):
-        """Test enhanced conversation management features"""
-        print("💬 Testing Enhanced Conversation Management...")
-        
-        if not self.auth_token:
-            self.log_test("Enhanced Conversation Management Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test conversation context enhancement through advanced chat
-        conversation_test_request = {
-            "message": "Help me optimize the performance of my React application. It's loading slowly and users are complaining.",
-            "model": "llama-3.1-70b-versatile",
-            "agent": "developer",
-            "conversation_id": "perf_optimization_conv",
-            "context": [
-                {"role": "user", "content": "I have a React app with performance issues"},
-                {"role": "assistant", "content": "I can help optimize React performance"}
-            ],
-            "enable_coordination": True
-        }
-        
-        response = self.make_request("POST", "/api/ai/v2/enhanced/advanced-chat", conversation_test_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            if ("conversation_quality" in data and "metadata" in data):
-                conversation_quality = data.get("conversation_quality", {})
-                if conversation_quality:
-                    self.log_test("Enhanced Conversation Context", "PASS", 
-                                f"Conversation quality assessment completed", response.status_code)
-                else:
-                    self.log_test("Enhanced Conversation Context", "FAIL", 
-                                "Empty conversation quality data", response.status_code)
-            else:
-                self.log_test("Enhanced Conversation Context", "FAIL", 
-                            "Missing conversation quality assessment", response.status_code)
-        else:
-            self.log_test("Enhanced Conversation Context", "FAIL", 
-                        "Enhanced conversation management failed", response.status_code if response else None)
-
-    def test_intelligent_agent_coordination(self):
-        """Test intelligent agent coordination system"""
-        print("🧠 Testing Intelligent Agent Coordination...")
-        
-        if not self.auth_token:
-            self.log_test("Intelligent Agent Coordination Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test complex task requiring multiple agents
-        complex_task_request = {
-            "message": "I need to build a complete SaaS platform with user management, subscription billing, real-time notifications, analytics dashboard, and mobile app. Include security best practices, scalability considerations, and comprehensive testing strategy.",
-            "task_complexity": "complex",
-            "preferred_agents": [],  # Let system choose optimal agents
-            "project_id": "saas_platform_project"
-        }
-        
-        response = self.make_request("POST", "/api/ai/v2/enhanced/multi-agent-chat", complex_task_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            
-            # Verify intelligent coordination features
-            if ("task_analysis" in data and "coordination_plan" in data and "agent_recommendation" in data):
-                task_analysis = data.get("task_analysis", {})
-                coordination_plan = data.get("coordination_plan", {})
-                
-                # Check task analysis quality
-                if ("complexity" in task_analysis and "required_skills" in task_analysis and 
-                    "collaborative" in task_analysis):
-                    complexity = task_analysis.get("complexity", 0)
-                    skills_count = len(task_analysis.get("required_skills", []))
-                    collaborative = task_analysis.get("collaborative", False)
-                    
-                    self.log_test("Task Requirement Analysis", "PASS", 
-                                f"Complexity: {complexity}, Skills: {skills_count}, Collaborative: {collaborative}", response.status_code)
-                else:
-                    self.log_test("Task Requirement Analysis", "FAIL", 
-                                "Incomplete task analysis", response.status_code)
-                
-                # Check coordination plan quality
-                if ("task_breakdown" in coordination_plan and "execution_order" in coordination_plan):
-                    task_breakdown = coordination_plan.get("task_breakdown", [])
-                    execution_order = coordination_plan.get("execution_order", [])
-                    
-                    self.log_test("Multi-Agent Workflow Coordination", "PASS", 
-                                f"Task breakdown: {len(task_breakdown)} phases, Execution order: {len(execution_order)} steps", response.status_code)
-                else:
-                    self.log_test("Multi-Agent Workflow Coordination", "FAIL", 
-                                "Incomplete coordination plan", response.status_code)
-            else:
-                self.log_test("Intelligent Agent Coordination", "FAIL", 
-                            "Missing coordination intelligence features", response.status_code)
-        else:
-            self.log_test("Intelligent Agent Coordination", "FAIL", 
-                        "Agent coordination system failed", response.status_code if response else None)
-
-    def test_enhanced_ai_error_handling(self):
-        """Test error handling and robustness of enhanced AI features"""
-        print("🛡️ Testing Enhanced AI Error Handling...")
-        
-        if not self.auth_token:
-            self.log_test("Enhanced AI Error Handling Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test 1: Invalid conversation analysis request
-        invalid_analysis_request = {
-            "conversation_id": "non_existent_conversation",
-            "analysis_depth": "invalid_depth"
-        }
-        
-        response = self.make_request("POST", "/api/ai/v2/enhanced/conversation-analysis", invalid_analysis_request)
-        if response and response.status_code in [400, 404, 500]:
-            self.log_test("Invalid Conversation Analysis Handling", "PASS", 
-                        f"Properly handled invalid request", response.status_code)
-        else:
-            self.log_test("Invalid Conversation Analysis Handling", "FAIL", 
-                        "Did not handle invalid request properly", response.status_code if response else None)
-        
-        # Test 2: Invalid coordination status request
-        response = self.make_request("GET", "/api/ai/v2/enhanced/coordination-status/invalid_workflow_id")
-        if response and response.status_code in [400, 404, 500]:
-            self.log_test("Invalid Coordination Status Handling", "PASS", 
-                        f"Properly handled invalid workflow ID", response.status_code)
-        else:
-            self.log_test("Invalid Coordination Status Handling", "FAIL", 
-                        "Did not handle invalid workflow ID properly", response.status_code if response else None)
-        
-        # Test 3: Malformed advanced chat request
-        malformed_request = {
-            "message": "",  # Empty message
-            "model": "invalid_model",
-            "agent": "non_existent_agent"
-        }
-        
-        response = self.make_request("POST", "/api/ai/v2/enhanced/advanced-chat", malformed_request)
-        if response and response.status_code in [400, 422, 500]:
-            self.log_test("Malformed Advanced Chat Handling", "PASS", 
-                        f"Properly handled malformed request", response.status_code)
-        else:
-            self.log_test("Malformed Advanced Chat Handling", "FAIL", 
-                        "Did not handle malformed request properly", response.status_code if response else None)
-
-    def test_websocket_connection(self):
-        """Test WebSocket connection (basic connectivity test)"""
-        print("🔌 Testing WebSocket Connection...")
-        
-        # Note: This is a basic test - full WebSocket testing would require websocket client
-        try:
-            import websocket
-            
-            def on_open(ws):
-                self.log_test("WebSocket Connection", "PASS", "WebSocket connection established")
-                ws.close()
-            
-            def on_error(ws, error):
-                self.log_test("WebSocket Connection", "FAIL", f"WebSocket error: {error}")
-            
-            ws = websocket.WebSocketApp(f"ws://localhost:8001/ws/test-client",
-                                      on_open=on_open,
-                                      on_error=on_error)
-            # Use a simple run with timeout handling
-            import threading
-            import time
-            
-            def run_ws():
-                ws.run_forever()
-            
-            thread = threading.Thread(target=run_ws)
-            thread.daemon = True
-            thread.start()
-            thread.join(timeout=5)
-            
-            if thread.is_alive():
-                ws.close()
-                self.log_test("WebSocket Connection", "FAIL", "WebSocket connection timeout")
-            
-        except ImportError:
-            self.log_test("WebSocket Connection", "SKIP", "websocket-client not installed")
-        except Exception as e:
-            self.log_test("WebSocket Connection", "FAIL", f"WebSocket test failed: {e}")
-
-    def test_experimental_sandbox_service(self):
-        """Test Experimental Sandbox Service endpoints"""
-        print("🧪 Testing Experimental Sandbox Service...")
-        
-        if not self.auth_token:
-            self.log_test("Experimental Sandbox Test", "SKIP", "No authentication token available")
-            return
-        
-        # Test getting available experiments
-        response = self.make_request("GET", "/api/experimental-sandbox/available-experiments")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "language_features" in data and "experimental_apis" in data and "experiment_types" in data:
-                self.log_test("Get Available Experiments", "PASS", 
-                            f"Found {len(data['experiment_types'])} experiment types", response.status_code)
-            else:
-                self.log_test("Get Available Experiments", "FAIL", 
-                            "Missing experiment data", response.status_code)
-        else:
-            self.log_test("Get Available Experiments", "FAIL", 
-                        "Available experiments endpoint failed", response.status_code if response else None)
-        
-        # Test creating a sandbox
-        sandbox_request = {
-            "project_id": "test_project_123",
-            "experiment_type": "general",
-            "isolation_level": "high",
-            "description": "Test sandbox for API validation"
-        }
-        
-        response = self.make_request("POST", "/api/experimental-sandbox/create-sandbox", sandbox_request)
-        if response and response.status_code == 200:
-            data = response.json()
-            if "sandbox_id" in data and "status" in data:
-                self.log_test("Create Sandbox", "PASS", 
-                            f"Sandbox created: {data.get('sandbox_id')}", response.status_code)
-                self.test_sandbox_id = data["sandbox_id"]
-            else:
-                self.log_test("Create Sandbox", "FAIL", 
-                            "Sandbox creation response invalid", response.status_code)
-        else:
-            self.log_test("Create Sandbox", "FAIL", 
-                        "Sandbox creation failed", response.status_code if response else None)
-
-    def test_visual_programming_service(self):
-        """Test Visual Programming Service endpoints"""
-        print("🎨 Testing Visual Programming Service...")
-        
-        # Test getting supported diagram types (public endpoint)
-        response = self.make_request("GET", "/api/visual-programming/supported-diagram-types")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "supported_types" in data and len(data["supported_types"]) > 0:
-                self.log_test("Get Supported Diagram Types", "PASS", 
-                            f"Found {len(data['supported_types'])} diagram types", response.status_code)
-            else:
-                self.log_test("Get Supported Diagram Types", "FAIL", 
-                            "No diagram types found", response.status_code)
-        else:
-            self.log_test("Get Supported Diagram Types", "FAIL", 
-                        "Supported diagram types endpoint failed", response.status_code if response else None)
-        
-        # Test getting diagram examples
-        response = self.make_request("GET", "/api/visual-programming/examples")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "examples" in data and len(data["examples"]) > 0:
-                self.log_test("Get Diagram Examples", "PASS", 
-                            f"Found {len(data['examples'])} diagram examples", response.status_code)
-            else:
-                self.log_test("Get Diagram Examples", "FAIL", 
-                            "No diagram examples found", response.status_code)
-        else:
-            self.log_test("Get Diagram Examples", "FAIL", 
-                        "Diagram examples endpoint failed", response.status_code if response else None)
-
-    def test_community_intelligence_service(self):
-        """Test Community Intelligence Service endpoints"""
-        print("👥 Testing Community Intelligence Service...")
-        
-        # Test getting community statistics (public endpoint)
-        response = self.make_request("GET", "/api/community-intelligence/statistics")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "community_overview" in data and "engagement_metrics" in data:
-                self.log_test("Get Community Statistics", "PASS", 
-                            f"Total developers: {data['community_overview'].get('total_developers', 0)}", response.status_code)
-            else:
-                self.log_test("Get Community Statistics", "FAIL", 
-                            "Missing community statistics data", response.status_code)
-        else:
-            self.log_test("Get Community Statistics", "FAIL", 
-                        "Community statistics endpoint failed", response.status_code if response else None)
-        
-        # Test getting trending content
-        response = self.make_request("GET", "/api/community-intelligence/trending")
-        if response and response.status_code == 200:
-            data = response.json()
-            if "trending_patterns" in data and "trending_technologies" in data:
-                self.log_test("Get Trending Content", "PASS", 
-                            f"Found {len(data['trending_patterns'])} trending patterns", response.status_code)
-            else:
-                self.log_test("Get Trending Content", "FAIL", 
-                            "Missing trending content data", response.status_code)
-        else:
-            self.log_test("Get Trending Content", "FAIL", 
-                        "Trending content endpoint failed", response.status_code if response else None)
-
-    def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Comprehensive Backend API Testing...")
+    def run_comprehensive_test(self):
+        """Run comprehensive test of all 8 competitive features"""
+        print("🎯 AETHER AI PLATFORM - 8 COMPETITIVE FEATURES TESTING")
+        print("=" * 60)
+        print(f"Testing Backend URL: {self.base_url}")
+        print(f"Test Started: {datetime.now().isoformat()}")
         print("=" * 60)
         
-        start_time = time.time()
+        # Authenticate first
+        if not self.authenticate():
+            print("❌ Authentication failed - cannot proceed with testing")
+            return
         
-        # Run core test suites
-        self.test_health_endpoints()
-        self.test_authentication_system()
+        print("\n🚀 TESTING ALL 8 COMPETITIVE FEATURES...")
+        print("=" * 60)
         
-        # PRIORITY: Enhanced AI v2 Testing (as requested in review)
-        print("\n🎯 PRIORITY: Testing Enhanced AI v2 Features...")
-        self.test_enhanced_ai_v2_features()
-        self.test_enhanced_conversation_management()
-        self.test_intelligent_agent_coordination()
-        self.test_enhanced_ai_error_handling()
-        
-        # Run 7-day trial system tests (PRIORITY - as requested in review)
-        self.test_7_day_trial_system()
-        
-        self.test_ai_chat_integration()
-        self.test_project_management()
-        self.test_template_system()
-        
-        # Run subscription system tests (PRIORITY - as requested in review)
-        self.test_subscription_system()
-        self.test_ai_chat_with_usage_tracking()
-        self.test_subscription_database_models()
-        
-        # Run advanced feature tests (as requested in review)
-        self.test_multi_agent_capabilities()
-        self.test_advanced_ai_features()
-        self.test_analytics_dashboard_integration()
-        self.test_collaboration_workflow_engine()
-        self.test_security_compliance()
-        self.test_advanced_services_integration()
-        self.test_cutting_edge_features()
-        
-        # Run existing tests
-        self.test_enterprise_features()
-        self.test_agents_system()
-        self.test_integrations_marketplace()
-        self.test_websocket_connection()
-        
-        # Test the three new services
-        self.test_experimental_sandbox_service()
-        self.test_visual_programming_service()
-        self.test_community_intelligence_service()
-        
-        end_time = time.time()
-        duration = end_time - start_time
+        # Test all 8 competitive features
+        self.test_1_integration_hub()
+        self.test_2_template_marketplace()
+        self.test_3_multi_model_architecture()
+        self.test_4_enterprise_compliance()
+        self.test_5_mobile_experience()
+        self.test_6_advanced_analytics()
+        self.test_7_enhanced_onboarding()
+        self.test_8_workflow_builder()
         
         # Generate summary
-        self.generate_summary(duration)
+        self.generate_summary()
 
-    def generate_summary(self, duration: float):
-        """Generate test summary"""
-        print("=" * 60)
-        print("📊 TEST SUMMARY")
+    def generate_summary(self):
+        """Generate comprehensive test summary"""
+        print("\n📊 COMPREHENSIVE TEST SUMMARY")
         print("=" * 60)
         
         total_tests = len(self.test_results)
-        passed = len([r for r in self.test_results if r["status"] == "PASS"])
-        failed = len([r for r in self.test_results if r["status"] == "FAIL"])
-        skipped = len([r for r in self.test_results if r["status"] == "SKIP"])
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
+        skipped_tests = len([r for r in self.test_results if r["status"] == "SKIP"])
         
         print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed}")
-        print(f"❌ Failed: {failed}")
-        print(f"⚠️ Skipped: {skipped}")
-        print(f"⏱️ Duration: {duration:.2f} seconds")
+        print(f"✅ Passed: {passed_tests} ({passed_tests/total_tests*100:.1f}%)")
+        print(f"❌ Failed: {failed_tests} ({failed_tests/total_tests*100:.1f}%)")
+        print(f"⚠️ Skipped: {skipped_tests} ({skipped_tests/total_tests*100:.1f}%)")
         print()
         
-        if failed > 0:
-            print("❌ FAILED TESTS:")
+        # Feature-by-feature summary
+        features = [
+            "Integration Hub",
+            "Template Marketplace", 
+            "Multi-Model Architecture",
+            "Enterprise Compliance",
+            "Mobile Experience",
+            "Advanced Analytics",
+            "Enhanced Onboarding",
+            "Workflow Builder"
+        ]
+        
+        print("🎯 COMPETITIVE FEATURES STATUS:")
+        print("-" * 40)
+        
+        feature_status = {}
+        for i, feature in enumerate(features, 1):
+            feature_tests = [r for r in self.test_results if feature.lower().replace(" ", "_") in r["test"].lower()]
+            if feature_tests:
+                feature_passed = len([r for r in feature_tests if r["status"] == "PASS"])
+                feature_total = len(feature_tests)
+                feature_percentage = feature_passed / feature_total * 100 if feature_total > 0 else 0
+                
+                if feature_percentage >= 80:
+                    status = "✅ WORKING"
+                elif feature_percentage >= 50:
+                    status = "⚠️ PARTIAL"
+                else:
+                    status = "❌ FAILED"
+                
+                feature_status[feature] = status
+                print(f"{i}. {feature}: {status} ({feature_passed}/{feature_total} tests passed)")
+            else:
+                feature_status[feature] = "❌ NOT TESTED"
+                print(f"{i}. {feature}: ❌ NOT TESTED")
+        
+        print()
+        
+        # Overall assessment
+        working_features = len([s for s in feature_status.values() if "✅" in s])
+        partial_features = len([s for s in feature_status.values() if "⚠️" in s])
+        failed_features = len([s for s in feature_status.values() if "❌" in s])
+        
+        print("🏆 OVERALL COMPETITIVE ASSESSMENT:")
+        print("-" * 40)
+        print(f"✅ Fully Working Features: {working_features}/8 ({working_features/8*100:.1f}%)")
+        print(f"⚠️ Partially Working Features: {partial_features}/8 ({partial_features/8*100:.1f}%)")
+        print(f"❌ Failed/Missing Features: {failed_features}/8 ({failed_features/8*100:.1f}%)")
+        print()
+        
+        # Final verdict
+        if working_features >= 6:
+            verdict = "🎉 EXCELLENT - Production Ready"
+        elif working_features >= 4:
+            verdict = "👍 GOOD - Minor Issues to Address"
+        elif working_features >= 2:
+            verdict = "⚠️ NEEDS WORK - Major Issues Present"
+        else:
+            verdict = "❌ CRITICAL - Significant Development Required"
+        
+        print(f"FINAL VERDICT: {verdict}")
+        print()
+        
+        # Detailed failure analysis
+        if failed_tests > 0:
+            print("🔍 FAILED TESTS ANALYSIS:")
+            print("-" * 30)
             for result in self.test_results:
                 if result["status"] == "FAIL":
-                    print(f"  - {result['test']}: {result['details']}")
+                    print(f"❌ {result['test']}: {result['details']}")
             print()
         
-        # Overall status
-        if failed == 0:
-            print("🎉 ALL CRITICAL TESTS PASSED!")
-            print("Backend API is fully functional and ready for production.")
-        elif failed <= 2:
-            print("⚠️ MINOR ISSUES DETECTED")
-            print("Backend API is mostly functional with minor issues.")
-        else:
-            print("🚨 CRITICAL ISSUES DETECTED")
-            print("Backend API has significant problems that need attention.")
-        
+        print(f"Test Completed: {datetime.now().isoformat()}")
         print("=" * 60)
-        
-        # Save detailed results to file
-        with open("/app/backend_test_results.json", "w") as f:
-            json.dump({
-                "summary": {
-                    "total": total_tests,
-                    "passed": passed,
-                    "failed": failed,
-                    "skipped": skipped,
-                    "duration": duration,
-                    "timestamp": datetime.now().isoformat()
-                },
-                "results": self.test_results
-            }, f, indent=2)
-        
-        print("📄 Detailed results saved to: /app/backend_test_results.json")
 
 if __name__ == "__main__":
-    # Check if backend URL is provided
-    backend_url = sys.argv[1] if len(sys.argv) > 1 else "https://eff9b120-6bdb-4106-9e7c-b8fc53717e13.preview.emergentagent.com"
+    # Use the backend URL from environment or default
+    backend_url = "http://localhost:8001"
     
-    # Initialize and run tests
-    tester = BackendTester(backend_url)
-    tester.run_all_tests()
+    print("🚀 Starting Aether AI Platform - 8 Competitive Features Test")
+    print(f"Backend URL: {backend_url}")
+    
+    tester = CompetitiveFeaturesTester(backend_url)
+    tester.run_comprehensive_test()
