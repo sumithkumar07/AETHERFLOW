@@ -9,7 +9,7 @@ from datetime import datetime
 import logging
 
 from services.enterprise_compliance_system import (
-    EnterpriseComplianceSystem, ComplianceFramework, AuditAction
+    EnterpriseComplianceSystem, ComplianceStandard, AuditLogLevel
 )
 from services.visual_workflow_builder_system import (
     VisualWorkflowBuilderSystem, WorkflowNodeType, WorkflowStatus
@@ -50,7 +50,7 @@ async def log_audit_event(
 ):
     """Log audit event for compliance tracking"""
     try:
-        audit_action = AuditAction(action)
+        audit_action = AuditLogLevel(action)
         audit_id = await compliance_system.log_audit_event(
             user_id=user_id,
             action=audit_action,
@@ -70,7 +70,7 @@ async def get_compliance_status(framework: Optional[str] = None):
     try:
         compliance_framework = None
         if framework:
-            compliance_framework = ComplianceFramework(framework)
+            compliance_framework = ComplianceStandard(framework)
             
         status = await compliance_system.get_compliance_status(compliance_framework)
         return {"status": "success", "compliance": status}
@@ -88,7 +88,7 @@ async def generate_compliance_report(
     try:
         compliance_framework = None
         if framework:
-            compliance_framework = ComplianceFramework(framework)
+            compliance_framework = ComplianceStandard(framework)
             
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None
