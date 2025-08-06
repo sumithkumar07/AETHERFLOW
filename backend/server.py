@@ -157,6 +157,19 @@ app.include_router(conversational_debugging_enhanced_router, prefix="/api/debugg
 from routes.competitive_features_complete import router as competitive_features_complete_router
 app.include_router(competitive_features_complete_router, prefix="/api/competitive-complete", tags=["All 5 Competitive Features - Complete"])
 
+# Include ALL 5 COMPETITIVE FEATURES - BACKEND IMPLEMENTATION COMPLETE
+from routes.enterprise_compliance_api import router as enterprise_compliance_api_router
+from routes.advanced_analytics_api import router as advanced_analytics_api_router
+from routes.enhanced_onboarding_api import router as enhanced_onboarding_api_router
+from routes.mobile_experience_api import router as mobile_experience_api_router
+from routes.workflow_builder_api import router as workflow_builder_api_router
+
+app.include_router(enterprise_compliance_api_router, prefix="/api/compliance", tags=["Enterprise Compliance - SOC2, GDPR, HIPAA"])
+app.include_router(advanced_analytics_api_router, prefix="/api/analytics", tags=["Advanced Analytics - Dashboard & Third-Party"])
+app.include_router(enhanced_onboarding_api_router, prefix="/api/onboarding", tags=["Enhanced Onboarding - One-Click Deploy"])
+app.include_router(mobile_experience_api_router, prefix="/api/mobile", tags=["Mobile Experience - PWA & Offline"])
+app.include_router(workflow_builder_api_router, prefix="/api/workflows", tags=["Workflow Builder - Visual Drag-and-Drop"])
+
 # Legacy routes (maintain backward compatibility)
 app.include_router(git_cicd_router, prefix="/api/cicd", tags=["Git & CI/CD Integration"])
 app.include_router(conversational_debugging_router, prefix="/api/debugging", tags=["Conversational Debugging"])
