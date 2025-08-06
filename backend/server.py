@@ -178,6 +178,13 @@ app.include_router(enhanced_onboarding_api_router, prefix="/api/onboarding", tag
 app.include_router(mobile_experience_api_router, prefix="/api/mobile", tags=["Mobile Experience - PWA & Offline"])
 app.include_router(workflow_builder_api_router, prefix="/api/workflows", tags=["Workflow Builder - Visual Drag-and-Drop"])
 
+# Include NEW 5 MISSING COMPETITIVE FEATURES - JANUARY 2025 IMPLEMENTATION
+app.include_router(enterprise_compliance_router, prefix="/api/compliance", tags=["Enterprise Compliance - New Implementation"])
+app.include_router(mobile_experience_router, prefix="/api/mobile", tags=["Mobile Experience - New Implementation"])
+app.include_router(advanced_analytics_router, prefix="/api/analytics", tags=["Advanced Analytics - New Implementation"])
+app.include_router(enhanced_onboarding_router, prefix="/api/onboarding", tags=["Enhanced Onboarding - New Implementation"])
+app.include_router(workflow_builder_router, prefix="/api/workflows", tags=["Workflow Builder - New Implementation"])
+
 # Legacy routes (maintain backward compatibility)
 app.include_router(git_cicd_router, prefix="/api/cicd", tags=["Git & CI/CD Integration"])
 app.include_router(conversational_debugging_router, prefix="/api/debugging", tags=["Conversational Debugging"])
