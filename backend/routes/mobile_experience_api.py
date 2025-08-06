@@ -10,7 +10,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 import logging
 
-from services.mobile_experience_complete import get_mobile_system
+from services.mobile_experience_comprehensive import get_mobile_system
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
