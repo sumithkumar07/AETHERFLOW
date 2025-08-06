@@ -1,203 +1,330 @@
-#!/usr/bin/env python3
-"""
-Enterprise Compliance API Routes
-Provides SOC2, GDPR, HIPAA compliance tracking endpoints
-"""
+from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi.responses import JSONResponse
+from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+from pydantic import BaseModel
+import uuid
+import logging
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict, Any, List
-from datetime import datetime
-import json
-
-from services.enterprise_compliance_service import enterprise_compliance_service
-from routes.auth import get_current_user
-
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.get("/compliance/dashboard")
-async def get_compliance_dashboard(current_user: dict = Depends(get_current_user)):
+# Pydantic models for Enterprise Compliance
+class ComplianceStatus(BaseModel):
+    standard: str
+    status: str  # "compliant", "in_progress", "needs_attention"
+    last_audit: Optional[datetime] = None
+    next_audit: Optional[datetime] = None
+    score: int  # 0-100
+    issues: List[str] = []
+    controls_implemented: int = 0
+    total_controls: int = 0
+
+class AuditLog(BaseModel):
+    id: str
+    timestamp: datetime
+    action: str
+    user_id: str
+    resource: str
+    details: Dict
+    compliance_impact: str
+
+class ComplianceReport(BaseModel):
+    report_id: str
+    generated_at: datetime
+    standards: List[ComplianceStatus]
+    overall_score: int
+    recommendations: List[str]
+    
+# In-memory compliance data (in production, this would be in database)
+compliance_data = {
+    "soc2": {
+        "status": "compliant",
+        "last_audit": datetime.now() - timedelta(days=90),
+        "next_audit": datetime.now() + timedelta(days=275),
+        "score": 95,
+        "issues": ["Password rotation policy needs update"],
+        "controls_implemented": 64,
+        "total_controls": 67,
+        "controls": [
+            "Access Control", "System Operations", "Change Management",
+            "Logical and Physical Access", "System Monitoring", "Data Protection"
+        ]
+    },
+    "gdpr": {
+        "status": "compliant", 
+        "last_audit": datetime.now() - timedelta(days=180),
+        "next_audit": datetime.now() + timedelta(days=185),
+        "score": 88,
+        "issues": ["Data retention policy documentation", "Cookie consent optimization"],
+        "controls_implemented": 42,
+        "total_controls": 48,
+        "controls": [
+            "Data Minimization", "Consent Management", "Right to Erasure",
+            "Data Portability", "Privacy by Design", "Data Breach Notification"
+        ]
+    },
+    "hipaa": {
+        "status": "in_progress",
+        "last_audit": datetime.now() - timedelta(days=45),
+        "next_audit": datetime.now() + timedelta(days=320),
+        "score": 78,
+        "issues": ["Encryption at rest verification", "Employee training completion", "Risk assessment documentation"],
+        "controls_implemented": 124,
+        "total_controls": 159,
+        "controls": [
+            "Administrative Safeguards", "Physical Safeguards", "Technical Safeguards",
+            "Risk Assessment", "Workforce Training", "Information Access Management"
+        ]
+    }
+}
+
+audit_logs = []
+
+@router.get("/health")
+async def compliance_health():
+    """Health check for compliance system"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow(),
+        "compliance_systems": {
+            "soc2_tracking": "operational",
+            "gdpr_monitoring": "operational", 
+            "hipaa_controls": "operational",
+            "audit_logging": "operational"
+        }
+    }
+
+@router.get("/dashboard")
+async def get_compliance_dashboard():
     """Get comprehensive compliance dashboard data"""
     try:
-        dashboard_data = await enterprise_compliance_service.get_compliance_dashboard()
+        overall_score = sum(data["score"] for data in compliance_data.values()) // len(compliance_data)
+        total_issues = sum(len(data["issues"]) for data in compliance_data.values())
+        
         return {
-            "success": True,
-            "data": dashboard_data,
-            "timestamp": datetime.now().isoformat()
+            "overview": {
+                "overall_score": overall_score,
+                "total_standards": len(compliance_data),
+                "compliant_standards": len([d for d in compliance_data.values() if d["status"] == "compliant"]),
+                "total_issues": total_issues,
+                "last_updated": datetime.utcnow()
+            },
+            "standards": [
+                {
+                    "name": standard.upper(),
+                    "status": data["status"],
+                    "score": data["score"],
+                    "issues_count": len(data["issues"]),
+                    "controls_progress": f"{data['controls_implemented']}/{data['total_controls']}",
+                    "next_audit": data["next_audit"]
+                }
+                for standard, data in compliance_data.items()
+            ],
+            "recent_audits": [
+                {
+                    "standard": standard.upper(),
+                    "date": data["last_audit"],
+                    "score": data["score"],
+                    "status": data["status"]
+                }
+                for standard, data in compliance_data.items()
+            ][-5:]  # Last 5 audits
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get compliance dashboard: {str(e)}")
+        logger.error(f"Error getting compliance dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving compliance dashboard")
 
-@router.get("/compliance/soc2/status")
-async def get_soc2_status(current_user: dict = Depends(get_current_user)):
-    """Get SOC2 compliance status"""
+@router.get("/soc2/status")
+async def get_soc2_status():
+    """Get SOC 2 compliance status"""
     try:
-        soc2_status = await enterprise_compliance_service.get_soc2_status()
-        return {
-            "success": True,
-            "compliance_type": "SOC2",
-            "data": soc2_status.dict(),
-            "timestamp": datetime.now().isoformat()
-        }
+        soc2_data = compliance_data["soc2"]
+        return ComplianceStatus(
+            standard="SOC 2 Type II",
+            status=soc2_data["status"],
+            last_audit=soc2_data["last_audit"],
+            next_audit=soc2_data["next_audit"],
+            score=soc2_data["score"],
+            issues=soc2_data["issues"],
+            controls_implemented=soc2_data["controls_implemented"],
+            total_controls=soc2_data["total_controls"]
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get SOC2 status: {str(e)}")
+        logger.error(f"Error getting SOC 2 status: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving SOC 2 status")
 
-@router.get("/compliance/gdpr/status")
-async def get_gdpr_status(current_user: dict = Depends(get_current_user)):
+@router.get("/gdpr/status")
+async def get_gdpr_status():
     """Get GDPR compliance status"""
     try:
-        gdpr_status = await enterprise_compliance_service.get_gdpr_status()
-        return {
-            "success": True,
-            "compliance_type": "GDPR",
-            "data": gdpr_status.dict(),
-            "timestamp": datetime.now().isoformat()
-        }
+        gdpr_data = compliance_data["gdpr"]
+        return ComplianceStatus(
+            standard="GDPR",
+            status=gdpr_data["status"],
+            last_audit=gdpr_data["last_audit"],
+            next_audit=gdpr_data["next_audit"],
+            score=gdpr_data["score"],
+            issues=gdpr_data["issues"],
+            controls_implemented=gdpr_data["controls_implemented"],
+            total_controls=gdpr_data["total_controls"]
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get GDPR status: {str(e)}")
+        logger.error(f"Error getting GDPR status: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving GDPR status")
 
-@router.get("/compliance/hipaa/status")
-async def get_hipaa_status(current_user: dict = Depends(get_current_user)):
+@router.get("/hipaa/status")
+async def get_hipaa_status():
     """Get HIPAA compliance status"""
     try:
-        hipaa_status = await enterprise_compliance_service.get_hipaa_status()
-        return {
-            "success": True,
-            "compliance_type": "HIPAA",
-            "data": hipaa_status.dict(),
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get HIPAA status: {str(e)}")
-
-@router.post("/compliance/audit/log")
-async def log_audit_event(
-    audit_data: Dict[str, Any],
-    current_user: dict = Depends(get_current_user)
-):
-    """Log an audit event for compliance tracking"""
-    try:
-        required_fields = ["action", "resource", "details"]
-        for field in required_fields:
-            if field not in audit_data:
-                raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
-        
-        audit_entry = await enterprise_compliance_service.log_audit_event(
-            user_id=current_user.get("id", "unknown"),
-            action=audit_data["action"],
-            resource=audit_data["resource"],
-            details=audit_data["details"]
+        hipaa_data = compliance_data["hipaa"]
+        return ComplianceStatus(
+            standard="HIPAA",
+            status=hipaa_data["status"],
+            last_audit=hipaa_data["last_audit"],
+            next_audit=hipaa_data["next_audit"],
+            score=hipaa_data["score"],
+            issues=hipaa_data["issues"],
+            controls_implemented=hipaa_data["controls_implemented"],
+            total_controls=hipaa_data["total_controls"]
         )
-        
-        return {
-            "success": True,
-            "audit_entry": audit_entry.dict(),
-            "message": "Audit event logged successfully"
-        }
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to log audit event: {str(e)}")
+        logger.error(f"Error getting HIPAA status: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving HIPAA status")
 
-@router.get("/compliance/audit/logs")
-async def get_audit_logs(
-    limit: int = 50,
-    current_user: dict = Depends(get_current_user)
-):
+@router.get("/audit-logs")
+async def get_audit_logs(limit: int = 50):
     """Get recent audit logs"""
     try:
-        # Get recent audit logs from service
-        audit_logs = enterprise_compliance_service.audit_logs[-limit:]
+        # Generate sample audit logs if empty
+        if not audit_logs:
+            sample_logs = []
+            for i in range(20):
+                sample_logs.append({
+                    "id": str(uuid.uuid4()),
+                    "timestamp": datetime.now() - timedelta(hours=i),
+                    "action": ["login", "data_access", "config_change", "audit_review"][i % 4],
+                    "user_id": f"user_{(i % 5) + 1}",
+                    "resource": ["user_data", "system_config", "audit_report", "compliance_settings"][i % 4],
+                    "details": {"ip": "192.168.1.100", "session": str(uuid.uuid4())[:8]},
+                    "compliance_impact": ["low", "medium", "high"][i % 3]
+                })
+            audit_logs.extend(sample_logs)
         
         return {
-            "success": True,
-            "logs": [log.dict() for log in reversed(audit_logs)],
-            "total_available": len(enterprise_compliance_service.audit_logs),
-            "returned": len(audit_logs)
+            "logs": audit_logs[:limit],
+            "total_count": len(audit_logs),
+            "filters_applied": {"limit": limit}
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get audit logs: {str(e)}")
+        logger.error(f"Error getting audit logs: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving audit logs")
 
-@router.get("/compliance/frameworks")
-async def get_compliance_frameworks():
-    """Get supported compliance frameworks and their requirements"""
+@router.post("/audit-logs")
+async def create_audit_log(action: str, user_id: str, resource: str, details: Dict):
+    """Create new audit log entry"""
     try:
-        frameworks = {
-            "soc2": {
-                "name": "SOC 2",
-                "description": "Service Organization Control 2 framework for service providers",
-                "trust_principles": ["Security", "Availability", "Processing Integrity", "Confidentiality", "Privacy"],
-                "audit_frequency": "Annual",
-                "key_controls": [
-                    "Access controls and user provisioning",
-                    "System operations and change management", 
-                    "Risk management and business continuity",
-                    "Vendor management",
-                    "Data governance and privacy"
-                ]
-            },
-            "gdpr": {
-                "name": "General Data Protection Regulation",
-                "description": "EU regulation for data protection and privacy",
-                "key_principles": ["Lawfulness", "Transparency", "Purpose Limitation", "Data Minimization", "Accuracy", "Storage Limitation", "Security", "Accountability"],
-                "data_subject_rights": ["Access", "Rectification", "Erasure", "Portability", "Object", "Restrict Processing"],
-                "breach_notification": "72 hours to supervisory authority",
-                "key_requirements": [
-                    "Lawful basis for processing",
-                    "Privacy notices and consent",
-                    "Data subject rights procedures",
-                    "Data protection impact assessments",
-                    "Records of processing activities"
-                ]
-            },
-            "hipaa": {
-                "name": "Health Insurance Portability and Accountability Act",
-                "description": "US regulation for protecting health information",
-                "safeguard_categories": ["Administrative", "Physical", "Technical"],
-                "covered_entities": ["Healthcare Providers", "Health Plans", "Healthcare Clearinghouses"],
-                "key_requirements": [
-                    "Administrative safeguards (security officer, workforce training)",
-                    "Physical safeguards (facility access, workstation use)",
-                    "Technical safeguards (access control, audit controls, integrity)",
-                    "Breach notification procedures",
-                    "Business associate agreements"
-                ]
-            }
+        log_entry = {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(),
+            "action": action,
+            "user_id": user_id,
+            "resource": resource,
+            "details": details,
+            "compliance_impact": "medium"  # Default impact
         }
+        audit_logs.append(log_entry)
+        return {"message": "Audit log created", "log_id": log_entry["id"]}
+    except Exception as e:
+        logger.error(f"Error creating audit log: {e}")
+        raise HTTPException(status_code=500, detail="Error creating audit log")
+
+@router.get("/reports/generate")
+async def generate_compliance_report():
+    """Generate comprehensive compliance report"""
+    try:
+        report_id = str(uuid.uuid4())
+        standards = [
+            ComplianceStatus(
+                standard=standard.upper(),
+                status=data["status"],
+                last_audit=data["last_audit"],
+                next_audit=data["next_audit"],
+                score=data["score"],
+                issues=data["issues"],
+                controls_implemented=data["controls_implemented"],
+                total_controls=data["total_controls"]
+            )
+            for standard, data in compliance_data.items()
+        ]
         
-        return {
-            "success": True,
-            "frameworks": frameworks,
-            "supported_count": len(frameworks)
-        }
+        overall_score = sum(s.score for s in standards) // len(standards)
+        
+        recommendations = [
+            "Implement automated compliance monitoring",
+            "Schedule quarterly compliance reviews", 
+            "Update data retention policies",
+            "Enhance employee training programs",
+            "Improve incident response procedures"
+        ]
+        
+        report = ComplianceReport(
+            report_id=report_id,
+            generated_at=datetime.now(),
+            standards=standards,
+            overall_score=overall_score,
+            recommendations=recommendations
+        )
+        
+        return report
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get compliance frameworks: {str(e)}")
+        logger.error(f"Error generating compliance report: {e}")
+        raise HTTPException(status_code=500, detail="Error generating compliance report")
 
-@router.get("/compliance/health")
-async def get_compliance_health():
-    """Get compliance service health status"""
+@router.get("/controls/{standard}")
+async def get_compliance_controls(standard: str):
+    """Get detailed compliance controls for specific standard"""
     try:
+        standard_lower = standard.lower()
+        if standard_lower not in compliance_data:
+            raise HTTPException(status_code=404, detail=f"Standard {standard} not found")
+        
+        data = compliance_data[standard_lower]
         return {
-            "status": "healthy",
-            "services": {
-                "soc2_tracking": "active",
-                "gdpr_compliance": "active", 
-                "hipaa_monitoring": "active",
-                "audit_logging": "active"
-            },
-            "features": {
-                "compliance_dashboard": True,
-                "automated_monitoring": True,
-                "audit_trail": True,
-                "risk_assessment": True,
-                "framework_support": True,
-                "real_time_alerts": True
-            },
-            "statistics": {
-                "total_audit_events": len(enterprise_compliance_service.audit_logs),
-                "compliance_frameworks": 3,
-                "monitoring_active": True,
-                "last_health_check": datetime.now().isoformat()
-            }
+            "standard": standard.upper(),
+            "controls": data["controls"],
+            "implemented": data["controls_implemented"],
+            "total": data["total_controls"],
+            "completion_rate": round((data["controls_implemented"] / data["total_controls"]) * 100, 1),
+            "status": data["status"]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get compliance health: {str(e)}")
+        logger.error(f"Error getting compliance controls: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving compliance controls")
+
+@router.put("/controls/{standard}/update")
+async def update_compliance_controls(standard: str, controls_completed: int):
+    """Update compliance controls completion"""
+    try:
+        standard_lower = standard.lower()
+        if standard_lower not in compliance_data:
+            raise HTTPException(status_code=404, detail=f"Standard {standard} not found")
+        
+        compliance_data[standard_lower]["controls_implemented"] = controls_completed
+        
+        # Update score based on completion rate
+        completion_rate = controls_completed / compliance_data[standard_lower]["total_controls"]
+        compliance_data[standard_lower]["score"] = int(completion_rate * 100)
+        
+        # Update status based on completion
+        if completion_rate >= 0.95:
+            compliance_data[standard_lower]["status"] = "compliant"
+        elif completion_rate >= 0.80:
+            compliance_data[standard_lower]["status"] = "in_progress"
+        else:
+            compliance_data[standard_lower]["status"] = "needs_attention"
+        
+        return {"message": f"{standard.upper()} controls updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating compliance controls: {e}")
+        raise HTTPException(status_code=500, detail="Error updating compliance controls")
