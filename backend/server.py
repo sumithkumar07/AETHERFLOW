@@ -243,9 +243,11 @@ app.include_router(advanced_analytics_router, prefix="/api/analytics", tags=["Ad
 app.include_router(enhanced_onboarding_router, prefix="/api/onboarding", tags=["Enhanced Onboarding - New Implementation"])
 app.include_router(workflow_builder_router, prefix="/api/workflows", tags=["Workflow Builder - New Implementation"])
 
-# Legacy routes (maintain backward compatibility)
-app.include_router(git_cicd_router, prefix="/api/cicd", tags=["Git & CI/CD Integration"])
-app.include_router(conversational_debugging_router, prefix="/api/debugging", tags=["Conversational Debugging"])
+# Legacy routes (maintain backward compatibility) - with error handling
+if git_cicd_router:
+    app.include_router(git_cicd_router, prefix="/api/cicd", tags=["Git & CI/CD Integration"])
+if conversational_debugging_router:
+    app.include_router(conversational_debugging_router, prefix="/api/debugging", tags=["Conversational Debugging"])
 
 # Include additional missing routers
 app.include_router(advanced_ai_router, prefix="/api/advanced-ai", tags=["Advanced AI"])
