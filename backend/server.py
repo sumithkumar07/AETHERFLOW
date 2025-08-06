@@ -103,10 +103,10 @@ try:
 except ImportError:
     competitive_features_api_router = None
 
-# Import 5 MISSING COMPETITIVE FEATURES - JANUARY 2025 IMPLEMENTATION
+# Import NEW 5 MISSING COMPETITIVE FEATURES - JANUARY 2025 IMPLEMENTATION
 from routes.enterprise_compliance import router as enterprise_compliance_router
-from routes.mobile_experience import router as mobile_experience_router
-from routes.advanced_analytics import router as advanced_analytics_router
+from routes.mobile_experience_fixed import router as mobile_experience_router_fixed
+from routes.advanced_analytics_fixed import router as advanced_analytics_router_fixed
 from routes.enhanced_onboarding import router as enhanced_onboarding_router
 from routes.workflow_builder import router as workflow_builder_router
 
@@ -238,8 +238,8 @@ app.include_router(workflow_builder_api_router, prefix="/api/workflows", tags=["
 
 # Include NEW 5 MISSING COMPETITIVE FEATURES - JANUARY 2025 IMPLEMENTATION
 app.include_router(enterprise_compliance_router, prefix="/api/compliance", tags=["Enterprise Compliance - New Implementation"])
-app.include_router(mobile_experience_router, prefix="/api/mobile", tags=["Mobile Experience - New Implementation"])
-app.include_router(advanced_analytics_router, prefix="/api/analytics", tags=["Advanced Analytics - New Implementation"])
+app.include_router(mobile_experience_router_fixed, prefix="/api/mobile", tags=["Mobile Experience - New Implementation"])
+app.include_router(advanced_analytics_router_fixed, prefix="/api/analytics", tags=["Advanced Analytics - New Implementation"])
 app.include_router(enhanced_onboarding_router, prefix="/api/onboarding", tags=["Enhanced Onboarding - New Implementation"])
 app.include_router(workflow_builder_router, prefix="/api/workflows", tags=["Workflow Builder - New Implementation"])
 
