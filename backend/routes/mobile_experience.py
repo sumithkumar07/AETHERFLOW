@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 
 from services.mobile_experience_service import mobile_experience_service
-from auth import get_current_user
+from routes.auth import get_current_user
 
 router = APIRouter()
 
