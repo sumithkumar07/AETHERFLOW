@@ -159,9 +159,9 @@ class AetherAIBackendTester:
         response, response_time = self.make_request("GET", "/api/subscription/trial/status")
         if response and response.status_code == 200:
             data = response.json()
-            if "trial_active" in data:
+            if "is_trial_active" in data:
                 self.log_test("Trial System", "PASS", 
-                            f"Trial status: {data.get('trial_active')}, Days remaining: {data.get('days_remaining', 'N/A')}", 
+                            f"Trial status: {data.get('is_trial_active')}, Days remaining: {data.get('trial_days_remaining', 'N/A')}", 
                             response_time, response.status_code)
             else:
                 self.log_test("Trial System", "FAIL", 
