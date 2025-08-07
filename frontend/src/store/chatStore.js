@@ -37,10 +37,10 @@ const useChatStore = create(
       puterAIAvailable: false,
       freeAIAccess: true,
 
-      // Actions
+      // Actions - ENHANCED WITH ALL 6 PHASES
       initializeModelsAndAgents: async () => {
         try {
-          console.log('🤖 Initializing Aether AI models and agents...')
+          console.log('🚀 Initializing Enhanced Aether AI with all 6 phases...')
           
           // Initialize Puter.js AI Service with timeout (non-blocking)
           let puterAvailable = false
