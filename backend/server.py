@@ -41,6 +41,9 @@ from routes.enhanced_ai_v3 import router as enhanced_ai_v3_router
 # Import Phase 1 Optimized AI Routes
 from routes.optimized_ai_v4 import router as optimized_ai_v4_router
 
+# Import ALL ENHANCEMENT PHASES INTEGRATED - v4 Complete
+from routes.enhanced_ai_v4_complete import router as enhanced_ai_v4_complete_router
+
 # Import Gap-Closing Enhancement Routes - Competitive Features (working routes only)
 try:
     from routes.autonomous_planning import router as autonomous_planning_router
