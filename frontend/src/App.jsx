@@ -13,14 +13,14 @@ import { useThemeStore } from './store/themeStore'
 import { useChatStore } from './store/chatStore'
 import { useProjectStore } from './store/projectStore'
 
-// Simplified lazy loaded pages for better performance
-const EnhancedHome = lazy(() => import('./pages/EnhancedHome'))
-const Login = lazy(() => import('./pages/Login'))
-const Signup = lazy(() => import('./pages/Signup'))
-const ChatHub = lazy(() => import('./pages/ChatHub'))
-const Projects = lazy(() => import('./pages/Projects'))
-const Templates = lazy(() => import('./pages/Templates'))
-const Settings = lazy(() => import('./pages/Settings'))
+// Direct imports to avoid lazy loading issues
+import EnhancedHome from './pages/EnhancedHome'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import ChatHub from './pages/ChatHub'
+import Projects from './pages/Projects'
+import Templates from './pages/Templates'
+import Settings from './pages/Settings'
 
 // Simple loading component instead of heavy OptimizedLoader
 const SimpleLoader = ({ message = "Loading..." }) => (
