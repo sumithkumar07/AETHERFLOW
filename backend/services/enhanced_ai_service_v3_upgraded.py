@@ -51,6 +51,9 @@ class EnhancedAIServiceV3Upgraded:
         # Existing
         self.conversation_contexts = {}
         
+        # Initialize flag
+        self.initialized = False
+        
         # Enhanced agent configurations with architectural intelligence integration
         # FIXED: Proper assignment of llama-3.2-3b-preview to PROJECT_MANAGER agent
         self.agent_configs = {
