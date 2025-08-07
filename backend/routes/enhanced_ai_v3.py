@@ -41,6 +41,10 @@ class ConversationSummaryResponse(BaseModel):
 async def get_ai_status():
     """AI Status Endpoint - FIXED status reporting for system monitoring"""
     try:
+        # Ensure service is initialized
+        if not enhanced_ai_service.groq_client.initialized:
+            await enhanced_ai_service.initialize()
+        
         # Get Groq service status with proper connection check
         groq_status = await enhanced_ai_service.groq_client.get_model_status()
         is_groq_connected = groq_status.get("groq_connected", False)
@@ -107,11 +111,7 @@ async def get_ai_status():
             "timestamp": datetime.utcnow().isoformat(),
             "overall_status": "error",
             "error": str(e),
-            "fallback_mode": True,
-            "diagnostics": {
-                "error_type": type(e).__name__,
-                "error_details": str(e)
-            }
+            "services_initialized": False
         }
 
 @router.post("/chat/enhanced", response_model=ChatResponse)
