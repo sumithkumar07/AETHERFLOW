@@ -200,6 +200,10 @@ app.include_router(enhanced_ai_v4_complete_router, prefix="/api/ai/v4", tags=["E
 from routes.enhanced_ai_v3_intelligence import router as enhanced_ai_intelligence_router
 app.include_router(enhanced_ai_intelligence_router, prefix="/api/ai/v3/intelligence", tags=["AI Intelligence Enhancement - Backend Only"])
 
+# Include Advanced Accessibility API Routes (WCAG COMPLIANT - NO UI CHANGES)
+from routes.accessibility_api import router as accessibility_api_router
+app.include_router(accessibility_api_router, prefix="/api/accessibility", tags=["Advanced Accessibility - WCAG Compliant"])
+
 # Include Gap-Closing Enhancement Routes - All Competitive Features (with error handling)
 if autonomous_planning_router:
     app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
