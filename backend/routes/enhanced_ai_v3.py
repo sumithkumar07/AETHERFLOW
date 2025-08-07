@@ -119,6 +119,10 @@ async def enhanced_ai_chat(request: ChatRequest):
     """Enhanced AI chat with full intelligence integration and multi-agent coordination"""
     
     try:
+        # VALIDATION: Check for empty message
+        if not request.message or not request.message.strip():
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
+        
         # Generate session ID if not provided
         session_id = request.session_id or str(uuid.uuid4())
         user_id = request.user_id or "anonymous"
@@ -131,6 +135,10 @@ async def enhanced_ai_chat(request: ChatRequest):
                 project_id=request.project_id,
                 initial_context=request.message
             )
+        
+        # FIXED: Update session activity timestamp for proper cleanup
+        if hasattr(enhanced_ai_service.conversation_contexts[session_id], 'last_activity'):
+            enhanced_ai_service.conversation_contexts[session_id].last_activity = datetime.utcnow()
         
         # Process the message with UPGRADED enhanced AI V3 with full intelligence integration
         response = await enhanced_ai_service.enhance_conversation(
@@ -151,6 +159,8 @@ async def enhanced_ai_chat(request: ChatRequest):
             model_used=response.get("model_used")
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"UPGRADED Enhanced AI chat failed: {e}")
         raise HTTPException(status_code=500, detail=f"Enhanced AI chat with full intelligence failed: {str(e)}")
