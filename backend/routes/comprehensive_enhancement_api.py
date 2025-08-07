@@ -266,8 +266,7 @@ async def get_real_time_performance_metrics():
 
 @router.post("/natural-language-coding")
 async def natural_language_to_code(
-    request: Dict[str, Any],
-    current_user: dict = Depends(get_current_user)
+    request: Dict[str, Any]
 ):
     """
     🗣️ NATURAL LANGUAGE TO CODE CONVERSION
