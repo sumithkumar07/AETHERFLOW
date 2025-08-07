@@ -193,6 +193,9 @@ app.include_router(comprehensive_ai_router, prefix="/api/ai/comprehensive", tags
 # Include Phase 1 Optimized AI Routes - Enterprise Performance
 app.include_router(optimized_ai_v4_router, prefix="/api/ai", tags=["Optimized AI v4 - Enterprise"])
 
+# Include ALL ENHANCEMENT PHASES INTEGRATED - v4 Complete (NEW)
+app.include_router(enhanced_ai_v4_complete_router, prefix="/api/ai/v4", tags=["Enhanced AI v4 Complete - All 6 Phases"])
+
 # Include Gap-Closing Enhancement Routes - All Competitive Features (with error handling)
 if autonomous_planning_router:
     app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
