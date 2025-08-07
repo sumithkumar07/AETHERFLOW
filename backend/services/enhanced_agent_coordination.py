@@ -421,16 +421,65 @@ class EnhancedAgentCoordinator:
         role: str = "primary",
         **kwargs
     ) -> str:
-        """Get agent response with architectural context"""
+        """Get agent response with architectural context using actual Groq AI"""
         
-        # This would integrate with your actual Groq AI service
-        # For now, return enhanced mock response based on agent and context
+        try:
+            # Import Groq AI service for actual responses
+            from .groq_ai_service import GroqAIService
+            
+            # Initialize Groq service if not already done
+            if not hasattr(self, 'groq_service') or not self.groq_service:
+                self.groq_service = GroqAIService()
+                await self.groq_service.initialize()
+            
+            # Extract the user's message from context
+            message = user_context.get('message', '') or user_context.get('user_message', '') or request
+            if not message:
+                message = "Help me with my development task"
+            
+            agent_name = agent.value.title()
+            intelligence_level = architectural_context.intelligence_level.value
+            
+            # Create architectural context prompt
+            architectural_prompt = f"""You are a {agent_name} agent enhanced with architectural intelligence.
+            
+Intelligence Level: {intelligence_level}
+Project Scale: {architectural_context.scale_assessment}
+Architecture Pattern: {architectural_context.recommended_patterns[0] if architectural_context.recommended_patterns else 'Standard'}
+
+Provide a practical, actionable response that includes:
+1. Direct solution to the user's request
+2. Architectural considerations for scalability
+3. Performance optimization tips
+4. Best practices for maintainable code
+
+User Request: {message}"""
+            
+            # Get actual Groq AI response
+            response = await self.groq_service.generate_response(
+                message=architectural_prompt,
+                agent=agent.value,
+                model=None,  # Let Groq service choose optimal model
+                system_prompt=f"You are an expert {agent.value} with deep architectural knowledge. Provide specific, actionable advice.",
+                context=[],
+                stream=False
+            )
+            
+            # Extract the actual content from Groq response
+            actual_content = response.get('content', '')
+            if actual_content and not any(placeholder in actual_content.lower() 
+                                       for placeholder in ['[primary', '[supporting', 'mock', 'placeholder']):
+                return actual_content
+            
+        except Exception as e:
+            logger.warning(f"Failed to get actual Groq response: {e}")
         
+        # Fallback to enhanced mock only if Groq fails
         agent_name = agent.value.title()
         intelligence_level = architectural_context.intelligence_level.value
         
         if role == "primary":
-            return f"**{agent_name} Response (Enhanced with Architectural Intelligence):**\n\nBased on your request and architectural analysis showing {intelligence_level} intelligence requirements, here's my architecturally-informed recommendation:\n\n[Primary {agent_name} response with architectural considerations integrated]"
+            return f"**{agent_name} Response (Enhanced with Architectural Intelligence):**\n\nBased on your request and architectural analysis showing {intelligence_level} intelligence requirements, here's my architecturally-informed recommendation:\n\n[Primary {agent_name} response with architectural considerations integrated]\n\n💡 **Note:** This is a fallback response. Please check your Groq API connection for full AI responses."
         elif role == "supporting":
             return f"**{agent_name} Supporting Analysis:**\n\nFrom a {agent_name.lower()} perspective, considering the architectural context:\n\n[Supporting analysis with architectural intelligence]"
         elif role == "architect_lead":
