@@ -603,10 +603,18 @@ Business intelligence at the speed of Groq! 📊"""
     async def get_model_status(self) -> Dict[str, Any]:
         """Get status of all Groq models with FIXED connection reporting"""
         try:
-            # FIXED: Check actual API key and test connection status
+            # Force reload environment variables 
+            load_dotenv()
+            current_api_key = os.getenv("GROQ_API_KEY")
+            
+            # Update api_key if it was missing during initialization
+            if not self.api_key and current_api_key:
+                self.api_key = current_api_key
+            
+            # Check if we have API key and are initialized
             is_connected = self.initialized and self.api_key is not None
             
-            # FIXED: Test actual Groq connection if needed
+            # Test actual Groq connection with proper error handling
             if is_connected and self.api_key:
                 try:
                     async with httpx.AsyncClient() as client:
@@ -616,10 +624,13 @@ Business intelligence at the speed of Groq! 📊"""
                                 "Authorization": f"Bearer {self.api_key}",
                                 "Content-Type": "application/json"
                             },
-                            timeout=5.0
+                            timeout=10.0  # Increased timeout
                         )
                         is_connected = response.status_code == 200
-                except:
+                        if not is_connected:
+                            logger.warning(f"Groq API returned status {response.status_code}")
+                except Exception as e:
+                    logger.warning(f"Groq connection test failed: {e}")
                     is_connected = False
             
             return {
@@ -630,7 +641,7 @@ Business intelligence at the speed of Groq! 📊"""
                 "ultra_fast": True,
                 "cloud_based": True,
                 "cost_optimized": True,
-                "api_key_present": self.api_key is not None,
+                "api_key_present": current_api_key is not None,
                 "last_status_check": datetime.utcnow().isoformat()
             }
         except Exception as e:
