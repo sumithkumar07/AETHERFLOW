@@ -39,15 +39,17 @@ class ConversationSummaryResponse(BaseModel):
 
 @router.get("/status")
 async def get_ai_status():
-    """AI Status Endpoint - FIXED MISSING ENDPOINT for system monitoring"""
+    """AI Status Endpoint - FIXED status reporting for system monitoring"""
     try:
-        # Get Groq service status
+        # Get Groq service status with proper connection check
         groq_status = await enhanced_ai_service.groq_client.get_model_status()
+        is_groq_connected = groq_status.get("groq_connected", False)
         
-        # Get enhanced AI service status
+        # Get enhanced AI service status with FIXED reporting
         enhanced_status = {
             "enhanced_ai_v3": {
-                "status": "operational" if enhanced_ai_service.groq_client.initialized else "offline",
+                "status": "operational" if is_groq_connected else "degraded",
+                "groq_connected": is_groq_connected,  # FIXED: Use actual connection status
                 "intelligence_layers": {
                     "architectural_intelligence": True,
                     "background_intelligence": True, 
@@ -55,30 +57,31 @@ async def get_ai_status():
                     "multi_agent_system": True
                 },
                 "active_conversations": len(enhanced_ai_service.conversation_contexts),
-                "available_agents": len(enhanced_ai_service.agent_configs)
+                "available_agents": len(enhanced_ai_service.agent_configs),
+                "api_key_status": "configured" if enhanced_ai_service.groq_client.api_key else "missing"
             }
         }
         
-        # Get agent statuses
+        # Get agent statuses with proper connection status
         agent_statuses = {}
         for role, config in enhanced_ai_service.agent_configs.items():
             agent_statuses[role.value] = {
                 "name": config["name"],
                 "model": config["model"], 
-                "status": "ready",
+                "status": "ready" if is_groq_connected else "offline",
                 "capabilities": len(config["capabilities"]),
                 "architectural_intelligence": True
             }
         
         return {
             "timestamp": datetime.utcnow().isoformat(),
-            "overall_status": "operational" if enhanced_ai_service.groq_client.initialized else "degraded",
+            "overall_status": "operational" if is_groq_connected else "degraded",
             "version": "v3_upgraded_full_intelligence",
             "groq_integration": groq_status,
             "enhanced_ai_system": enhanced_status,
             "agents": agent_statuses,
             "features": {
-                "ultra_fast_responses": True,
+                "ultra_fast_responses": is_groq_connected,
                 "cost_optimized_routing": True, 
                 "enterprise_grade_intelligence": True,
                 "multi_agent_coordination": True,
@@ -90,6 +93,11 @@ async def get_ai_status():
                 "cost_optimization": "85%+ savings vs GPU setup",
                 "concurrent_users": "unlimited",
                 "uptime_target": "99.9%"
+            },
+            "diagnostics": {
+                "groq_connection_test": "passed" if is_groq_connected else "failed",
+                "api_key_present": enhanced_ai_service.groq_client.api_key is not None,
+                "services_initialized": enhanced_ai_service.groq_client.initialized
             }
         }
         
@@ -99,7 +107,11 @@ async def get_ai_status():
             "timestamp": datetime.utcnow().isoformat(),
             "overall_status": "error",
             "error": str(e),
-            "fallback_mode": True
+            "fallback_mode": True,
+            "diagnostics": {
+                "error_type": type(e).__name__,
+                "error_details": str(e)
+            }
         }
 
 @router.post("/chat/enhanced", response_model=ChatResponse)
