@@ -432,15 +432,15 @@ Would you like to try again?`,
               project_id: projectId,
               conversation_id: currentConversationId,
               context,
-          enhanced_features: {
-            voice_enabled: get().voiceEnabled,
-            multimodal: get().multimodalEnabled,
-            real_time_collaboration: get().realTimeCollaboration,
-            ai_code_review: get().aiCodeReview,
-            year: 2025,
-            puter_js_available: get().puterAIAvailable
-          }
-        })
+              enhanced_features: {
+                voice_enabled: get().voiceEnabled,
+                multimodal: get().multimodalEnabled,
+                real_time_collaboration: get().realTimeCollaboration,
+                ai_code_review: get().aiCodeReview,
+                year: 2025,
+                puter_js_available: get().puterAIAvailable
+              }
+            })
 
             return response.data
           }
