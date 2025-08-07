@@ -51,11 +51,27 @@ class AdvancedCacheManager:
         
     async def initialize(self):
         """Initialize Redis connection"""
+        if not REDIS_AVAILABLE:
+            logger.warning("Redis not available, using memory cache only")
+            return
+            
         try:
-            self.redis_client = aioredis.from_url("redis://localhost:6379", decode_responses=True)
-            logger.info("✅ Advanced cache manager initialized")
+            if REDIS_AVAILABLE:
+                # Use Redis 5+ syntax
+                self.redis_client = aioredis.Redis.from_url(
+                    "redis://localhost:6379", 
+                    decode_responses=True,
+                    socket_connect_timeout=5,
+                    socket_timeout=5
+                )
+                # Test connection
+                await self.redis_client.ping()
+                logger.info("✅ Advanced cache manager initialized with Redis")
+            else:
+                logger.info("✅ Advanced cache manager initialized with memory cache only")
         except Exception as e:
-            logger.warning(f"Redis not available, using memory cache only: {e}")
+            logger.warning(f"Redis connection failed, using memory cache only: {e}")
+            self.redis_client = None
     
     async def get(self, key: str, ttl: int = 3600) -> Optional[Any]:
         """Get cached value with intelligent fallback"""
