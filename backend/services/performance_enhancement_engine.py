@@ -11,9 +11,21 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
-import aioredis
 from motor.motor_asyncio import AsyncIOMotorClient
 import json
+
+# Redis import with fallback handling
+try:
+    import redis.asyncio as aioredis
+    REDIS_AVAILABLE = True
+except ImportError:
+    try:
+        import redis as redis_sync
+        REDIS_AVAILABLE = False
+        print("Warning: Using synchronous Redis client")
+    except ImportError:
+        REDIS_AVAILABLE = False
+        print("Warning: Redis not available, using memory cache only")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
