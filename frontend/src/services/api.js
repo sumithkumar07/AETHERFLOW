@@ -42,7 +42,31 @@ class ApiService {
 
   // ==================== AI SERVICES ====================
   
-  // Chat with AI
+  // Enhanced Chat with AI v4 Complete - All 6 Phases (PERFORMANCE OPTIMIZED)
+  async enhancedChatComplete(messageData) {
+    try {
+      const response = await this.client.post('/api/ai/v4/chat/enhanced-complete', messageData)
+      return response.data
+    } catch (error) {
+      // Intelligent fallback to v3 if v4 fails
+      console.warn('Enhanced v4 failed, falling back to v3:', error.message)
+      return await this.enhancedChatV3(messageData)
+    }
+  }
+  
+  // Quick Enhanced Response (PERFORMANCE OPTIMIZED)
+  async quickEnhancedResponse(messageData) {
+    try {
+      const response = await this.client.post('/api/ai/v4/chat/quick-enhanced', messageData)
+      return response.data
+    } catch (error) {
+      // Fallback to standard chat
+      console.warn('Quick enhanced failed, falling back to standard:', error.message)
+      return await this.chatWithAI(messageData)
+    }
+  }
+  
+  // Chat with AI (Standard - preserved for compatibility)
   async chatWithAI(messageData) {
     const response = await this.client.post('/api/ai/chat', messageData)
     return response.data
