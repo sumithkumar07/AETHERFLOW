@@ -597,27 +597,49 @@ Business intelligence at the speed of Groq! 📊"""
         return suggestions[:3]  # Return top 3 suggestions
     
     async def get_model_status(self) -> Dict[str, Any]:
-        """Get status of all Groq models"""
+        """Get status of all Groq models with FIXED connection reporting"""
         try:
+            # FIXED: Check actual API key and test connection status
+            is_connected = self.initialized and self.api_key is not None
+            
+            # FIXED: Test actual Groq connection if needed
+            if is_connected and self.api_key:
+                try:
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(
+                            f"{self.base_url}/models",
+                            headers={
+                                "Authorization": f"Bearer {self.api_key}",
+                                "Content-Type": "application/json"
+                            },
+                            timeout=5.0
+                        )
+                        is_connected = response.status_code == 200
+                except:
+                    is_connected = False
+            
             return {
-                "models": {name: {**info, "available": True, "status": "ready"} 
+                "models": {name: {**info, "available": is_connected, "status": "ready" if is_connected else "offline"} 
                          for name, info in self.models.items()},
-                "groq_connected": self.initialized,
-                "total_available": len(self.models),
+                "groq_connected": is_connected,
+                "total_available": len(self.models) if is_connected else 0,
                 "ultra_fast": True,
                 "cloud_based": True,
-                "cost_optimized": True
+                "cost_optimized": True,
+                "api_key_present": self.api_key is not None,
+                "last_status_check": datetime.utcnow().isoformat()
             }
         except Exception as e:
             logger.error(f"Failed to get model status: {e}")
             return {
-                "models": {name: {**info, "available": False, "status": "unknown"} 
+                "models": {name: {**info, "available": False, "status": "error"} 
                           for name, info in self.models.items()},
                 "groq_connected": False,
                 "total_available": 0,
                 "ultra_fast": True,
                 "cloud_based": True,
-                "error": str(e)
+                "error": str(e),
+                "api_key_present": self.api_key is not None
             }
 
     async def get_available_models(self):
