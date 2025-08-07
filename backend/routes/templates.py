@@ -47,6 +47,35 @@ async def get_templates(
         logger.error(f"Template fetch error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch templates")
 
+@router.get("/featured")
+async def get_featured_templates(limit: int = Query(8, description="Number of featured templates")):
+    """Get featured templates - FIXED MISSING ENDPOINT"""
+    try:
+        # Get all templates and filter for featured ones
+        all_templates = enhanced_template_library.get_all_templates()
+        featured_templates = [t for t in all_templates if t.get("featured", False)]
+        
+        # If not enough featured templates, add popular ones
+        if len(featured_templates) < limit:
+            popular_templates = enhanced_template_library.get_popular_templates(limit - len(featured_templates))
+            for template in popular_templates:
+                if template not in featured_templates:
+                    featured_templates.append(template)
+        
+        # Apply limit
+        featured_templates = featured_templates[:limit]
+        
+        return {
+            "templates": featured_templates,
+            "total_featured": len([t for t in all_templates if t.get("featured", False)]),
+            "returned": len(featured_templates),
+            "limit": limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Featured templates fetch error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch featured templates")
+
 @router.get("/categories")
 async def get_template_categories():
     """Get all template categories with counts"""
