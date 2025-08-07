@@ -78,10 +78,34 @@ class ApiService {
     return response.data.models
   }
 
-  // Get available agents
-  async getAIAgents() {
-    const response = await this.client.get('/api/ai/agents')
-    return response.data.agents
+  // Get enhanced agents with performance metrics
+  async getEnhancedAgents() {
+    try {
+      const response = await this.client.get('/api/ai/v4/agents/enhanced')
+      return response.data
+    } catch (error) {
+      // Fallback to v3 agents
+      console.warn('Enhanced agents v4 failed, falling back to v3:', error.message)
+      const response = await this.client.get('/api/ai/v3/agents/available')
+      return response.data
+    }
+  }
+  
+  // Get comprehensive system status
+  async getComprehensiveStatus() {
+    try {
+      const response = await this.client.get('/api/ai/v4/status/comprehensive')
+      return response.data
+    } catch (error) {
+      console.warn('Comprehensive status v4 failed:', error.message)
+      return { status: 'error', message: 'Status unavailable' }
+    }
+  }
+
+  // Enhanced Chat v3 (fallback method)
+  async enhancedChatV3(messageData) {
+    const response = await this.client.post('/api/ai/v3/chat/enhanced', messageData)
+    return response.data
   }
 
   // Get conversations
