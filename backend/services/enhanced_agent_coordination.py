@@ -465,7 +465,7 @@ User Request: {message}"""
             )
             
             # Extract the actual content from Groq response
-            actual_content = response.get('content', '')
+            actual_content = response.get('response', '')
             if actual_content and not any(placeholder in actual_content.lower() 
                                        for placeholder in ['[primary', '[supporting', 'mock', 'placeholder']):
                 return actual_content
