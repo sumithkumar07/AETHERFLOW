@@ -14,6 +14,26 @@ router = APIRouter()
 # Initialize the UPGRADED enhanced AI service V3 with full intelligence integration
 enhanced_ai_service = EnhancedAIServiceV3Upgraded()
 
+# Initialize the service at module load
+import asyncio
+try:
+    # Create an event loop if one doesn't exist
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    # Run initialization
+    if not loop.is_running():
+        loop.run_until_complete(enhanced_ai_service.initialize())
+    else:
+        # If loop is already running, create a task
+        asyncio.create_task(enhanced_ai_service.initialize())
+except Exception as e:
+    logger.error(f"Failed to initialize enhanced AI service during module load: {e}")
+    # Service will initialize lazily during first request
+
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
