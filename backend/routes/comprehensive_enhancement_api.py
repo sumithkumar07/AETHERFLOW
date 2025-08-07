@@ -308,8 +308,7 @@ async def natural_language_to_code(
 
 @router.post("/orchestrate-development")
 async def orchestrate_development_workflow(
-    request: Dict[str, Any],
-    current_user: dict = Depends(get_current_user)
+    request: Dict[str, Any]
 ):
     """
     🎯 ORCHESTRATE DEVELOPMENT WORKFLOW
