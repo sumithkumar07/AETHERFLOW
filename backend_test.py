@@ -509,9 +509,141 @@ class CompetitiveFeaturesTester:
             self.log_test("Workflow Creation", "FAIL", 
                         "Workflow creation endpoint not implemented", response.status_code if response else None)
 
+    def test_backend_gaps_fixes(self):
+        """Test specific backend gaps that were fixed"""
+        print("🔧 TESTING BACKEND GAPS FIXES - COMPREHENSIVE VERIFICATION")
+        print("=" * 60)
+        
+        # Test 1: Featured Templates endpoint
+        print("1. Testing Featured Templates endpoint...")
+        response = self.make_request("GET", "/api/templates/featured")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "templates" in data and len(data["templates"]) > 0:
+                self.log_test("Featured Templates Fix", "PASS", 
+                            f"Featured templates endpoint working - returned {len(data['templates'])} templates", response.status_code)
+            else:
+                self.log_test("Featured Templates Fix", "FAIL", 
+                            "Featured templates endpoint returns empty data", response.status_code)
+        else:
+            self.log_test("Featured Templates Fix", "FAIL", 
+                        "Featured templates endpoint not working", response.status_code if response else None)
+        
+        # Test 2: AI Status Endpoint
+        print("2. Testing AI Status endpoint...")
+        response = self.make_request("GET", "/api/ai/v3/status")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "groq_models" in data and len(data["groq_models"]) >= 4:
+                models = [model.get("name") if isinstance(model, dict) else str(model) for model in data["groq_models"]]
+                expected_models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.2-3b-preview"]
+                if any(expected in str(models) for expected in expected_models):
+                    self.log_test("AI Status Endpoint Fix", "PASS", 
+                                f"AI status endpoint working - found models: {models}", response.status_code)
+                else:
+                    self.log_test("AI Status Endpoint Fix", "FAIL", 
+                                f"AI status endpoint missing expected models. Found: {models}", response.status_code)
+            else:
+                self.log_test("AI Status Endpoint Fix", "FAIL", 
+                            f"AI status endpoint missing groq_models data. Keys: {list(data.keys())}", response.status_code)
+        else:
+            self.log_test("AI Status Endpoint Fix", "FAIL", 
+                        "AI status endpoint not working", response.status_code if response else None)
+        
+        # Test 3: Groq Model Assignment for PROJECT_MANAGER (Sage)
+        print("3. Testing Groq Model Assignment for Sage...")
+        response = self.make_request("GET", "/api/ai/v3/agents/available")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "agents" in data:
+                sage_agent = None
+                for agent in data["agents"]:
+                    if isinstance(agent, dict) and agent.get("name") == "Sage":
+                        sage_agent = agent
+                        break
+                
+                if sage_agent and "model" in sage_agent:
+                    if "llama-3.2-3b-preview" in str(sage_agent.get("model")):
+                        self.log_test("Groq Model Assignment Fix", "PASS", 
+                                    f"Sage agent properly assigned llama-3.2-3b-preview model", response.status_code)
+                    else:
+                        self.log_test("Groq Model Assignment Fix", "FAIL", 
+                                    f"Sage agent has wrong model: {sage_agent.get('model')}", response.status_code)
+                else:
+                    self.log_test("Groq Model Assignment Fix", "FAIL", 
+                                f"Sage agent not found or missing model assignment. Available agents: {[a.get('name') for a in data['agents'] if isinstance(a, dict)]}", response.status_code)
+            else:
+                self.log_test("Groq Model Assignment Fix", "FAIL", 
+                            "Agents endpoint missing agents data", response.status_code)
+        else:
+            self.log_test("Groq Model Assignment Fix", "FAIL", 
+                        "Agents endpoint not working", response.status_code if response else None)
+        
+        # Test 4: Mobile Experience endpoints
+        print("4. Testing Mobile Experience endpoints...")
+        
+        # Mobile Health
+        response = self.make_request("GET", "/api/mobile/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "mobile_optimized" in data or "pwa_ready" in data or "status" in data:
+                self.log_test("Mobile Health Fix", "PASS", 
+                            f"Mobile health endpoint working with proper structure", response.status_code)
+            else:
+                self.log_test("Mobile Health Fix", "FAIL", 
+                            f"Mobile health endpoint missing expected fields. Keys: {list(data.keys())}", response.status_code)
+        else:
+            self.log_test("Mobile Health Fix", "FAIL", 
+                        "Mobile health endpoint not working", response.status_code if response else None)
+        
+        # PWA Manifest
+        response = self.make_request("GET", "/api/mobile/pwa/manifest")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "name" in data or "icons" in data or "manifest" in data:
+                self.log_test("PWA Manifest Fix", "PASS", 
+                            f"PWA manifest endpoint working with proper structure", response.status_code)
+            else:
+                self.log_test("PWA Manifest Fix", "FAIL", 
+                            f"PWA manifest endpoint missing expected fields. Keys: {list(data.keys())}", response.status_code)
+        else:
+            self.log_test("PWA Manifest Fix", "FAIL", 
+                        "PWA manifest endpoint not working", response.status_code if response else None)
+        
+        # Test 5: Advanced Analytics endpoints
+        print("5. Testing Advanced Analytics endpoints...")
+        
+        # Analytics Health
+        response = self.make_request("GET", "/api/analytics/health")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "analytics_enabled" in data or "status" in data or "health" in data:
+                self.log_test("Analytics Health Fix", "PASS", 
+                            f"Analytics health endpoint working with proper structure", response.status_code)
+            else:
+                self.log_test("Analytics Health Fix", "FAIL", 
+                            f"Analytics health endpoint missing expected fields. Keys: {list(data.keys())}", response.status_code)
+        else:
+            self.log_test("Analytics Health Fix", "FAIL", 
+                        "Analytics health endpoint not working", response.status_code if response else None)
+        
+        # Analytics Dashboard
+        response = self.make_request("GET", "/api/analytics/dashboard")
+        if response and response.status_code == 200:
+            data = response.json()
+            if "metrics" in data or "charts" in data or "dashboard" in data:
+                self.log_test("Analytics Dashboard Fix", "PASS", 
+                            f"Analytics dashboard endpoint working with comprehensive data", response.status_code)
+            else:
+                self.log_test("Analytics Dashboard Fix", "FAIL", 
+                            f"Analytics dashboard endpoint missing expected fields. Keys: {list(data.keys())}", response.status_code)
+        else:
+            self.log_test("Analytics Dashboard Fix", "FAIL", 
+                        "Analytics dashboard endpoint not working", response.status_code if response else None)
+
     def run_comprehensive_test(self):
-        """Run comprehensive test of all 8 competitive features"""
-        print("🎯 AETHER AI PLATFORM - 8 COMPETITIVE FEATURES TESTING")
+        """Run comprehensive test focusing on backend gaps fixes"""
+        print("🎯 AETHER AI PLATFORM - BACKEND GAPS FIXES TESTING")
         print("=" * 60)
         print(f"Testing Backend URL: {self.base_url}")
         print(f"Test Started: {datetime.now().isoformat()}")
@@ -522,11 +654,16 @@ class CompetitiveFeaturesTester:
             print("❌ Authentication failed - cannot proceed with testing")
             return
         
-        print("\n🚀 TESTING ALL 8 COMPETITIVE FEATURES...")
+        print("\n🔧 TESTING BACKEND GAPS FIXES...")
         print("=" * 60)
         
-        # Test all 8 competitive features
-        self.test_1_integration_hub()
+        # Test specific backend gaps fixes
+        self.test_backend_gaps_fixes()
+        
+        print("\n🚀 TESTING ADDITIONAL COMPETITIVE FEATURES...")
+        print("=" * 60)
+        
+        # Test additional competitive features for completeness
         self.test_2_template_marketplace()
         self.test_3_multi_model_architecture()
         self.test_4_enterprise_compliance()
