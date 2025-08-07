@@ -36,6 +36,24 @@ async def chat_with_ai(
 ):
     """Chat with ultra-fast Groq AI agent with usage tracking - PERFORMANCE OPTIMIZED"""
     try:
+        # VALIDATION: Check for empty message
+        if not message_data.message or not message_data.message.strip():
+            raise HTTPException(status_code=400, detail={
+                "error": "Invalid request",
+                "message": "Message cannot be empty or contain only whitespace",
+                "field": "message"
+            })
+        
+        # VALIDATION: Check message length limits
+        if len(message_data.message) > 10000:
+            raise HTTPException(status_code=400, detail={
+                "error": "Message too long",
+                "message": "Message cannot exceed 10,000 characters",
+                "field": "message",
+                "current_length": len(message_data.message),
+                "max_length": 10000
+            })
+        
         current_user = usage_info["user"]
         user_id = usage_info["user_id"]
         track_usage = usage_info["track_usage"]
@@ -58,6 +76,14 @@ async def chat_with_ai(
             project_id=message_data.project_id,
             stream=False  # Keep non-streaming for consistency
         )
+        
+        # VALIDATION: Check AI response validity
+        if not ai_response or not ai_response.get("response"):
+            raise HTTPException(status_code=502, detail={
+                "error": "AI service error",
+                "message": "AI service returned empty or invalid response",
+                "suggestion": "Please try again or contact support if the issue persists"
+            })
         
         # 🚀 PERFORMANCE FIX: Parallelize token estimation and database operations
         output_tokens = estimate_response_tokens(ai_response["response"], ai_response.get("model_used", message_data.model))
@@ -169,9 +195,18 @@ async def chat_with_ai(
             "timestamp": datetime.utcnow().isoformat()
         }
         
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         logger.error(f"OPTIMIZED Groq AI chat error: {e}")
-        raise HTTPException(status_code=500, detail="Groq AI service error")
+        # Return structured error response
+        raise HTTPException(status_code=500, detail={
+            "error": "Internal service error",
+            "message": "An unexpected error occurred while processing your request",
+            "suggestion": "Please try again or contact support if the issue persists",
+            "error_id": f"err_{uuid.uuid4().hex[:8]}"
+        })
 
 @router.get("/conversations")
 async def get_conversations(
