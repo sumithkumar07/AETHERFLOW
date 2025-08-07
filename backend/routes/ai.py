@@ -410,20 +410,27 @@ async def download_model(
 
 @router.get("/status")
 async def get_ai_status():
-    """Get Groq AI service status"""
+    """Get Groq AI service status with FIXED connection reporting"""
     try:
         model_status = await ai_service.get_model_status()
         usage_stats = ai_service.get_usage_stats()
+        is_connected = model_status.get("groq_connected", False)
         
         return {
             "service": "Groq AI",
-            "status": "online" if model_status.get("groq_connected", False) else "offline", 
+            "status": "online" if is_connected else "offline", 
             "ultra_fast": True,
             "cloud_based": True,
             "cost_optimized": True,
             "provider": "Groq",
             "models": model_status,
             "usage": usage_stats,
+            "connection_details": {
+                "groq_connected": is_connected,
+                "api_key_configured": model_status.get("api_key_present", False),
+                "total_models": model_status.get("total_available", 0),
+                "last_check": model_status.get("last_status_check", "unknown")
+            },
             "features": {
                 "ultra_fast_inference": True,
                 "smart_cost_routing": True,
@@ -439,6 +446,11 @@ async def get_ai_status():
                 "cost": "80%+ savings vs alternatives", 
                 "reliability": "Enterprise-grade uptime",
                 "scalability": "Handles unlimited concurrent users"
+            },
+            "diagnostics": {
+                "service_initialized": ai_service.initialized if hasattr(ai_service, 'initialized') else True,
+                "models_available": list(model_status.get("models", {}).keys()) if model_status.get("models") else [],
+                "error": model_status.get("error") if not is_connected else None
             }
         }
     except Exception as e:
@@ -448,5 +460,9 @@ async def get_ai_status():
             "status": "error",
             "error": str(e),
             "unlimited": True,
-            "local": True
+            "local": True,
+            "diagnostics": {
+                "error_type": type(e).__name__,
+                "error_details": str(e)
+            }
         }
