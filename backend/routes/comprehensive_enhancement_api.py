@@ -77,8 +77,7 @@ async def enhancement_health():
 @router.post("/enhance-ai-interaction")
 async def enhance_ai_interaction(
     request: EnhancementRequest,
-    background_tasks: BackgroundTasks,
-    current_user: dict = Depends(get_current_user)
+    background_tasks: BackgroundTasks
 ):
     """
     🚀 MASTER AI INTERACTION ENHANCEMENT ENDPOINT
@@ -101,13 +100,13 @@ async def enhance_ai_interaction(
         enhanced_request = {
             "request_id": request_id,
             "message": request.message,
-            "user_id": request.user_id or current_user.get("user_id", "anonymous"),
+            "user_id": request.user_id or "anonymous",
             "conversation_id": request.conversation_id or str(uuid.uuid4()),
             "selected_agents": request.selected_agents,
             "enhancement_level": request.enhancement_level,
             "phases_to_apply": request.phases_to_apply,
             "user_context": {
-                "user_id": current_user.get("user_id"),
+                "user_id": request.user_id or "anonymous",
                 "user_agent": "Aether-AI-Enhanced",
                 "current_route": "/ai-chat",
                 "theme": "system",
