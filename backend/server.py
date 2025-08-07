@@ -204,6 +204,14 @@ app.include_router(enhanced_ai_intelligence_router, prefix="/api/ai/v3/intellige
 from routes.accessibility_api import router as accessibility_api_router
 app.include_router(accessibility_api_router, prefix="/api/accessibility", tags=["Advanced Accessibility - WCAG Compliant"])
 
+# Include Advanced Robustness & Reliability API Routes (ERROR HANDLING - NO UI CHANGES)
+from routes.robustness_api import router as robustness_api_router
+app.include_router(robustness_api_router, prefix="/api/robustness", tags=["Advanced Robustness & Reliability"])
+
+# Include Comprehensive Enhancement Coordinator API (MASTER CONTROLLER - NO UI CHANGES)
+from routes.comprehensive_enhancement_api import router as comprehensive_api_router
+app.include_router(comprehensive_api_router, prefix="/api/enhancements", tags=["Comprehensive Enhancement Coordinator"])
+
 # Include Gap-Closing Enhancement Routes - All Competitive Features (with error handling)
 if autonomous_planning_router:
     app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
