@@ -144,9 +144,9 @@ class AetherAIBackendTester:
         response, response_time = self.make_request("GET", "/api/subscription/current")
         if response and response.status_code == 200:
             data = response.json()
-            if "subscription" in data:
+            if "plan" in data and "status" in data:
                 self.log_test("Subscription System", "PASS", 
-                            f"Subscription data retrieved: {data['subscription'].get('plan', 'Unknown')}", 
+                            f"Subscription data retrieved: {data.get('plan', 'Unknown')} ({data.get('status', 'Unknown')})", 
                             response_time, response.status_code)
             else:
                 self.log_test("Subscription System", "FAIL", 
