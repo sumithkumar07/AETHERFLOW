@@ -632,12 +632,12 @@ class CompetitiveFeaturesTester:
         response = self.make_request("GET", "/api/analytics/dashboard")
         if response and response.status_code == 200:
             data = response.json()
-            if "metrics" in data or "charts" in data or "dashboard" in data:
+            if "overview" in data and "traffic_analytics" in data and "user_engagement" in data:
                 self.log_test("Analytics Dashboard Fix", "PASS", 
-                            f"Analytics dashboard endpoint working with comprehensive data", response.status_code)
+                            f"Analytics dashboard endpoint working with comprehensive data structure", response.status_code)
             else:
                 self.log_test("Analytics Dashboard Fix", "FAIL", 
-                            f"Analytics dashboard endpoint missing expected fields. Keys: {list(data.keys())}", response.status_code)
+                            f"Analytics dashboard endpoint missing expected comprehensive structure. Keys: {list(data.keys())}", response.status_code)
         else:
             self.log_test("Analytics Dashboard Fix", "FAIL", 
                         "Analytics dashboard endpoint not working", response.status_code if response else None)
