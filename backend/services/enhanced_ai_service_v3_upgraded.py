@@ -484,8 +484,8 @@ class EnhancedAIServiceV3Upgraded:
         project_id: str = None,
         initial_context: str = ""
     ):
-        """Initialize conversation with intelligence context"""
-        self.conversation_contexts[session_id] = ConversationContext(
+        """Initialize conversation with intelligence context and proper session management"""
+        conversation_context = ConversationContext(
             session_id=session_id,
             user_id=user_id,
             active_agents=[AgentRole.DEVELOPER],  # Default agent
@@ -494,12 +494,27 @@ class EnhancedAIServiceV3Upgraded:
             project_id=project_id
         )
         
-        # Add intelligence context separately
-        self.conversation_contexts[session_id].intelligence_context = {
+        # FIXED: Add proper session management attributes
+        conversation_context.last_activity = datetime.utcnow()
+        conversation_context.created_at = datetime.utcnow()
+        
+        # Add intelligence context
+        conversation_context.intelligence_context = {
             "architectural_preferences": [],
             "scale_indicators": [],
-            "learning_velocity": 0.5
+            "learning_velocity": 0.5,
+            "session_metadata": {
+                "user_id": user_id,
+                "project_id": project_id,
+                "initial_context": initial_context[:200] if initial_context else "",
+                "created_at": datetime.utcnow().isoformat()
+            }
         }
+        
+        # Store the context
+        self.conversation_contexts[session_id] = conversation_context
+        
+        logger.info(f"✅ Conversation session initialized: {session_id} for user: {user_id}")
 
     async def _update_conversation_context(
         self, 
