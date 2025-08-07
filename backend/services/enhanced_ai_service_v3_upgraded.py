@@ -696,21 +696,39 @@ class EnhancedAIServiceV3Upgraded:
         return [agent.value for agent in context.active_agents]
 
     async def cleanup_old_conversations(self, max_age_hours: int = 24):
-        """Clean up old conversation contexts"""
+        """Clean up old conversation contexts with improved session management"""
         try:
             current_time = datetime.utcnow()
             to_remove = []
             
             for session_id, context in self.conversation_contexts.items():
-                if hasattr(context, 'last_activity'):
-                    age = current_time - context.last_activity
+                # FIXED: Proper timestamp handling for cleanup
+                last_activity = getattr(context, 'last_activity', None)
+                if last_activity:
+                    age = current_time - last_activity
                     if age.total_seconds() > (max_age_hours * 3600):
                         to_remove.append(session_id)
+                else:
+                    # Remove contexts without proper timestamps (old format)
+                    to_remove.append(session_id)
             
+            # Clean up old conversations
             for session_id in to_remove:
                 del self.conversation_contexts[session_id]
+                logger.info(f"🧹 Cleaned up old conversation: {session_id}")
                 
-            logger.info(f"Cleaned up {len(to_remove)} old conversations")
+            if to_remove:
+                logger.info(f"✅ Cleaned up {len(to_remove)} old conversations")
+            else:
+                logger.info("🔍 No old conversations found for cleanup")
+            
+            # Return cleanup stats
+            return {
+                "cleaned_up": len(to_remove),
+                "active_conversations": len(self.conversation_contexts),
+                "cleanup_threshold_hours": max_age_hours
+            }
             
         except Exception as e:
             logger.error(f"Conversation cleanup failed: {e}")
+            return {"error": str(e), "cleaned_up": 0}
