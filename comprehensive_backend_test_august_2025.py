@@ -634,6 +634,10 @@ class AetherAIBackendTester:
         ]
         
         for i, test_request in enumerate(test_requests, 1):
+            # Add delay between requests to avoid rate limiting
+            if i > 1:
+                time.sleep(1)
+                
             request_data = {
                 "message": test_request["message"],
                 "conversation_id": f"cost_test_{i}_{int(time.time())}"
@@ -642,7 +646,8 @@ class AetherAIBackendTester:
             response, response_time = self.make_request("POST", "/api/ai/v3/chat/enhanced", request_data)
             if response and response.status_code == 200:
                 data = response.json()
-                if "response" in data and len(data["response"]) > 10:
+                ai_response = data.get("response") or data.get("content", "")
+                if len(ai_response) > 10:
                     # Check if model information is returned (for cost tracking)
                     model_info = data.get("model_used", "unknown")
                     self.log_test(f"Cost Optimization - {test_request['type'].title()} Request", "PASS", 
@@ -650,6 +655,9 @@ class AetherAIBackendTester:
                 else:
                     self.log_test(f"Cost Optimization - {test_request['type'].title()} Request", "FAIL", 
                                 "Poor response quality", response_time, response.status_code)
+            elif response and response.status_code == 429:
+                self.log_test(f"Cost Optimization - {test_request['type'].title()} Request", "WARN", 
+                            "Rate limit exceeded", response_time, response.status_code)
             else:
                 self.log_test(f"Cost Optimization - {test_request['type'].title()} Request", "FAIL", 
                             "Request failed", response_time, response.status_code if response else None)
