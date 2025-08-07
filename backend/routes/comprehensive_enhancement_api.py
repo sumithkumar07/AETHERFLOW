@@ -25,6 +25,10 @@ def get_current_user():
     """Simplified authentication - returns anonymous user for enhancement API"""
     return {"user_id": "anonymous", "username": "anonymous"}
 
+# Update the Depends calls to use a simple lambda
+def get_auth():
+    return {"user_id": "anonymous", "username": "anonymous"}
+
 # Request/Response Models
 class EnhancementRequest(BaseModel):
     message: str
