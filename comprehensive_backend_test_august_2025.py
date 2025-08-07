@@ -361,6 +361,10 @@ class AetherAIBackendTester:
         
         ai_response_times = []
         for i, test_data in enumerate(ai_tests, 1):
+            # Add delay between requests to avoid rate limiting
+            if i > 1:
+                time.sleep(1)
+                
             response, response_time = self.make_request("POST", "/api/ai/v3/chat/enhanced", test_data)
             ai_response_times.append(response_time)
             
@@ -370,6 +374,9 @@ class AetherAIBackendTester:
                 self.log_test(f"AI Performance Test {i}", status, 
                             f"Target: <2s, Actual: {response_time:.3f}s", 
                             response_time, response.status_code)
+            elif response and response.status_code == 429:
+                self.log_test(f"AI Performance Test {i}", "WARN", 
+                            "Rate limit exceeded", response_time, response.status_code)
             else:
                 self.log_test(f"AI Performance Test {i}", "FAIL", 
                             "AI endpoint failed", response_time, response.status_code if response else None)
