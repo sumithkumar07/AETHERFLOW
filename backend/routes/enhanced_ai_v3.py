@@ -283,6 +283,10 @@ async def quick_ai_response_with_intelligence(request: ChatRequest):
     """Quick AI response with full intelligence integration - ULTRA OPTIMIZED FOR <2s TARGET"""
     
     try:
+        # VALIDATION: Check for empty message
+        if not request.message or not request.message.strip():
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
+        
         # Generate quick response with full intelligence integration
         response = await enhanced_ai_service.quick_response_with_intelligence(
             request.message, 
@@ -300,6 +304,8 @@ async def quick_ai_response_with_intelligence(request: ChatRequest):
             model_used=response.get("model_used")
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in ULTRA FAST quick AI response with full intelligence: {e}")
         raise HTTPException(status_code=500, detail=f"Quick AI response with full intelligence failed: {str(e)}")
