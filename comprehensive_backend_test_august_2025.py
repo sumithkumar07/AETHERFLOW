@@ -287,9 +287,10 @@ class AetherAIBackendTester:
         response, response_time = self.make_request("POST", "/api/ai/v3/chat/enhanced", complex_request)
         if response and response.status_code == 200:
             data = response.json()
-            if "response" in data and len(data["response"]) > 200:
+            ai_response = data.get("response") or data.get("content", "")
+            if len(ai_response) > 200:
                 # Check if response mentions multiple agents or coordination
-                response_text = data["response"].lower()
+                response_text = ai_response.lower()
                 coordination_indicators = ["dev", "luna", "atlas", "quinn", "sage", "coordinate", "team", "collaborate"]
                 coordination_score = sum(1 for indicator in coordination_indicators if indicator in response_text)
                 
@@ -303,8 +304,11 @@ class AetherAIBackendTester:
                                 response_time, response.status_code)
             else:
                 self.log_test("Multi-Agent Coordination", "FAIL", 
-                            f"Insufficient response quality: {len(data.get('response', ''))}", 
+                            f"Insufficient response quality: {len(ai_response)}", 
                             response_time, response.status_code)
+        elif response and response.status_code == 429:
+            self.log_test("Multi-Agent Coordination", "WARN", 
+                        "Rate limit exceeded - cannot test coordination", response_time, response.status_code)
         else:
             self.log_test("Multi-Agent Coordination", "FAIL", 
                         "Multi-agent coordination failed", response_time, response.status_code if response else None)
