@@ -456,7 +456,7 @@ Provide a practical, actionable response that includes:
 User Request: {message}"""
             
             # Get actual Groq AI response
-            response = await self.groq_service.generate_response(
+            response = await self.groq_service.process_message(
                 message=architectural_prompt,
                 agent=agent.value,
                 model=None,  # Let Groq service choose optimal model
