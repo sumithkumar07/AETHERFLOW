@@ -433,7 +433,7 @@ class EnhancedAgentCoordinator:
                 await self.groq_service.initialize()
             
             # Extract the user's message from context
-            message = user_context.get('message', '') or user_context.get('user_message', '') or request
+            message = user_context.get('message', '') or user_context.get('user_message', '')
             if not message:
                 message = "Help me with my development task"
             
