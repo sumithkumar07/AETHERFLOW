@@ -442,7 +442,9 @@ Would you like to try again?`,
           }
         })
 
-        return response.data
+            return response.data
+          }
+        }
       },
 
       // Helper function to generate suggestions
