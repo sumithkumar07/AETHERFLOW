@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 class GroqAIService:
     def __init__(self):
+        # Load environment variables to ensure API key is available
+        load_dotenv()
+        
         self.api_key = os.getenv("GROQ_API_KEY")
         self.base_url = "https://api.groq.com/openai/v1"
         self.initialized = False
