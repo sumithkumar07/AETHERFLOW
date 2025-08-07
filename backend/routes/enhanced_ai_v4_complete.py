@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 
 # Import our master enhanced service
-from ..services.enhanced_ai_service_master import get_master_ai_service
+from services.enhanced_ai_service_master import get_master_ai_service
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
