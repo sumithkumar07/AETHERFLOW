@@ -6,6 +6,7 @@ import logging
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
 import uuid
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
