@@ -460,7 +460,6 @@ User Request: {message}"""
                 message=architectural_prompt,
                 agent=agent.value,
                 model=None,  # Let Groq service choose optimal model
-                system_prompt=f"You are an expert {agent.value} with deep architectural knowledge. Provide specific, actionable advice.",
                 context=[],
                 stream=False
             )
