@@ -444,8 +444,8 @@ class EnhancedAgentCoordinator:
             architectural_prompt = f"""You are a {agent_name} agent enhanced with architectural intelligence.
             
 Intelligence Level: {intelligence_level}
-Project Scale: {architectural_context.scale_assessment}
-Architecture Pattern: {architectural_context.recommended_patterns[0] if architectural_context.recommended_patterns else 'Standard'}
+Project Scale: {architectural_context.scalability_analysis.get('scale', 'Standard')}
+Architecture Pattern: {architectural_context.architecture_patterns[0] if architectural_context.architecture_patterns else 'Standard'}
 
 Provide a practical, actionable response that includes:
 1. Direct solution to the user's request
