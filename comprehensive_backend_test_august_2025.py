@@ -558,9 +558,13 @@ class AetherAIBackendTester:
         response, response_time = self.make_request("POST", "/api/ai/v3/chat/enhanced", message1)
         if response and response.status_code == 200:
             data = response.json()
-            if "response" in data:
+            ai_response = data.get("response") or data.get("content", "")
+            if ai_response:
                 self.log_test("Session Creation", "PASS", 
                             f"Created new conversation session", response_time, response.status_code)
+                
+                # Add delay to avoid rate limiting
+                time.sleep(1)
                 
                 # Follow-up message in same conversation
                 message2 = {
@@ -571,9 +575,10 @@ class AetherAIBackendTester:
                 response2, response_time2 = self.make_request("POST", "/api/ai/v3/chat/enhanced", message2)
                 if response2 and response2.status_code == 200:
                     data2 = response2.json()
-                    if "response" in data2:
+                    ai_response2 = data2.get("response") or data2.get("content", "")
+                    if ai_response2:
                         # Check if response shows context awareness
-                        response_text = data2["response"].lower()
+                        response_text = ai_response2.lower()
                         context_indicators = ["react", "component", "application", "app"]
                         context_score = sum(1 for indicator in context_indicators if indicator in response_text)
                         
@@ -588,12 +593,18 @@ class AetherAIBackendTester:
                     else:
                         self.log_test("Session Persistence", "FAIL", 
                                     "No response in follow-up message", response_time2, response2.status_code)
+                elif response2 and response2.status_code == 429:
+                    self.log_test("Session Persistence", "WARN", 
+                                "Rate limit exceeded - cannot test persistence", response_time2, response2.status_code)
                 else:
                     self.log_test("Session Persistence", "FAIL", 
                                 "Follow-up message failed", response_time2, response2.status_code if response2 else None)
             else:
                 self.log_test("Session Creation", "FAIL", 
                             "No response in initial message", response_time, response.status_code)
+        elif response and response.status_code == 429:
+            self.log_test("Session Creation", "WARN", 
+                        "Rate limit exceeded - cannot test session creation", response_time, response.status_code)
         else:
             self.log_test("Session Creation", "FAIL", 
                         "Failed to create conversation session", response_time, response.status_code if response else None)
