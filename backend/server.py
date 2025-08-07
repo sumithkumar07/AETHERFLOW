@@ -212,6 +212,10 @@ app.include_router(robustness_api_router, prefix="/api/robustness", tags=["Advan
 from routes.comprehensive_enhancement_api import router as comprehensive_api_router
 app.include_router(comprehensive_api_router, prefix="/api/enhancements", tags=["Comprehensive Enhancement Coordinator"])
 
+# Include NEW COMPREHENSIVE ENHANCEMENT API - ALL 6 PHASES INTEGRATED
+from routes.comprehensive_enhancement_api import router as comprehensive_enhancement_router
+app.include_router(comprehensive_enhancement_router, prefix="/api/comprehensive", tags=["Comprehensive Enhancement - All 6 Phases"])
+
 # Include Gap-Closing Enhancement Routes - All Competitive Features (with error handling)
 if autonomous_planning_router:
     app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
