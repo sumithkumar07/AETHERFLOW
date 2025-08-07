@@ -768,7 +768,7 @@ class AetherAIBackendTester:
             print()
         
         # Performance Issues
-        slow_tests = [r for r in self.test_results if r.get("response_time", 0) > 2.0]
+        slow_tests = [r for r in self.test_results if r.get("response_time") is not None and r.get("response_time", 0) > 2.0]
         if slow_tests:
             print("🐌 PERFORMANCE ISSUES:")
             print("-" * 30)
