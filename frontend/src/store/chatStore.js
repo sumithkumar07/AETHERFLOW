@@ -359,15 +359,79 @@ Would you like to try again?`,
         }
       },
 
-      // Helper function to call backend AI
+      // ENHANCED Helper function to call backend AI with ALL 6 PHASES
       _callBackendAI: async (message, selectedModel, selectedAgent, projectId, currentConversationId, context) => {
-        const response = await axios.post(`${BACKEND_URL}/api/ai/chat`, {
-          message,
-          model: selectedModel,
-          agent: selectedAgent,
-          project_id: projectId,
-          conversation_id: currentConversationId,
-          context,
+        try {
+          // Try enhanced v4 complete endpoint first (ALL 6 ENHANCEMENT PHASES)
+          console.log('🚀 Trying Enhanced AI v4 Complete (All 6 Phases)...')
+          
+          const enhancedResponse = await axios.post(`${BACKEND_URL}/api/ai/v4/chat/enhanced-complete`, {
+            message,
+            agent_name: selectedAgent,
+            conversation_id: currentConversationId,
+            conversation_history: context,
+            user_id: localStorage.getItem('user_id') || 'anonymous'
+          }, { timeout: 15000 })
+
+          console.log('✅ Enhanced v4 Complete response received!')
+          
+          return {
+            response: enhancedResponse.data.response,
+            model_used: enhancedResponse.data.model || selectedModel,
+            conversation_id: enhancedResponse.data.conversation_id,
+            agent: enhancedResponse.data.agent,
+            confidence: enhancedResponse.data.confidence || 0.95,
+            metadata: {
+              provider: 'aether-enhanced-v4',
+              enhancement_applied: enhancedResponse.data.enhancement_applied,
+              response_time: enhancedResponse.data.response_time,
+              optimizations: enhancedResponse.data.optimizations,
+              phases_applied: enhancedResponse.data.phases_applied || [
+                'performance_optimization', 'ai_intelligence_enhancement', 
+                'system_optimization', 'infrastructure_enhancement',
+                'data_analytics_optimization', 'accessibility_standards'
+              ],
+              cached: enhancedResponse.data.cached,
+              agent_confidence: enhancedResponse.data.optimizations?.agent_confidence
+            }
+          }
+
+        } catch (v4Error) {
+          console.warn('Enhanced v4 failed, trying v3 fallback:', v4Error.message)
+          
+          try {
+            // Fallback to v3 enhanced
+            const v3Response = await axios.post(`${BACKEND_URL}/api/ai/v3/chat/enhanced`, {
+              message,
+              agent_name: selectedAgent,
+              conversation_id: currentConversationId,
+              conversation_history: context
+            }, { timeout: 10000 })
+
+            return {
+              response: v3Response.data.response,
+              model_used: v3Response.data.model || selectedModel,
+              conversation_id: v3Response.data.conversation_id,
+              agent: v3Response.data.agent,
+              confidence: v3Response.data.confidence || 0.90,
+              metadata: {
+                provider: 'aether-enhanced-v3',
+                fallback_from: 'v4',
+                enhancement_applied: true
+              }
+            }
+
+          } catch (v3Error) {
+            console.warn('Enhanced v3 failed, trying standard fallback:', v3Error.message)
+            
+            // Final fallback to standard endpoint
+            const response = await axios.post(`${BACKEND_URL}/api/ai/chat`, {
+              message,
+              model: selectedModel,
+              agent: selectedAgent,
+              project_id: projectId,
+              conversation_id: currentConversationId,
+              context,
           enhanced_features: {
             voice_enabled: get().voiceEnabled,
             multimodal: get().multimodalEnabled,
