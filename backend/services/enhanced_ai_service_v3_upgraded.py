@@ -52,6 +52,7 @@ class EnhancedAIServiceV3Upgraded:
         self.conversation_contexts = {}
         
         # Enhanced agent configurations with architectural intelligence integration
+        # FIXED: Proper assignment of llama-3.2-3b-preview to PROJECT_MANAGER agent
         self.agent_configs = {
             AgentRole.DEVELOPER: {
                 "name": "Dev",
@@ -227,10 +228,11 @@ class EnhancedAIServiceV3Upgraded:
 **Intelligence Integration**: Automatically align testing strategies with architectural patterns, predict testing bottlenecks, optimize test resource usage, plan quality evolution, and ensure enterprise-grade quality assurance."""
             },
             
+            # FIXED: Properly assign llama-3.2-3b-preview model to PROJECT_MANAGER agent
             AgentRole.PROJECT_MANAGER: {
                 "name": "Sage",
                 "personality": "Strategic project manager with architectural intelligence for technical project planning, resource optimization, and delivery excellence",
-                "model": "llama-3.1-8b-instant",
+                "model": "llama-3.2-3b-preview",  # FIXED: Assigned missing Groq model
                 "capabilities": [
                     "Project planning and estimation with architectural complexity intelligence",
                     "Agile/Scrum methodologies optimized for technical architecture and scale",
@@ -276,6 +278,7 @@ class EnhancedAIServiceV3Upgraded:
         try:
             await self.groq_client.initialize()
             logger.info("🎯 Enhanced AI Service V3 UPGRADED with Full Intelligence Integration initialized")
+            logger.info(f"✅ Groq model llama-3.2-3b-preview assigned to {AgentRole.PROJECT_MANAGER.value} agent")
             return True
         except Exception as e:
             logger.error(f"Enhanced AI Service V3 UPGRADED initialization failed: {e}")
@@ -428,6 +431,12 @@ class EnhancedAIServiceV3Upgraded:
             "agents": agents,
             "total_agents": len(agents),
             "architectural_intelligence": True,
+            "groq_models_assigned": {
+                "llama-3.3-70b-versatile": ["developer", "architect"],
+                "llama-3.1-8b-instant": ["designer"],
+                "mixtral-8x7b-32768": ["tester"],
+                "llama-3.2-3b-preview": ["project_manager"]  # FIXED: Properly assigned
+            },
             "intelligence_features": [
                 "Background conversation analysis and learning",
                 "Predictive architectural intelligence",
