@@ -196,6 +196,10 @@ app.include_router(optimized_ai_v4_router, prefix="/api/ai", tags=["Optimized AI
 # Include ALL ENHANCEMENT PHASES INTEGRATED - v4 Complete (NEW)
 app.include_router(enhanced_ai_v4_complete_router, prefix="/api/ai/v4", tags=["Enhanced AI v4 Complete - All 6 Phases"])
 
+# Include Advanced AI Intelligence Enhancement Routes (PRESERVES EXISTING UI/WORKFLOW)
+from routes.enhanced_ai_v3_intelligence import router as enhanced_ai_intelligence_router
+app.include_router(enhanced_ai_intelligence_router, prefix="/api/ai/v3/intelligence", tags=["AI Intelligence Enhancement - Backend Only"])
+
 # Include Gap-Closing Enhancement Routes - All Competitive Features (with error handling)
 if autonomous_planning_router:
     app.include_router(autonomous_planning_router, prefix="/api/planning", tags=["Autonomous Planning"])
