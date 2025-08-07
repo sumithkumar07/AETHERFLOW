@@ -534,18 +534,19 @@ class CompetitiveFeaturesTester:
         response = self.make_request("GET", "/api/ai/v3/status")
         if response and response.status_code == 200:
             data = response.json()
-            if "groq_models" in data and len(data["groq_models"]) >= 4:
-                models = [model.get("name") if isinstance(model, dict) else str(model) for model in data["groq_models"]]
+            if "groq_integration" in data and "models" in data["groq_integration"]:
+                models = data["groq_integration"]["models"]
                 expected_models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.2-3b-preview"]
-                if any(expected in str(models) for expected in expected_models):
+                found_models = list(models.keys())
+                if all(expected in found_models for expected in expected_models):
                     self.log_test("AI Status Endpoint Fix", "PASS", 
-                                f"AI status endpoint working - found models: {models}", response.status_code)
+                                f"AI status endpoint working - found all 4 Groq models: {found_models}", response.status_code)
                 else:
                     self.log_test("AI Status Endpoint Fix", "FAIL", 
-                                f"AI status endpoint missing expected models. Found: {models}", response.status_code)
+                                f"AI status endpoint missing expected models. Found: {found_models}", response.status_code)
             else:
                 self.log_test("AI Status Endpoint Fix", "FAIL", 
-                            f"AI status endpoint missing groq_models data. Keys: {list(data.keys())}", response.status_code)
+                            f"AI status endpoint missing groq_integration.models data. Keys: {list(data.keys())}", response.status_code)
         else:
             self.log_test("AI Status Endpoint Fix", "FAIL", 
                         "AI status endpoint not working", response.status_code if response else None)
